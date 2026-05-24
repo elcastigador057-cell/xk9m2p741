@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codigo de Oro — BTC/USD & XAU/USD v5.0</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--bg2:#141720;--bg3:#1c2030;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --text:#e8eaf0;--text2:#8b91a8;--text3:#555d72;
+  --gold:#C9952A;--gold2:#E8B84B;
+  --green:#22c55e;--green-bg:rgba(34,197,94,0.12);--green-bdr:rgba(34,197,94,0.3);
+  --red:#ef4444;--red-bg:rgba(239,68,68,0.12);--red-bdr:rgba(239,68,68,0.3);
+  --yellow:#eab308;--yellow-bg:rgba(234,179,8,0.12);--yellow-bdr:rgba(234,179,8,0.3);
+  --blue:#3b82f6;--blue-bg:rgba(59,130,246,0.12);--blue-bdr:rgba(59,130,246,0.3);
+  --radius:8px;--radius-lg:12px;--mono:'Courier New',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13px;min-height:100vh;padding:12px;padding-top:110px;line-height:1.5}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* STICKY HEADER */
+.sticky-header{position:fixed;top:0;left:0;right:0;z-index:999;background:var(--bg);padding:5px 12px 6px;border-bottom:0.5px solid var(--border2)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:5px 12px;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);margin-bottom:4px;flex-wrap:wrap;gap:4px}
+.logo{font-size:13px;font-weight:700;letter-spacing:1px}.logo-gold{color:var(--gold2)}
+.online{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.clock{font-size:11px;color:var(--text2)}
+.horario-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700}
+
+/* TABS FIJAS */
+.tabs{display:flex;gap:6px}
+.tab{flex:1;padding:6px 8px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);cursor:pointer;text-align:center;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text2);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.tab:hover{border-color:var(--border2);color:var(--text)}
+.tab.active-btc{background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.5);color:#f7931a}
+.tab.active-xau{background:rgba(232,184,75,0.15);border-color:rgba(232,184,75,0.5);color:var(--gold2)}
+.tab-price{font-size:11px;font-weight:400;opacity:.8;margin-left:4px}
+
+/* PANELS */
+.panel{display:none}.panel.active{display:block}
+.sec{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media(max-width:640px){.g4{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}.tab-price{display:none}}
+.mcard{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px}
+.mcard-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.mcard-val{font-size:19px;font-weight:700;color:var(--text);line-height:1.2}
+.mcard-sub{font-size:11px;color:var(--text2);margin-top:3px}
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border)}
+.row:last-child{border-bottom:none}
+.row-lbl{font-size:12px;color:var(--text2)}.row-val{font-size:12px;font-weight:600;color:var(--text);text-align:right;max-width:65%}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.bg{background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-bdr)}
+.br{background:var(--red-bg);color:var(--red);border:0.5px solid var(--red-bdr)}
+.by{background:var(--yellow-bg);color:var(--yellow);border:0.5px solid var(--yellow-bdr)}
+.bb{background:var(--blue-bg);color:var(--blue);border:0.5px solid var(--blue-bdr)}
+.track-wrap{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px}
+.track-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.track-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px}
+.track-bg{height:8px;background:var(--bg3);border:0.5px solid var(--border);border-radius:4px;overflow:hidden}
+.track-fill{height:100%;border-radius:4px;transition:width .6s,background .4s}
+.track-marks{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:4px}
+.ia-box{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px}
+.ia-signal{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px}
+.ia-sub{font-size:11px;color:var(--text2)}
+.conf-bg{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;flex:1}
+.conf-fill{height:100%;border-radius:3px;transition:width .5s}
+.sltp-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:12px}
+.sltp-hdr{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
+.frow{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.frow label{font-size:10px;color:var(--text2);min-width:80px;text-transform:uppercase}
+.frow input{flex:1;padding:6px 8px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:12px;font-family:var(--mono);outline:none}
+.frow input:focus{border-color:var(--gold)}
+.frow input::placeholder{color:var(--text3)}
+.res-box{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 10px;margin-top:8px}
+.res-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:4px}
+.res-row:last-child{margin-bottom:0}
+.rl{color:var(--text2)}.rv{font-weight:700;font-family:var(--mono);color:var(--text)}
+.sl-c{color:var(--red)}.tp-c{color:var(--green)}
+.pnl-wrap{margin-top:8px}
+.pnl-hdr{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:3px}
+.pnl-bg{height:12px;background:var(--bg3);border:0.5px solid var(--border);border-radius:6px;overflow:hidden;position:relative}
+.pnl-fill{height:100%;border-radius:6px;transition:width .7s,background .4s}
+.pnl-line{position:absolute;top:0;bottom:0;width:1.5px;background:rgba(255,255,255,.35)}
+.a-box{border-radius:var(--radius);padding:7px 10px;font-size:11px;margin-top:6px;font-weight:600}
+.a-safe{background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-bdr)}
+.a-warn{background:var(--yellow-bg);color:var(--yellow);border:0.5px solid var(--yellow-bdr)}
+.a-danger{background:var(--red-bg);color:var(--red);border:0.5px solid var(--red-bdr)}
+.close-btn{width:100%;margin-top:7px;padding:8px;background:var(--red);color:#fff;border:none;border-radius:var(--radius);font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer}
+.cred-bar-bg{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:4px 0}
+.cred-bar{height:100%;border-radius:2px;transition:width 1s}
+.cap-bar-bg{height:16px;background:var(--bg3);border:0.5px solid var(--border);border-radius:8px;overflow:hidden}
+.cap-fill{height:100%;border-radius:8px;transition:width .8s,background .5s}
+.divider{height:0.5px;background:var(--border);margin:10px 0}
+.status-tag{display:inline-block;padding:1px 6px;background:var(--gold);color:#0d0f14;border-radius:3px;font-size:9px;font-weight:700;vertical-align:middle;margin-left:4px}
+
+/* API CONFIG AL FINAL */
+.api-config{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px}
+.api-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.api-row label{font-size:10px;color:var(--text3);min-width:60px;text-transform:uppercase}
+.api-row input{flex:1;padding:5px 8px;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:11px;font-family:var(--mono);outline:none}
+.api-row input:focus{border-color:var(--gold)}
+.api-btn{padding:6px 14px;background:var(--gold);color:#0d0f14;border:none;border-radius:var(--radius);font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer}
+.api-status{font-size:10px;margin-top:4px}
+.fuera-horario{background:var(--yellow-bg);border:0.5px solid var(--yellow-bdr);border-radius:var(--radius-lg);padding:10px 14px;margin-bottom:8px;font-size:12px;color:var(--yellow);text-align:center;display:none}
+.btn-encender{padding:6px 18px;border:none;border-radius:var(--radius);font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-enc-on{background:var(--green);color:#fff}
+.btn-enc-off{background:var(--red);color:#fff}
+</style>
+</head>
+<body>
+
+<!-- STICKY HEADER FIJO -->
+<div class="sticky-header">
+  <div class="topbar">
+    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v5.0</span></div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div class="online"><div class="dot"></div>ONLINE</div>
+      <span class="horario-badge bg" id="horario-badge">10AM-10PM</span>
+      <button class="btn-encender btn-enc-on" id="btn-manual" onclick="toggleManual()" style="display:none">&#9654; ENCENDER API</button>
+      <div class="clock" id="clk">--</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active-btc" id="tab-btc" onclick="switchTab('btc')">
+      &#8383; BTC/USD <span class="tab-price" id="tab-btc-price">$---</span>
+    </div>
+    <div class="tab" id="tab-xau" onclick="switchTab('xau')">
+      &#127747; XAU/USD <span class="tab-price" id="tab-xau-price">$---</span>
+    </div>
+  </div>
+</div>
+
+<!-- AVISO FUERA DE HORARIO -->
+<div class="fuera-horario" id="fuera-horario">
+  &#9200; Fuera de horario activo — Las APIs se activan automaticamente de 10:00 AM a 10:00 PM<br>
+  <span style="font-size:11px;opacity:.8">Puedes encender manualmente con el boton — se apagara automatico a las 10PM</span>
+</div>
+
+<!-- PANEL BTC -->
+<div class="panel active" id="panel-btc">
+  <div class="sec">Estado de mercado — BTC/USD</div>
+  <div class="g4">
+    <div class="mcard"><div class="mcard-lbl">BTC/USD precio</div><div class="mcard-val" id="btc-price">$---</div><div class="mcard-sub" id="btc-chg">--</div></div>
+    <div class="mcard"><div class="mcard-lbl">EMA 20</div><div class="mcard-val" id="btc-ema20">---</div><div class="mcard-sub" id="btc-ema20s">--</div></div>
+    <div class="mcard"><div class="mcard-lbl">EMA 50</div><div class="mcard-val" id="btc-ema50">---</div><div class="mcard-sub" id="btc-ema50s">--</div></div>
+    <div class="mcard"><div class="mcard-lbl">RSI 14</div><div class="mcard-val" id="btc-rsi">---</div><div class="mcard-sub" id="btc-rsis">--</div></div>
+  </div>
+  <div class="sec">Monitor RSI</div>
+  <div class="track-wrap">
+    <div class="track-hdr"><span class="track-lbl">RSI momentum BTC</span><span class="badge bb" id="btc-rsi-badge">--</span></div>
+    <div class="track-bg"><div class="track-fill" id="btc-rsi-fill" style="width:50%"></div></div>
+    <div class="track-marks"><span>0 sobreventa</span><span>30</span><span>50</span><span>70</span><span>100 sobrecompra</span></div>
+  </div>
+  <div class="sec">Senal IA — rsiAlcista:60 / rsiBajista:45 / atrTP:2.0</div>
+  <div class="ia-box">
+    <div class="ia-signal" id="btc-signal">Esperando datos...</div>
+    <div style="display:flex;align-items:center;gap:8px;margin:6px 0 4px">
+      <span class="ia-sub">Confianza:</span>
+      <div class="conf-bg"><div class="conf-fill" id="btc-conf" style="width:0%"></div></div>
+      <span style="font-size:11px;font-weight:700;min-width:34px" id="btc-conf-pct">0%</span>
+    </div>
+    <div class="ia-sub" id="btc-action">--</div>
+    <div class="ia-sub" style="margin-top:3px" id="btc-next">--</div>
+  </div>
+  <div class="g3" style="margin-bottom:8px">
+    <div class="mcard"><div class="mcard-lbl">Tendencia EMA</div><div style="font-size:13px;font-weight:700;margin-top:3px" id="btc-trend">--</div></div>
+    <div class="mcard"><div class="mcard-lbl">Dif EMA 20-50</div><div style="font-size:13px;font-weight:700;margin-top:3px" id="btc-difema">--</div></div>
+    <div class="mcard"><div class="mcard-lbl">ATR volatilidad</div><div style="font-size:13px;font-weight:700;margin-top:3px" id="btc-atr">--</div></div>
+  </div>
+  <div class="sec">Senales basicas</div>
+  <div class="card">
+    <div class="row"><span class="row-lbl">Precio vs EMA 20</span><span class="row-val" id="btc-s1">--</span></div>
+    <div class="row"><span class="row-lbl">Precio vs EMA 50</span><span class="row-val" id="btc-s2">--</span></div>
+    <div class="row"><span class="row-lbl">Tendencia EMA 20/50</span><span class="row-val" id="btc-s3">--</span></div>
+    <div class="row"><span class="row-lbl">RSI impulso</span><span class="row-val" id="btc-s4">--</span></div>
+    <div class="row"><span class="row-lbl">Senales alineadas</span><span class="row-val" id="btc-s5">--</span></div>
+    <div class="row"><span class="row-lbl">Velocidad mercado</span><span class="row-val" id="btc-s6">--</span></div>
+    <div class="row"><span class="row-lbl">Accion inmediata</span><span class="row-val" id="btc-s7">--</span></div>
+  </div>
+  <div class="sec">Calculadoras SL/TP — Ventas BTC (R:R sugerido 2.0)</div>
+  <div class="g2">
+    <div class="sltp-card">
+      <div class="sltp-hdr" style="display:flex;align-items:center;justify-content:space-between">
+        <span id="btc-v1-title">&#8601; Venta BTC #1</span>
+        <div style="display:flex;gap:4px">
+          <button onclick="setDir('btc',1,'buy')" id="btc-v1-buy" style="padding:3px 10px;border:none;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-bdr)">COMPRA</button>
+          <button onclick="setDir('btc',1,'sell')" id="btc-v1-sell" style="padding:3px 10px;border:none;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;background:var(--red);color:#fff">VENTA</button>
+        </div>
+      </div>
+      <div class="frow"><label>Entrada</label><input type="number" id="btc-v1e" placeholder="precio de tu entrada real" oninput="calcTrade('btc',1)" step="1"></div>
+      <div class="frow"><label>Precio XM</label><input type="number" id="btc-v1xm" placeholder="precio actual en XM" oninput="calcPnL('btc',1)" step="1" style="border-color:var(--gold)"></div>
+      <div class="frow"><label>Capital USD</label><input type="number" id="btc-v1c" placeholder="tu capital disponible" oninput="calcTrade('btc',1)"></div>
+      <div class="frow"><label>Riesgo %</label><input type="number" id="btc-v1r" placeholder="2" step="0.1" oninput="calcTrade('btc',1)"></div>
+      <div class="frow"><label>Ratio R:R</label><input type="number" id="btc-v1rr" placeholder="2" step="0.1" oninput="calcTrade('btc',1)"></div>
+      <div id="btc-v1-res" style="display:none">
+        <div class="res-box">
+          <div class="res-row"><span class="rl">Stop Loss</span><span class="rv sl-c" id="btc-v1-sl">--</span></div>
+          <div class="res-row"><span class="rl">Take Profit</span><span class="rv tp-c" id="btc-v1-tp">--</span></div>
+          <div class="res-row"><span class="rl">$ en riesgo</span><span class="rv sl-c" id="btc-v1-dr">--</span></div>
+          <div class="res-row"><span class="rl">$ potencial</span><span class="rv tp-c" id="btc-v1-dg">--</span></div>
+          <div class="res-row"><span class="rl">Tamano posicion</span><span class="rv" id="btc-v1-sz">--</span></div>
+          <div class="res-row"><span class="rl">Trailing stop</span><span class="rv" id="btc-v1-ts">--</span></div>
+          <div class="res-row" style="border-top:0.5px solid var(--gold);margin-top:4px;padding-top:4px"><span class="rl" style="color:var(--gold)">PnL real XM</span><span class="rv" id="btc-v1-pnlxm" style="color:var(--gold)">-- ingresa Precio XM</span></div>
+        </div>
+        <div class="pnl-wrap">
+          <div class="pnl-hdr"><span>SL riesgo</span><span>Tu entrada</span><span>TP meta</span></div>
+          <div class="pnl-bg"><div class="pnl-fill" id="btc-v1-pnl" style="width:50%"></div><div class="pnl-line" id="btc-v1-line" style="left:50%"></div></div>
+        </div>
+        <div class="a-box a-safe" id="btc-v1-as" style="display:none">&#10003; Operacion vigente — precio dentro del rango</div>
+        <div class="a-box a-warn" id="btc-v1-aw" style="display:none">&#9888; Precio acercandose al SL — preparar cierre</div>
+        <div class="a-box a-danger" id="btc-v1-ad" style="display:none">&#128308; CIERRE INMEDIATO</div>
+        <button class="close-btn" id="btc-v1-btn" style="display:none" onclick="cerrarPos('btc',1)">&#9940; Cerrar posicion ahora</button>
+      </div>
+    </div>
+    <div class="sltp-card">
+      <div class="sltp-hdr" style="display:flex;align-items:center;justify-content:space-between">
+        <span id="btc-v2-title">&#8601; Venta BTC #2</span>
+        <div style="display:flex;gap:4px">
+          <button onclick="setDir('btc',2,'buy')" id="btc-v2-buy" style="padding:3px 10px;border:none;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-bdr)">COMPRA</button>
+          <button onclick="setDir('btc',2,'sell')" id="btc-v2-sell" style="padding:3px 10px;border:none;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;background:var(--red);color:#fff">VENTA</button>
+        </div>
+      </div>
+      <div class="frow"><label>Entrada</label><input type="number" id="btc-v2e" placeholder="precio de tu entrada real" oninput="calcTrade('btc',2)" step="1"></div>
+      <div class="frow"><label>Precio XM</label><input type="number" id="btc-v2xm" placeholder="precio actual en XM" oninput="calcPnL('btc',2)" step="1" style="border-color:var(--gold)"></div>
+      <div class="frow"><label>Capital USD</label><input type="number" id="btc-v2c" placeholder="tu capital disponible" oninput="calcTrade('btc',2)"></div>
+      <div class="frow"><label>Riesgo %</label><input type="number" id="btc-v2r" placeholder="2" step="0.1" oninput="calcTrade('btc',2)"></div>
+      <div class="frow"><label>Ratio R:R</label><input type="number" id="btc-v2rr" placeholder="2" step="0.1" oninput="calcTrade('btc',2)"></div>
+      <div id="btc-v2-res" style="display:none">
+        <div class="res-box">
+          <div class="res-row"><span class="rl">Stop Loss</span><span class="rv sl-c" id="btc-v2-sl">--</span></div>
+          <div class="res-row"><span class="rl">Take Profit</span><span class="rv tp-c" id="btc-v2-tp">--</span></div>
+          <div class="res-row"><span class="rl">$ en riesgo</span><span class="rv sl-c" id="btc-v2-dr">--</span></div>
+          <div class="res-row"><span class="rl">$ potencial</span><span class="rv tp-c" id="btc-v2-dg">--</span></div>
+          <div class="res-row"><span class="rl">Tamano posicion</span><span class="rv" id="btc-v2-sz">--</span></div>
+          <div class="res-row"><span class="rl">Trailing stop</span><span class="rv" id="btc-v2-ts">--</span></div>
+          <div class="res-row" style="border-top:0.5px solid var(--gold);margin-top:4px;padding-top:4px"><span class="rl" style="color:var(--gold)">PnL real XM</span><span class="rv" id="btc-v2-pnlxm" style="color:var(--gold)">-- ingresa Precio XM</span></div>
+        </div>
+        <div class="pnl-wrap">
+          <div class="pnl-hdr"><span>SL riesgo</span><span>Tu entrada</span><span>TP meta</span></div>
+          <div class="pnl-bg"><div class="pnl-fill" id="btc-v2-pnl" style="width:50%"></div><div class="pnl-line" id="btc-v2-line" style="left:50%"></div></div>
+        </div>
+        <div class="a-box a-safe" id="btc-v2-as" style="display:none">&#10003; Operacion vigente — precio dentro del rango</div>
+        <div class="a-box a-warn" id="btc-v2-aw" style="display:none">&#9888; Precio acercandose al SL — preparar cierre</div>
+        <div class="a-box a-danger" id="btc-v2-ad" style="display:none">&#128308; CIERRE INMEDIATO</div>
+        <button class="close-btn" id="btc-v2-btn" style="display:none" onclick="cerrarPos('btc',2)">&#9940; Cerrar posicion ahora</button>
+      </div>
+    </div>
+  </div>
+  <div class="sec">Barra de capital — BTC</div>
+  <div class="track-wrap">
+    <div class="track-hdr"><span class="track-lbl">Estado capital BTC</span><span class="badge bb" id="btc-cap-badge">Sin posiciones</span></div>
+    <div class="cap-bar-bg"><div class="cap-fill" id="btc-cap-fill" style="width:50%;background:var(--blue)"></div></div>
+    <div class="track-marks"><span style="color:var(--red)">Perdida critica</span><span>SL</span><span>Entrada</span><span>TP 50%</span><span style="color:var(--green)">TP meta</span></div>
+  </div>
+</div>
+
+<!-- PANEL XAU -->
+<div class="panel" id="panel-xau">
+  <div class="sec">Estado de mercado — XAU/USD (Oro)</div>
+  <div class="g4">
+    <div class="mcard"><div class="mcard-lbl">XAU/USD precio</div><div class="mcard-val" id="xau-price">$---</div><div class="mcard-sub" id="xau-chg">--</div></div>
+    <div class="mcard"><div class="mcard-lbl">EMA 20</div><div class="mcard-val" id="xau-ema20">---</div><div class="mcard-sub" id="xau-ema20s">--</div></div>
+    <div class="mcard"><div class="mcard-lbl">EMA 50</div><div class="mcard-val" id="xau-ema50">---</div><div class="mcard-sub" id="xau-ema50s">--</div></div>
+    <div class="mcard"><div class="mcard-lbl">RSI 14</div><div class="mcard-val" id="xau-rsi">---</div><div class="mcard-sub" id="xau-rsis">--</div></div>
+  </div>
+  <div class="sec">Monitor RSI</div>
+  <div class="track-wrap">
+    <div class="track-hdr"><span class="track-lbl">RSI momentum XAU</span><span class="badge bb" id="xau-rsi-badge">--</span></div>
+    <div class="track-bg"><div class="track-fill" id="xau-rsi-fill" style="width:50%"></div></div>
+    <div class="track-marks"><span>0 sobreventa</span><span>30</span><span>50</span><span>70</span><span>100 sobrecompra</span></div>
+  </div>
+  <div class="sec">Senal IA — rsiAlcista:58 / rsiBajista:44 / atrTP:1.5</div>
+  <div class="ia-box">
+    <div class="ia-signal" id="xau-signal">Esperando datos...</div>
+    <div style="display:flex;align-items:center;gap:8px;margin:6px 0 4px">
+      <span class="ia-sub">Confianza:</span>
+      <div class="conf-bg"><div class="conf-fill" id="xau-conf" style="width:0%"></div></div>
+      <span style="font-size:11px;font-weight:700;min-width:34px" id="xau-conf-pct">0%</span>
+    </div>
+    <div class="ia-sub" id="xau-action">--</div>
+    <div class="ia-sub" style="margin-top:3px" id="xau-next">--</div>
+  </div>
+  <div class="g3" style="margin-bottom:8px">
+    <div class="mcard"><div class="mcard-lbl">Tendencia EMA</div><div style="font-size:13px;font-weight:700;margin-top:3px" id="xau-trend">--</div></div>
+    <div class="mcard"><div class="mcard-lbl">Dif EMA 20-50</div><div style="font-size:13px;font-weight:700;margin-top:3px" id="xau-difema">--</div></div>
+    <div class="mcard"><div class="mcard-lbl">ATR volatilidad</div><div style="font-size:13px;font-weight:700;margin-top:3px" id="xau-atr">--</div></div>
+  </div>
+  <div class="sec">Senales basicas</div>
+  <div class="card">
+    <div class="row"><span class="row-lbl">Precio vs EMA 20</span><span class="row-val" id="xau-s1">--</span></div>
+    <div class="row"><span class="row-lbl">Precio vs EMA 50</span><span class="row-val" id="xau-s2">--</span></div>
+    <div class="row"><span class="row-lbl">Tendencia EMA 20/50</span><span class="row-val" id="xau-s3">--</span></div>
+    <div class="row"><span class="row-lbl">RSI impulso</span><span class="row-val" id="xau-s4">--</span></div>
+    <div class="row"><span class="row-lbl">Senales alineadas</span><span class="row-val" id="xau-s5">--</span></div>
+    <div class="row"><span class="row-lbl">Velocidad mercado</span><span class="row-val" id="xau-s6">--</span></div>
+    <div class="row"><span class="row-lbl">Accion inmediata</span><span class="row-val" id="xau-s7">--</span></div>
+  </div>
+  <div class="sec">Calculadoras SL/TP — Ventas ORO (R:R sugerido 1.5)</div>
+  <div class="g2">
+    <div class="sltp-card">
+      <div class="sltp-hdr" style="display:flex;align-items:center;justify-content:space-between">
+        <span id="xau-v1-title">&#8601; Venta ORO #1</span>
+        <div style="display:flex;gap:4px">
+          <button onclick="setDir('xau',1,'buy')" id="xau-v1-buy" style="padding:3px 10px;border:none;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-bdr)">COMPRA</button>
+          <button onclick="setDir('xau',1,'sell')" id="xau-v1-sell" style="padding:3px 10px;border:none;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;background:var(--red);color:#fff">VENTA</button>
+        </div>
+      </div>
+      <div class="frow"><label>Entrada</label><input type="number" id="xau-v1e" placeholder="precio de tu entrada real" oninput="calcTrade('xau',1)" step="0.01"></div>
+      <div class="frow"><label>Precio XM</label><input type="number" id="xau-v1xm" placeholder="precio actual en XM" oninput="calcPnL('xau',1)" step="0.01" style="border-color:var(--gold)"></div>
+      <div class="frow"><label>Capital USD</label><input type="number" id="xau-v1c" placeholder="tu capital disponible" oninput="calcTrade('xau',1)"></div>
+      <div class="frow"><label>Riesgo %</label><input type="number" id="xau-v1r" placeholder="2" step="0.1" oninput="calcTrade('xau',1)"></div>
+      <div class="frow"><label>Ratio R:R</label><input type="number" id="xau-v1rr" placeholder="1.5" step="0.1" oninput="calcTrade('xau',1)"></div>
+      <div id="xau-v1-res" style="display:none">
+        <div class="res-box">
+          <div class="res-row"><span class="rl">Stop Loss</span><span class="rv sl-c" id="xau-v1-sl">--</span></div>
+          <div class="res-row"><span class="rl">Take Profit</span><span class="rv tp-c" id="xau-v1-tp">--</span></div>
+          <div class="res-row"><span class="rl">$ en riesgo</span><span class="rv sl-c" id="xau-v1-dr">--</span></div>
+          <div class="res-row"><span class="rl">$ potencial</span><span class="rv tp-c" id="xau-v1-dg">--</span></div>
+          <div class="res-row"><span class="rl">Tamano posicion</span><span class="rv" id="xau-v1-sz">--</span></div>
+          <div class="res-row"><span class="rl">Trailing stop</span><span class="rv" id="xau-v1-ts">--</span></div>
+          <div class="res-row" style="border-top:0.5px solid var(--gold);margin-top:4px;padding-top:4px"><span class="rl" style="color:var(--gold)">PnL real XM</span><span class="rv" id="xau-v1-pnlxm" style="color:var(--gold)">-- ingresa Precio XM</span></div>
+        </div>
+        <div class="pnl-wrap">
+          <div class="pnl-hdr"><span>SL riesgo</span><span>Tu entrada</span><span>TP meta</span></div>
+          <div class="pnl-bg"><div class="pnl-fill" id="xau-v1-pnl" style="width:50%"></div><div class="pnl-line" id="xau-v1-line" style="left:50%"></div></div>
+        </div>
+        <div class="a-box a-safe" id="xau-v1-as" style="display:none">&#10003; Operacion vigente — precio dentro del rango</div>
+        <div class="a-box a-warn" id="xau-v1-aw" style="display:none">&#9888; Precio acercandose al SL — preparar cierre</div>
+        <div class="a-box a-danger" id="xau-v1-ad" style="display:none">&#128308; CIERRE INMEDIATO</div>
+        <button class="close-btn" id="xau-v1-btn" style="display:none" onclick="cerrarPos('xau',1)">&#9940; Cerrar posicion ahora</button>
+      </div>
+    </div>
+    <div class="sltp-card">
+      <div class="sltp-hdr" style="display:flex;align-items:center;justify-content:space-between">
+        <span id="xau-v2-title">&#8601; Venta ORO #2</span>
+        <div style="display:flex;gap:4px">
+          <button onclick="setDir('xau',2,'buy')" id="xau-v2-buy" style="padding:3px 10px;border:none;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-bdr)">COMPRA</button>
+          <button onclick="setDir('xau',2,'sell')" id="xau-v2-sell" style="padding:3px 10px;border:none;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;background:var(--red);color:#fff">VENTA</button>
+        </div>
+      </div>
+      <div class="frow"><label>Entrada</label><input type="number" id="xau-v2e" placeholder="precio de tu entrada real" oninput="calcTrade('xau',2)" step="0.01"></div>
+      <div class="frow"><label>Precio XM</label><input type="number" id="xau-v2xm" placeholder="precio actual en XM" oninput="calcPnL('xau',2)" step="0.01" style="border-color:var(--gold)"></div>
+      <div class="frow"><label>Capital USD</label><input type="number" id="xau-v2c" placeholder="tu capital disponible" oninput="calcTrade('xau',2)"></div>
+      <div class="frow"><label>Riesgo %</label><input type="number" id="xau-v2r" placeholder="2" step="0.1" oninput="calcTrade('xau',2)"></div>
+      <div class="frow"><label>Ratio R:R</label><input type="number" id="xau-v2rr" placeholder="1.5" step="0.1" oninput="calcTrade('xau',2)"></div>
+      <div id="xau-v2-res" style="display:none">
+        <div class="res-box">
+          <div class="res-row"><span class="rl">Stop Loss</span><span class="rv sl-c" id="xau-v2-sl">--</span></div>
+          <div class="res-row"><span class="rl">Take Profit</span><span class="rv tp-c" id="xau-v2-tp">--</span></div>
+          <div class="res-row"><span class="rl">$ en riesgo</span><span class="rv sl-c" id="xau-v2-dr">--</span></div>
+          <div class="res-row"><span class="rl">$ potencial</span><span class="rv tp-c" id="xau-v2-dg">--</span></div>
+          <div class="res-row"><span class="rl">Tamano posicion</span><span class="rv" id="xau-v2-sz">--</span></div>
+          <div class="res-row"><span class="rl">Trailing stop</span><span class="rv" id="xau-v2-ts">--</span></div>
+          <div class="res-row" style="border-top:0.5px solid var(--gold);margin-top:4px;padding-top:4px"><span class="rl" style="color:var(--gold)">PnL real XM</span><span class="rv" id="xau-v2-pnlxm" style="color:var(--gold)">-- ingresa Precio XM</span></div>
+        </div>
+        <div class="pnl-wrap">
+          <div class="pnl-hdr"><span>SL riesgo</span><span>Tu entrada</span><span>TP meta</span></div>
+          <div class="pnl-bg"><div class="pnl-fill" id="xau-v2-pnl" style="width:50%"></div><div class="pnl-line" id="xau-v2-line" style="left:50%"></div></div>
+        </div>
+        <div class="a-box a-safe" id="xau-v2-as" style="display:none">&#10003; Operacion vigente — precio dentro del rango</div>
+        <div class="a-box a-warn" id="xau-v2-aw" style="display:none">&#9888; Precio acercandose al SL — preparar cierre</div>
+        <div class="a-box a-danger" id="xau-v2-ad" style="display:none">&#128308; CIERRE INMEDIATO</div>
+        <button class="close-btn" id="xau-v2-btn" style="display:none" onclick="cerrarPos('xau',2)">&#9940; Cerrar posicion ahora</button>
+      </div>
+    </div>
+  </div>
+  <div class="sec">Barra de capital — ORO</div>
+  <div class="track-wrap">
+    <div class="track-hdr"><span class="track-lbl">Estado capital ORO</span><span class="badge bb" id="xau-cap-badge">Sin posiciones</span></div>
+    <div class="cap-bar-bg"><div class="cap-fill" id="xau-cap-fill" style="width:50%;background:var(--blue)"></div></div>
+    <div class="track-marks"><span style="color:var(--red)">Perdida critica</span><span>SL</span><span>Entrada</span><span>TP 50%</span><span style="color:var(--green)">TP meta</span></div>
+  </div>
+</div>
+
+<!-- CREDITOS API -->
+<div class="divider"></div>
+<div class="sec">Creditos API — rotacion ciclica (750 x 4 = 3,000 / dia)</div>
+<div class="g4">
+  <div class="mcard"><div class="mcard-lbl">Cuenta 1</div><div class="cred-bar-bg"><div class="cred-bar" id="c1b"></div></div><div style="font-size:12px;font-weight:700" id="c1t">0/750</div><div class="mcard-sub" id="c1s">--</div></div>
+  <div class="mcard"><div class="mcard-lbl">Cuenta 2</div><div class="cred-bar-bg"><div class="cred-bar" id="c2b"></div></div><div style="font-size:12px;font-weight:700" id="c2t">0/750</div><div class="mcard-sub" id="c2s">--</div></div>
+  <div class="mcard"><div class="mcard-lbl">Cuenta 3</div><div class="cred-bar-bg"><div class="cred-bar" id="c3b"></div></div><div style="font-size:12px;font-weight:700" id="c3t">0/750</div><div class="mcard-sub" id="c3s">--</div></div>
+  <div class="mcard"><div class="mcard-lbl">Cuenta 4</div><div class="cred-bar-bg"><div class="cred-bar" id="c4b"></div></div><div style="font-size:12px;font-weight:700" id="c4t">0/750</div><div class="mcard-sub" id="c4s">--</div></div>
+</div>
+<div class="track-wrap" style="margin-top:2px">
+  <div class="track-hdr"><span class="track-lbl">Pool total diario</span><span style="font-size:11px;font-weight:700" id="pool-txt">0/3,000</span></div>
+  <div class="track-bg"><div class="track-fill" id="pool-fill" style="width:0%"></div></div>
+  <div class="track-marks"><span>0</span><span>750</span><span>1,500</span><span>2,250</span><span>3,000</span></div>
+</div>
+
+<!-- API CONFIG AL FINAL -->
+<div class="divider"></div>
+<div class="sec">Configuracion TwelveData — 4 cuentas API</div>
+<div class="api-config">
+  <div class="api-row"><label>API Key 1</label><input type="password" id="api1" placeholder="key cuenta 1"></div>
+  <div class="api-row"><label>API Key 2</label><input type="password" id="api2" placeholder="key cuenta 2"></div>
+  <div class="api-row"><label>API Key 3</label><input type="password" id="api3" placeholder="key cuenta 3"></div>
+  <div class="api-row"><label>API Key 4</label><input type="password" id="api4" placeholder="key cuenta 4"></div>
+  <div class="api-row">
+    <button class="api-btn" onclick="conectarAPI()">Conectar APIs</button>
+    <div class="api-status" id="api-status">Ingresa tus 4 keys y presiona conectar</div>
+  </div>
+</div>
+<div class="divider"></div>
+<div style="text-align:center;font-size:10px;color:var(--text3);padding:6px 0">
+  Codigo de Oro v5.0 &nbsp;|&nbsp; BTC/USD + XAU/USD &nbsp;|&nbsp; Horario 10AM-10PM &nbsp;|&nbsp; TwelveData API
+</div>
+
+<script>
+var PARAMS={
+  btc:{rsiAlcista:60,rsiBajista:45,velocidadRapida:100,atrMultTP:2.0,atrMultSL:1.0,vpp:0.01,dec:0,symbol:'BTC/USD'},
+  xau:{rsiAlcista:58,rsiBajista:44,velocidadRapida:2,  atrMultTP:1.5,atrMultSL:1.0,vpp:0.10,dec:2,symbol:'XAU/USD'}
+};
+var MKT={
+  btc:{price:0,ema20:0,ema50:0,rsi:50,atr:150,prevPrice:0,tick:0},
+  xau:{price:0,ema20:0,ema50:0,rsi:50,atr:8,  prevPrice:0,tick:0}
+};
+var TRADES={
+  btc:{1:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0},2:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0}},
+  xau:{1:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0},2:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0}}
+};
+var DIRS={btc:{1:'sell',2:'sell'},xau:{1:'sell',2:'sell'}};
+
+function setDir(act,n,dir){
+  DIRS[act][n]=dir;
+  var isBuy=dir==='buy';
+  var titleEl=el(act+'-v'+n+'-title');
+  var buyBtn=el(act+'-v'+n+'-buy');
+  var sellBtn=el(act+'-v'+n+'-sell');
+  var lbl=act==='btc'?'BTC':'ORO';
+  if(isBuy){
+    titleEl.textContent='▲ Compra '+lbl+' #'+n;
+    titleEl.style.color='var(--green)';
+    buyBtn.style.background='var(--green)';buyBtn.style.color='#fff';
+    sellBtn.style.background='var(--red-bg)';sellBtn.style.color='var(--red)';
+  }else{
+    titleEl.innerHTML='&#8601; Venta '+lbl+' #'+n;
+    titleEl.style.color='var(--red)';
+    sellBtn.style.background='var(--red)';sellBtn.style.color='#fff';
+    buyBtn.style.background='var(--green-bg)';buyBtn.style.color='var(--green)';
+  }
+  calcTrade(act,n);
+}
+var API={keys:[],idx:0,conectada:false};
+var credits=[0,0,0,0]; /* Se llenan con valores reales via /api_usage al arrancar */
+var _loopTimer=null;
+var HORA_INICIO=10, HORA_FIN=22;
+var manualEncendido=false; /* Estado del boton manual fuera de horario */
+
+function fp(v,d){return parseFloat(Number(v).toFixed(d===undefined?2:d));}
+function fc(v,d){var x=fp(v,d===undefined?0:d);return '$'+x.toLocaleString('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});}
+function el(id){return document.getElementById(id);}
+function bdg(cls,txt){return '<span class="badge '+cls+'">'+txt+'</span>';}
+
+function enHorario(){
+  var h=new Date().getHours();
+  return h>=HORA_INICIO && h<HORA_FIN;
+}
+
+/* Decide si la API debe estar activa: horario automatico O boton manual encendido */
+function apiActiva(){
+  if(enHorario()) return true;
+  return manualEncendido;
+}
+
+/* Boton manual: solo funciona fuera de horario */
+function toggleManual(){
+  if(enHorario()) return; /* Dentro de horario el boton no hace nada */
+  manualEncendido = !manualEncendido;
+  var btn=el('btn-manual');
+  if(manualEncendido){
+    btn.textContent='⏹ APAGAR API';
+    btn.className='btn-encender btn-enc-off';
+    el('api-status').textContent='Encendido manual fuera de horario — se apaga automatico a las 10PM';
+    el('api-status').style.color='var(--yellow)';
+    /* Arrancar el loop de API si no estaba corriendo */
+    if(_loopTimer) clearInterval(_loopTimer);
+    _loopTimer=setInterval(tickAPI,62000);
+    fetchActivo('btc');
+    setTimeout(function(){fetchActivo('xau');},5000);
+  } else {
+    btn.textContent='▶ ENCENDER API';
+    btn.className='btn-encender btn-enc-on';
+    el('api-status').textContent='Apagado manualmente — simulando';
+    el('api-status').style.color='var(--text2)';
+    /* Volver al loop de simulacion */
+    if(_loopTimer) clearInterval(_loopTimer);
+    _loopTimer=setInterval(tickSim,3000);
+  }
+}
+
+function switchTab(tab){
+  el('panel-btc').classList.toggle('active',tab==='btc');
+  el('panel-xau').classList.toggle('active',tab==='xau');
+  el('tab-btc').className='tab'+(tab==='btc'?' active-btc':'');
+  el('tab-xau').className='tab'+(tab==='xau'?' active-xau':'');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateClock(){
+  var n=new Date(),ds=['Dom','Lun','Mar','Mie','Jue','Vie','Sab'],ms=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  el('clk').textContent=ds[n.getDay()]+' '+n.getDate()+' '+ms[n.getMonth()]+' '+n.getFullYear()+' - '+n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0')+':'+n.getSeconds().toString().padStart(2,'0');
+  var ok=enHorario();
+  var hb=el('horario-badge');
+  hb.className='horario-badge '+(ok?'bg': manualEncendido?'by':'by');
+  hb.textContent=ok?'Horario activo': manualEncendido?'Manual activo':'Fuera de horario';
+  el('fuera-horario').style.display=ok?'none':'block';
+  /* Mostrar u ocultar boton manual segun horario */
+  el('btn-manual').style.display=ok?'none':'inline-block';
+  /* Si llego las 10PM y estaba encendido manual → apagar automaticamente */
+  if(ok && manualEncendido){
+    manualEncendido=false;
+    el('btn-manual').textContent='▶ ENCENDER API';
+    el('btn-manual').className='btn-encender btn-enc-on';
+  }
+}
+
+/* Valida los creditos reales de las 4 cuentas via /api_usage de TwelveData */
+function validarCreditos(callback){
+  var keys=API.keys;
+  var resultados=[0,0,0,0];
+  var pendientes=keys.length;
+  if(!pendientes){if(callback)callback();return;}
+  el('api-status').textContent='Validando creditos reales de las '+keys.length+' cuentas...';
+  el('api-status').style.color='var(--yellow)';
+  keys.forEach(function(key,i){
+    fetch('https://api.twelvedata.com/api_usage?apikey='+key)
+      .then(function(r){return r.json();})
+      .then(function(data){
+        /* TwelveData devuelve: data.current_usage y data.plan_limit */
+        var limite=data.plan_limit||750;
+        var usado=data.current_usage||0;
+        resultados[i]=Math.max(0, limite-usado);
+        credits[i]=resultados[i];
+      })
+      .catch(function(){
+        /* Si falla la validacion, asumimos 0 para no gastar llamadas a ciegas */
+        resultados[i]=0;
+        credits[i]=0;
+      })
+      .finally(function(){
+        pendientes--;
+        if(pendientes===0){
+          renderCredits();
+          var total=credits.reduce(function(a,b){return a+b;},0);
+          el('api-status').textContent='Creditos validados — pool disponible: '+total+' llamadas';
+          el('api-status').style.color=total>0?'var(--green)':'var(--red)';
+          /* Ajustar idx al primer indice con creditos disponibles */
+          API.idx=0;
+          for(var j=0;j<credits.length;j++){if(credits[j]>0){API.idx=j;break;}}
+          if(callback) callback();
+        }
+      });
+  });
+}
+
+function conectarAPI(){
+  var keys=[];
+  for(var i=1;i<=4;i++){var v=el('api'+i).value.trim();if(v)keys.push(v);}
+  if(!keys.length){el('api-status').textContent='Error: ingresa al menos 1 key';el('api-status').style.color='var(--red)';return;}
+  API.keys=keys;API.conectada=true;
+  /* Primero validar creditos reales, luego arrancar el loop */
+  validarCreditos(function(){
+    if(_loopTimer)clearInterval(_loopTimer);
+    _loopTimer=setInterval(tickAPI,62000);
+    if(apiActiva()){fetchActivo('btc');setTimeout(function(){fetchActivo('xau');},5000);}
+  });
+}
+
+function fetchActivo(act){
+  if(!API.conectada||!API.keys.length)return;
+  /* Usar apiActiva() en lugar de enHorario() para respetar el boton manual */
+  if(!apiActiva()){simular(act);renderActivo(act);return;}
+  var P=PARAMS[act];
+  var key=null;
+  var keyIdx=-1;
+  /* Rotacion secuencial: busca la siguiente cuenta CON creditos disponibles */
+  for(var a=0;a<API.keys.length;a++){
+    var idx=(API.idx+a)%API.keys.length;
+    if(credits[idx]>0){key=API.keys[idx];keyIdx=idx;API.idx=(idx+1)%API.keys.length;credits[idx]--;break;}
+  }
+  if(!key){
+    el('api-status').textContent='Todas las cuentas agotadas — simulando';
+    el('api-status').style.color='var(--yellow)';
+    simular(act);renderActivo(act);return;
+  }
+  fetch('https://api.twelvedata.com/quote?symbol='+encodeURIComponent(P.symbol)+'&apikey='+key)
+    .then(function(r){return r.json();})
+    .then(function(q){
+      if(q.status==='error'){simular(act);renderActivo(act);renderCredits();return;}
+      var m=MKT[act];
+      m.prevPrice=m.price||parseFloat(q.previous_close||q.close);
+      m.price=fp(parseFloat(q.close),P.dec);
+      fetch('https://api.twelvedata.com/time_series?symbol='+encodeURIComponent(P.symbol)+'&interval=10min&outputsize=55&apikey='+key)
+        .then(function(r2){return r2.json();})
+        .then(function(ts){
+          if(ts.values&&ts.values.length>=20){
+            var cls=ts.values.map(function(v){return parseFloat(v.close);}).reverse();
+            m.ema20=fp(calcEMA(cls,20),P.dec);m.ema50=fp(calcEMA(cls,50),P.dec);m.rsi=fp(calcRSI(cls,14),1);
+            var d=0;for(var i=ts.values.length-1;i>=Math.max(0,ts.values.length-5);i--)d+=Math.abs(parseFloat(ts.values[i].close)-parseFloat(ts.values[Math.max(0,i-1)].close));
+            m.atr=fp(d/5,P.dec)||(act==='btc'?150:8);
+          }else{m.ema20=fp(m.price*0.9963,P.dec);m.ema50=fp(m.price*0.9897,P.dec);m.rsi=50;}
+          el('api-status').textContent='API activa — cta '+(keyIdx+1)+' — '+P.symbol+' — '+new Date().toLocaleTimeString();
+          el('api-status').style.color='var(--green)';
+          renderActivo(act);renderCredits();
+          el('tab-'+act+'-price').textContent=act==='btc'?fc(m.price,0):fc(m.price,2);
+        })
+        .catch(function(){m.ema20=fp(m.price*0.9963,P.dec);m.ema50=fp(m.price*0.9897,P.dec);m.rsi=50;renderActivo(act);});
+    })
+    .catch(function(){simular(act);renderActivo(act);});
+}
+
+function calcEMA(cls,period){
+  if(cls.length<period)return cls[cls.length-1];
+  var k=2/(period+1),ema=cls[0];
+  for(var i=1;i<cls.length;i++)ema=cls[i]*k+ema*(1-k);
+  return ema;
+}
+function calcRSI(cls,period){
+  if(cls.length<period+1)return 50;
+  var g=0,l=0;
+  for(var i=cls.length-period;i<cls.length;i++){var d=cls[i]-cls[i-1];d>0?g+=d:l-=d;}
+  if(l===0)return 100;if(g===0)return 0;
+  return fp(100-(100/(1+(g/l))),1);
+}
+
+function simular(act){
+  var m=MKT[act];m.tick++;
+  m.prevPrice=m.price||(act==='btc'?74600:3300);
+  if(act==='btc'){
+    var b=74600+Math.sin(m.tick/18)*900+Math.sin(m.tick/7)*200+(Math.random()-.5)*80;
+    m.price=fp(b,0);m.ema20=fp(m.price-380+Math.sin(m.tick/25)*260,0);m.ema50=fp(m.price-1050+Math.sin(m.tick/40)*400,0);
+    m.rsi=fp(Math.min(85,Math.max(18,52+Math.sin(m.tick/12)*24+(Math.random()-.5)*4)),1);m.atr=fp(Math.abs(m.price-m.prevPrice)*1.5+80,0)||150;
+  }else{
+    var b2=3300+Math.sin(m.tick/20)*15+Math.sin(m.tick/9)*5+(Math.random()-.5)*1.5;
+    m.price=fp(b2,2);m.ema20=fp(m.price-3+Math.sin(m.tick/25)*2,2);m.ema50=fp(m.price-8+Math.sin(m.tick/40)*4,2);
+    m.rsi=fp(Math.min(85,Math.max(18,52+Math.sin(m.tick/12)*20+(Math.random()-.5)*3)),1);m.atr=fp(Math.abs(m.price-m.prevPrice)*1.5+5,2)||8;
+  }
+  el('tab-'+act+'-price').textContent=act==='btc'?fc(m.price,0):fc(m.price,2);
+}
+
+function decision(act){
+  var m=MKT[act],P=PARAMS[act];
+  var esAlc=m.ema20>m.ema50,difEMA=fp(m.ema20-m.ema50,P.dec);
+  var rapido=Math.abs(m.price-m.prevPrice)>P.velocidadRapida;
+  var impAlc=m.rsi>=P.rsiAlcista,impBaj=m.rsi<=P.rsiBajista,neutral=!impAlc&&!impBaj;
+  var alin=(esAlc&&impAlc)||(!esAlc&&impBaj);
+  var tpCalc=esAlc?fp(m.price+m.atr*P.atrMultTP,P.dec):fp(m.price-m.atr*P.atrMultTP,P.dec);
+  var slCalc=esAlc?fp(m.price-m.atr*P.atrMultSL,P.dec):fp(m.price+m.atr*P.atrMultSL,P.dec);
+  if(slCalc<=0)slCalc=fp(m.price*0.99,P.dec);
+  var bonD=Math.abs(difEMA)>(act==='btc'?100:5)?5:0;
+  var bonR=(m.rsi>=P.rsiAlcista+5||m.rsi<=P.rsiBajista-5)?5:0;
+  var conf,sig,action;
+  if(alin&&esAlc){sig='Entrar compra - EMA y RSI alineados';action='Abrir Long';conf=Math.min(70+bonD+bonR,95);}
+  else if(alin&&!esAlc){sig='Entrar venta - EMA y RSI alineados';action='Abrir Short';conf=Math.min(70+bonD+bonR,95);}
+  else if(neutral){sig='Esperar - RSI neutral ('+m.rsi.toFixed(1)+')';action='No abrir';conf=40;}
+  else{sig='Senales en conflicto - no operar';action='No operar';conf=30;}
+  var prox=alin?'5 min':neutral?'15 min':'30 min';
+  var accionInm=alin?(esAlc?'Oportunidad compra - senales a favor':'Oportunidad venta - senales a favor'):neutral?'Esperar - RSI sin direccion':'No operar - conflicto de senales';
+  return{esAlc:esAlc,difEMA:difEMA,rapido:rapido,impAlc:impAlc,impBaj:impBaj,neutral:neutral,alin:alin,tpCalc:tpCalc,slCalc:slCalc,conf:conf,sig:sig,action:action,prox:prox,accionInm:accionInm};
+}
+
+function renderActivo(act){
+  var m=MKT[act],P=PARAMS[act],d=decision(act),id=act+'-';
+  var rsiCls=m.rsi<30?'bg':m.rsi>70?'br':m.rsi>55?'by':'bb';
+  var rsiTxt=m.rsi<30?'Sobreventa':m.rsi>70?'Sobrecompra':m.rsi>55?'Zona alcista':m.rsi<45?'Zona bajista':'Neutral';
+  var chg=m.prevPrice>0?fp(((m.price-m.prevPrice)/m.prevPrice)*100,2):0,up=chg>=0;
+  el(id+'price').textContent=act==='btc'?fc(m.price,0):fc(m.price,2);
+  el(id+'chg').innerHTML=bdg(up?'bg':'br',(up?'▲':'▼')+' '+Math.abs(chg)+'%');
+  el(id+'ema20').textContent=act==='btc'?fc(m.ema20,0):fc(m.ema20,2);
+  el(id+'ema50').textContent=act==='btc'?fc(m.ema50,0):fc(m.ema50,2);
+  el(id+'rsi').textContent=m.rsi.toFixed(1);
+  el(id+'ema20s').innerHTML=bdg(m.price>m.ema20?'bg':'br',m.price>m.ema20?'Sobre EMA':'Bajo EMA');
+  el(id+'ema50s').innerHTML=bdg(m.price>m.ema50?'bg':'br',m.price>m.ema50?'Sobre EMA':'Bajo EMA');
+  el(id+'rsis').innerHTML=bdg(rsiCls,rsiTxt);
+  var rf=el(id+'rsi-fill');rf.style.width=m.rsi+'%';rf.style.background=m.rsi<30?'#22c55e':m.rsi>70?'#ef4444':'#eab308';
+  var rb=el(id+'rsi-badge');rb.className='badge '+rsiCls;rb.textContent=m.rsi.toFixed(1)+' - '+rsiTxt;
+  var sigEl=el(id+'signal');
+  sigEl.textContent=d.sig;
+  if(d.alin&&d.esAlc){ sigEl.style.color='var(--green)'; }
+  else if(d.alin&&!d.esAlc){ sigEl.style.color='var(--red)'; }
+  else{ sigEl.style.color='var(--text)'; }
+  el(id+'action').textContent='Accion: '+d.action+' - Riesgo: '+(d.conf>=75?'bajo':d.conf>=50?'medio':'alto');
+  el(id+'next').textContent='Proxima revision: '+d.prox+' - '+d.accionInm;
+  el(id+'trend').innerHTML=bdg(d.esAlc?'bg':'br',d.esAlc?'Alcista':'Bajista');
+  el(id+'difema').textContent=(d.difEMA>0?'+':'')+d.difEMA;
+  el(id+'atr').textContent=m.atr+' pts';
+  var cf=el(id+'conf');cf.style.width=d.conf+'%';cf.style.background=d.conf>=75?'#22c55e':d.conf>=50?'#eab308':'#ef4444';
+  el(id+'conf-pct').textContent=d.conf+'%';
+  el(id+'s1').innerHTML=bdg(m.price>m.ema20?'bg':'br',m.price>m.ema20?'Sobre EMA20':'Bajo EMA20');
+  el(id+'s2').innerHTML=bdg(m.price>m.ema50?'bg':'br',m.price>m.ema50?'Sobre EMA50':'Bajo EMA50');
+  el(id+'s3').innerHTML=bdg(m.ema20>m.ema50?'bg':'br',m.ema20>m.ema50?'EMA20>EMA50 alcista':'EMA20<EMA50 bajista');
+  el(id+'s4').innerHTML=bdg(rsiCls,'RSI '+m.rsi.toFixed(1)+' - '+rsiTxt);
+  el(id+'s5').innerHTML=bdg(d.alin?'bg':'br',d.alin?'Si - operar':'No - esperar');
+  el(id+'s6').innerHTML=bdg(d.rapido?'by':'bb',d.rapido?'Mercado rapido':'Mercado lento');
+  el(id+'s7').innerHTML=bdg(d.alin?'bg':d.neutral?'by':'br',d.accionInm);
+  for(var n=1;n<=2;n++)renderTrade(act,n,d);
+  renderCapital(act);
+}
+
+function calcTrade(act,n){
+  var P=PARAMS[act];
+  var entry=parseFloat(el(act+'-v'+n+'e').value);
+  var cap=parseFloat(el(act+'-v'+n+'c').value);
+  var risk=parseFloat(el(act+'-v'+n+'r').value);
+  var rr=parseFloat(el(act+'-v'+n+'rr').value);
+  if(!entry||!cap||!risk||!rr||risk<=0||rr<=0)return;
+  var isBuy=DIRS[act][n]==='buy';
+  var dr=fp(cap*(risk/100),2);
+  /* COMPRA: SL abajo, TP arriba — VENTA: SL arriba, TP abajo */
+  var sl=isBuy ? fp(entry*(1-risk/100),P.dec) : fp(entry*(1+risk/100),P.dec);
+  var tp=isBuy ? fp(entry*(1+risk/100*rr),P.dec) : fp(entry*(1-risk/100*rr),P.dec);
+  if(tp<=0)tp=fp(entry*0.90,P.dec);
+  if(sl<=0)sl=fp(entry*0.99,P.dec);
+  var size=fp(dr/Math.abs(sl-entry),act==='btc'?6:2);
+  var dg=fp(dr*rr,2);
+  TRADES[act][n]={sl:sl,tp:tp,entry:entry,cap:cap,size:size,dr:dr,dg:dg,isBuy:isBuy};
+  el(act+'-v'+n+'-sl').textContent=fc(sl,P.dec);
+  el(act+'-v'+n+'-tp').textContent=fc(tp,P.dec);
+  el(act+'-v'+n+'-dr').textContent='-$'+dr.toFixed(2);
+  el(act+'-v'+n+'-dg').textContent='+$'+dg.toFixed(2);
+  el(act+'-v'+n+'-sz').textContent=size+(act==='btc'?' BTC':' oz');
+  /* Color barra segun direccion */
+  var pnlEl=el(act+'-v'+n+'-pnl');
+  if(pnlEl) pnlEl.style.background=isBuy?'var(--green)':'var(--red)';
+  el(act+'-v'+n+'-res').style.display='block';
+  renderTrade(act,n,decision(act));
+}
+
+function renderTrade(act,n,d){
+  var t=TRADES[act][n];if(!t||!t.entry)return;
+  var m=MKT[act],P=PARAMS[act];
+  var sl=t.sl,tp=t.tp,entry=t.entry,price=m.price;
+  var isBuy=t.isBuy;
+
+  /* Trailing stop — activa desde 30% */
+  var distTP=Math.abs(tp-entry),distAct=Math.abs(price-entry);
+  var prog=distTP>0?Math.max(0,Math.min(100,(distAct/distTP)*100)):0;
+  var tsEl=el(act+'-v'+n+'-ts');
+  if(tsEl){
+    if(prog>=30){var buf=m.atr*0.4;var ts=isBuy?fp(price-buf,P.dec):fp(price+buf,P.dec);tsEl.textContent=fc(ts,P.dec)+' activo';}
+    else tsEl.textContent='Inactivo - activa al 30% del recorrido';
+  }
+
+  /* Barra PNL — COMPRA: SL izq TP der — VENTA: SL der TP izq */
+  var fullRange=Math.abs(sl-tp);if(fullRange<=0)return;
+  var pos,entPos;
+  if(isBuy){
+    /* izquierda=SL, derecha=TP */
+    pos=Math.max(2,Math.min(98,fp(((price-sl)/fullRange)*100,1)));
+    entPos=Math.max(2,Math.min(98,fp(((entry-sl)/fullRange)*100,1)));
+  }else{
+    /* izquierda=TP, derecha=SL */
+    pos=Math.max(2,Math.min(98,fp(((sl-price)/fullRange)*100,1)));
+    entPos=Math.max(2,Math.min(98,fp(((sl-entry)/fullRange)*100,1)));
+  }
+  el(act+'-v'+n+'-pnl').style.width=pos+'%';
+  el(act+'-v'+n+'-line').style.left=entPos+'%';
+
+  /* Color segun direccion y distancia al SL */
+  var atSL = isBuy ? price<=sl : price>=sl;
+  var distToSL=Math.abs(price-sl)/Math.abs(entry-sl||1);
+  var warnZone=distToSL<=0.20;
+  var poolOk=credits.reduce(function(a,b){return a+b;},0)>0;
+
+  if(atSL||!poolOk){
+    el(act+'-v'+n+'-pnl').style.background='#ef4444';
+  }else if(warnZone){
+    el(act+'-v'+n+'-pnl').style.background='#eab308';
+  }else{
+    el(act+'-v'+n+'-pnl').style.background=isBuy?'#22c55e':'#ef4444';
+  }
+
+  var as=el(act+'-v'+n+'-as'),aw=el(act+'-v'+n+'-aw'),ad=el(act+'-v'+n+'-ad'),btn=el(act+'-v'+n+'-btn');
+  as.style.display='none';aw.style.display='none';ad.style.display='none';btn.style.display='none';
+  if(atSL||!poolOk){
+    ad.style.display='block';btn.style.display='block';
+    ad.textContent=!poolOk&&!atSL?'CIERRE INMEDIATO - credito API agotado':'CIERRE INMEDIATO - Stop Loss alcanzado';
+  }else if(warnZone){aw.style.display='block';btn.style.display='block';}
+  else{as.style.display='block';}
+}
+
+function calcPnL(act,n){
+  var t=TRADES[act][n];if(!t||!t.entry)return;
+  var P=PARAMS[act];
+  var xmPrice=parseFloat(el(act+'-v'+n+'xm').value);
+  if(!xmPrice||isNaN(xmPrice))return;
+  var isBuy=t.isBuy;
+  /* PnL = (precioActual - entrada) * size para compra, inverso para venta */
+  var pnl = isBuy
+    ? fp((xmPrice - t.entry) * t.size, 2)
+    : fp((t.entry - xmPrice) * t.size, 2);
+  var pnlEl=el(act+'-v'+n+'-pnlxm');
+  var distToSL=Math.abs(xmPrice-t.sl)/Math.abs(t.entry-t.sl||1);
+  var atSL=isBuy?xmPrice<=t.sl:xmPrice>=t.sl;
+  var atTP=isBuy?xmPrice>=t.tp:xmPrice<=t.tp;
+  if(atSL){
+    pnlEl.textContent='STOP LOSS ALCANZADO — '+( pnl>=0?'+':'')+pnl+' USD';
+    pnlEl.style.color='var(--red)';
+    el(act+'-v'+n+'-ad').style.display='block';
+    el(act+'-v'+n+'-btn').style.display='block';
+  } else if(atTP){
+    pnlEl.textContent='TAKE PROFIT ALCANZADO — +'+Math.abs(pnl)+' USD';
+    pnlEl.style.color='var(--green)';
+  } else if(pnl>=0){
+    pnlEl.textContent='Ganando +$'+pnl+' USD en XM';
+    pnlEl.style.color='var(--green)';
+  } else {
+    pnlEl.textContent='Perdiendo -$'+Math.abs(pnl)+' USD en XM';
+    pnlEl.style.color='var(--red)';
+    if(distToSL<=0.20){
+      el(act+'-v'+n+'-aw').style.display='block';
+      el(act+'-v'+n+'-btn').style.display='block';
+    }
+  }
+}
+
+function cerrarPos(act,n){
+  var t=TRADES[act][n],m=MKT[act],P=PARAMS[act];
+  if(!t||!t.entry){alert('No hay posicion abierta en Venta #'+n);return;}
+  var pnl=fp((t.entry-m.price)*t.size,2);
+  alert((act==='btc'?'BTC/USD':'XAU/USD')+' - Venta #'+n+'\n'+(pnl>=0?'GANANCIA: +$'+pnl:'Perdida: -$'+Math.abs(pnl))+'\nPrecio de cierre: '+fc(m.price,P.dec)+'\n\n[En produccion: ejecutar orden CLOSE en tu broker]');
+  TRADES[act][n]={sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0};
+  ['e','c','r','rr'].forEach(function(x){el(act+'-v'+n+x).value='';});
+  el(act+'-v'+n+'-res').style.display='none';
+  ['as','aw','ad'].forEach(function(x){el(act+'-v'+n+'-'+x).style.display='none';});
+  el(act+'-v'+n+'-btn').style.display='none';
+  renderCapital(act);
+}
+
+function renderCapital(act){
+  var m=MKT[act],tot=0,cap=0;
+  for(var n=1;n<=2;n++){var t=TRADES[act][n];if(t&&t.entry){tot+=fp((t.entry-m.price)*t.size,2);cap+=t.cap||0;}}
+  var cf=el(act+'-cap-fill'),badge_=el(act+'-cap-badge');
+  if(cap===0){cf.style.width='50%';cf.style.background='#3b82f6';badge_.className='badge bb';badge_.textContent='Sin posiciones abiertas';return;}
+  var pos=Math.max(2,Math.min(98,fp(50+(tot/cap*100),1)));
+  cf.style.width=pos+'%';cf.style.background=pos<30?'#ef4444':pos<45?'#eab308':'#22c55e';
+  if(tot>0){badge_.className='badge bg';badge_.textContent='+$'+fp(tot,2)+' ganancia';}
+  else if(tot<0){badge_.className='badge br';badge_.textContent='-$'+fp(Math.abs(tot),2)+' perdida';}
+  else{badge_.className='badge bb';badge_.textContent='Breakeven';}
+}
+
+function renderCredits(){
+  var sum=0;
+  for(var i=1;i<=4;i++){
+    var u=credits[i-1],p=Math.round((u/750)*100);sum+=u;
+    el('c'+i+'b').style.width=p+'%';
+    el('c'+i+'b').style.background=p<35?'#ef4444':p<60?'#eab308':'#22c55e';
+    el('c'+i+'t').textContent=u+'/750';
+    el('c'+i+'s').textContent=p===0?'Agotada':p<35?'Bajo':'OK';
+    el('c'+i+'s').style.color=p===0?'#ef4444':p<35?'#eab308':'#22c55e';
+  }
+  var pp=Math.round((sum/3000)*100);
+  el('pool-fill').style.width=pp+'%';el('pool-fill').style.background=pp<35?'#ef4444':pp<60?'#eab308':'#22c55e';
+  el('pool-txt').textContent=sum+'/3,000 ('+pp+'%)';
+}
+
+function tickSim(){simular('btc');simular('xau');renderActivo('btc');renderActivo('xau');}
+function tickAPI(){
+  if(apiActiva()){fetchActivo('btc');setTimeout(function(){fetchActivo('xau');},5000);}
+  else{simular('btc');simular('xau');renderActivo('btc');renderActivo('xau');}
+}
+
+/* ══ KEYS PRECARGADAS — no necesitas ingresarlas ══ */
+var KEYS_PRECARGADAS = [
+  '4b41d893c4a94827954f2a62f7c2b3cf',
+  '5fad4bb6de644394a8003e63bdcb5c3f',
+  '2af6b69b41594b0e96ae77b69ad7173d',
+  'ffab2053a03d4e6d8f8923251358f8ff'
+];
+API.keys = KEYS_PRECARGADAS;
+API.conectada = true;
+el('api1').value = KEYS_PRECARGADAS[0];
+el('api2').value = KEYS_PRECARGADAS[1];
+el('api3').value = KEYS_PRECARGADAS[2];
+el('api4').value = KEYS_PRECARGADAS[3];
+
+setInterval(updateClock,1000);
+_loopTimer=setInterval(tickSim,3000);
+updateClock();
+simular('btc');simular('xau');
+renderActivo('btc');renderActivo('xau');
+
+/* Validar creditos reales al arrancar y luego iniciar API si corresponde */
+validarCreditos(function(){
+  if(apiActiva()){
+    if(_loopTimer) clearInterval(_loopTimer);
+    _loopTimer=setInterval(tickAPI,62000);
+    fetchActivo('btc');
+    setTimeout(function(){fetchActivo('xau');},5000);
+  }
+});
+</script>
+</body>
+</html>
