@@ -90,6 +90,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 .a-safe{background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-bdr)}
 .a-warn{background:var(--yellow-bg);color:var(--yellow);border:0.5px solid var(--yellow-bdr)}
 .a-danger{background:var(--red-bg);color:var(--red);border:0.5px solid var(--red-bdr)}
+.a-danger-blink{background:var(--red-bg);color:var(--red);border:0.5px solid var(--red-bdr);animation:dangerBlink 0.6s infinite}
+@keyframes dangerBlink{0%,100%{background:var(--red-bg);border-color:var(--red-bdr)}50%{background:rgba(239,68,68,0.45);border-color:#ef4444}}
+.pnl-fill-blink{animation:pnlBlink 0.6s infinite}
+@keyframes pnlBlink{0%,100%{opacity:1}50%{opacity:0.3}}
 .close-btn{width:100%;margin-top:7px;padding:8px;background:var(--red);color:#fff;border:none;border-radius:var(--radius);font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer}
 .cred-bar-bg{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:4px 0}
 .cred-bar{height:100%;border-radius:2px;transition:width 1s}
@@ -743,6 +747,26 @@ function calcTrade(act,n){
   renderTrade(act,n,decision(act));
 }
 
+/* Sonido de alerta via Web Audio API — no requiere archivos externos */
+var _lastAlertTime={};
+function playAlert(id){
+  var now=Date.now();
+  if(_lastAlertTime[id]&&now-_lastAlertTime[id]<8000)return; /* max 1 vez cada 8s */
+  _lastAlertTime[id]=now;
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [440,330,440].forEach(function(freq,i){
+      var o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=freq;o.type='square';
+      g.gain.setValueAtTime(0.15,ctx.currentTime+i*0.18);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.18+0.15);
+      o.start(ctx.currentTime+i*0.18);
+      o.stop(ctx.currentTime+i*0.18+0.15);
+    });
+  }catch(e){}
+}
+
 function renderTrade(act,n,d){
   var t=TRADES[act][n];if(!t||!t.entry)return;
   var m=MKT[act],P=PARAMS[act];
@@ -788,12 +812,33 @@ function renderTrade(act,n,d){
   }
 
   var as=el(act+'-v'+n+'-as'),aw=el(act+'-v'+n+'-aw'),ad=el(act+'-v'+n+'-ad'),btn=el(act+'-v'+n+'-btn');
+  var pnlFill=el(act+'-v'+n+'-pnl');
   as.style.display='none';aw.style.display='none';ad.style.display='none';btn.style.display='none';
+
   if(atSL||!poolOk){
+    /* Parpadeo rojo en barra + sonido de alerta */
+    if(pnlFill) pnlFill.classList.add('pnl-fill-blink');
+    ad.className='a-box a-danger-blink';
     ad.style.display='block';btn.style.display='block';
-    ad.textContent=!poolOk&&!atSL?'CIERRE INMEDIATO - credito API agotado':'CIERRE INMEDIATO - Stop Loss alcanzado';
-  }else if(warnZone){aw.style.display='block';btn.style.display='block';}
-  else{as.style.display='block';}
+    ad.textContent=!poolOk&&!atSL?'⚠ CIERRE INMEDIATO — credito API agotado':'🚨 CIERRE INMEDIATO — Stop Loss alcanzado';
+    playAlert(act+n);
+  }else if(warnZone){
+    if(pnlFill) pnlFill.classList.remove('pnl-fill-blink');
+    ad.className='a-box a-danger';
+    aw.style.display='block';btn.style.display='block';
+    playAlert(act+n+'warn');
+  }else{
+    if(pnlFill) pnlFill.classList.remove('pnl-fill-blink');
+    ad.className='a-box a-danger';
+    as.style.display='block';
+  }
+
+  /* Autocomplete Precio XM con precio de la API en cada tick */
+  var xmInput=el(act+'-v'+n+'xm');
+  if(xmInput&&MKT[act].price>0){
+    xmInput.value=MKT[act].price;
+    calcPnL(act,n);
+  }
 }
 
 function calcPnL(act,n){
