@@ -195,7 +195,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
       <div class="frow"><label>Entrada</label><input type="number" id="btc-v1e" placeholder="precio de tu entrada real" oninput="calcTrade('btc',1)" step="1"></div>
       <div class="frow"><label>Precio XM</label><input type="number" id="btc-v1xm" placeholder="precio actual en XM" oninput="calcPnL('btc',1)" step="1" style="border-color:var(--gold)"></div>
       <div class="frow"><label>Capital USD</label><input type="number" id="btc-v1c" placeholder="tu capital disponible" oninput="calcTrade('btc',1)"></div>
-      <div class="frow"><label>Riesgo %</label><input type="number" id="btc-v1r" placeholder="2" step="0.1" oninput="calcTrade('btc',1)"></div>
+      <div class="frow"><label>SL/TP Puntos XM</label><input type="number" id="btc-v1r" placeholder="2" step="0.1" oninput="calcTrade('btc',1)"></div>
       <div class="frow"><label>Ratio R:R</label><input type="number" id="btc-v1rr" placeholder="2" step="0.1" oninput="calcTrade('btc',1)"></div>
       <div id="btc-v1-res" style="display:none">
         <div class="res-box">
@@ -228,7 +228,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
       <div class="frow"><label>Entrada</label><input type="number" id="btc-v2e" placeholder="precio de tu entrada real" oninput="calcTrade('btc',2)" step="1"></div>
       <div class="frow"><label>Precio XM</label><input type="number" id="btc-v2xm" placeholder="precio actual en XM" oninput="calcPnL('btc',2)" step="1" style="border-color:var(--gold)"></div>
       <div class="frow"><label>Capital USD</label><input type="number" id="btc-v2c" placeholder="tu capital disponible" oninput="calcTrade('btc',2)"></div>
-      <div class="frow"><label>Riesgo %</label><input type="number" id="btc-v2r" placeholder="2" step="0.1" oninput="calcTrade('btc',2)"></div>
+      <div class="frow"><label>SL/TP Puntos XM</label><input type="number" id="btc-v2r" placeholder="2" step="0.1" oninput="calcTrade('btc',2)"></div>
       <div class="frow"><label>Ratio R:R</label><input type="number" id="btc-v2rr" placeholder="2" step="0.1" oninput="calcTrade('btc',2)"></div>
       <div id="btc-v2-res" style="display:none">
         <div class="res-box">
@@ -313,7 +313,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
       <div class="frow"><label>Entrada</label><input type="number" id="xau-v1e" placeholder="precio de tu entrada real" oninput="calcTrade('xau',1)" step="0.01"></div>
       <div class="frow"><label>Precio XM</label><input type="number" id="xau-v1xm" placeholder="precio actual en XM" oninput="calcPnL('xau',1)" step="0.01" style="border-color:var(--gold)"></div>
       <div class="frow"><label>Capital USD</label><input type="number" id="xau-v1c" placeholder="tu capital disponible" oninput="calcTrade('xau',1)"></div>
-      <div class="frow"><label>Riesgo %</label><input type="number" id="xau-v1r" placeholder="2" step="0.1" oninput="calcTrade('xau',1)"></div>
+      <div class="frow"><label>SL/TP Puntos XM</label><input type="number" id="xau-v1r" placeholder="2" step="0.1" oninput="calcTrade('xau',1)"></div>
       <div class="frow"><label>Ratio R:R</label><input type="number" id="xau-v1rr" placeholder="1.5" step="0.1" oninput="calcTrade('xau',1)"></div>
       <div id="xau-v1-res" style="display:none">
         <div class="res-box">
@@ -346,7 +346,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
       <div class="frow"><label>Entrada</label><input type="number" id="xau-v2e" placeholder="precio de tu entrada real" oninput="calcTrade('xau',2)" step="0.01"></div>
       <div class="frow"><label>Precio XM</label><input type="number" id="xau-v2xm" placeholder="precio actual en XM" oninput="calcPnL('xau',2)" step="0.01" style="border-color:var(--gold)"></div>
       <div class="frow"><label>Capital USD</label><input type="number" id="xau-v2c" placeholder="tu capital disponible" oninput="calcTrade('xau',2)"></div>
-      <div class="frow"><label>Riesgo %</label><input type="number" id="xau-v2r" placeholder="2" step="0.1" oninput="calcTrade('xau',2)"></div>
+      <div class="frow"><label>SL/TP Puntos XM</label><input type="number" id="xau-v2r" placeholder="2" step="0.1" oninput="calcTrade('xau',2)"></div>
       <div class="frow"><label>Ratio R:R</label><input type="number" id="xau-v2rr" placeholder="1.5" step="0.1" oninput="calcTrade('xau',2)"></div>
       <div id="xau-v2-res" style="display:none">
         <div class="res-box">
@@ -706,17 +706,23 @@ function calcTrade(act,n){
   var P=PARAMS[act];
   var entry=parseFloat(el(act+'-v'+n+'e').value);
   var cap=parseFloat(el(act+'-v'+n+'c').value);
-  var risk=parseFloat(el(act+'-v'+n+'r').value);
+  var pts=parseFloat(el(act+'-v'+n+'r').value); /* puntos XM: usuario ingresa 3 → 300 puntos */
   var rr=parseFloat(el(act+'-v'+n+'rr').value);
-  if(!entry||!cap||!risk||!rr||risk<=0||rr<=0)return;
+  if(!entry||!cap||!pts||!rr||pts<=0||rr<=0)return;
   var isBuy=DIRS[act][n]==='buy';
-  var dr=fp(cap*(risk/100),2);
+
+  /* XM: usuario ingresa 3 puntos → distancia real = 3 × 100 = 300 puntos en precio */
+  var slDist=fp(pts*100, P.dec);
+
   /* COMPRA: SL abajo, TP arriba — VENTA: SL arriba, TP abajo */
-  var sl=isBuy ? fp(entry*(1-risk/100),P.dec) : fp(entry*(1+risk/100),P.dec);
-  var tp=isBuy ? fp(entry*(1+risk/100*rr),P.dec) : fp(entry*(1-risk/100*rr),P.dec);
+  var sl=isBuy ? fp(entry-slDist,P.dec) : fp(entry+slDist,P.dec);
+  var tp=isBuy ? fp(entry+slDist*rr,P.dec) : fp(entry-slDist*rr,P.dec);
   if(tp<=0)tp=fp(entry*0.90,P.dec);
   if(sl<=0)sl=fp(entry*0.99,P.dec);
-  var size=fp(dr/Math.abs(sl-entry),act==='btc'?6:2);
+
+  /* Dolares en riesgo = distancia SL en puntos × tamaño posicion */
+  var size=fp(cap/entry, act==='btc'?6:4); /* tamaño en BTC u oz segun capital */
+  var dr=fp(slDist*size,2);
   var dg=fp(dr*rr,2);
   TRADES[act][n]={sl:sl,tp:tp,entry:entry,cap:cap,size:size,dr:dr,dg:dg,isBuy:isBuy};
   el(act+'-v'+n+'-sl').textContent=fc(sl,P.dec);
@@ -728,6 +734,12 @@ function calcTrade(act,n){
   var pnlEl=el(act+'-v'+n+'-pnl');
   if(pnlEl) pnlEl.style.background=isBuy?'var(--green)':'var(--red)';
   el(act+'-v'+n+'-res').style.display='block';
+  /* Autocompletar Precio XM si esta vacio */
+  var xmInput=el(act+'-v'+n+'xm');
+  if(xmInput&&!xmInput.value&&MKT[act].price>0){
+    xmInput.value=MKT[act].price;
+    calcPnL(act,n);
+  }
   renderTrade(act,n,decision(act));
 }
 
