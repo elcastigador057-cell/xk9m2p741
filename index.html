@@ -695,6 +695,13 @@ function renderActivo(act){
   el(id+'atr').textContent=m.atr+' pts';
   var cf=el(id+'conf');cf.style.width=d.conf+'%';cf.style.background=d.conf>=75?'#22c55e':d.conf>=50?'#eab308':'#ef4444';
   el(id+'conf-pct').textContent=d.conf+'%';
+
+  /* Sonido iPhone cuando cambia a señal de entrada con confianza >= 75% */
+  var sigKey=(d.action==='Abrir Long'||d.action==='Abrir Short')&&d.conf>=75 ? d.action : '';
+  if(sigKey && sigKey!==_lastSignal[act]){
+    playEntrySound();
+  }
+  _lastSignal[act]=sigKey;
   el(id+'s1').innerHTML=bdg(m.price>m.ema20?'bg':'br',m.price>m.ema20?'Sobre EMA20':'Bajo EMA20');
   el(id+'s2').innerHTML=bdg(m.price>m.ema50?'bg':'br',m.price>m.ema50?'Sobre EMA50':'Bajo EMA50');
   el(id+'s3').innerHTML=bdg(m.ema20>m.ema50?'bg':'br',m.ema20>m.ema50?'EMA20>EMA50 alcista':'EMA20<EMA50 bajista');
@@ -747,7 +754,24 @@ function calcTrade(act,n){
   renderTrade(act,n,decision(act));
 }
 
-/* Sonido de alerta via Web Audio API — no requiere archivos externos */
+/* Sonido tipo iPhone — tono limpio de notificacion */
+var _lastSignal={btc:'',xau:''};
+function playEntrySound(){
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    /* Dos notas suaves: Do5 + Mi5 — imita notificacion iPhone */
+    [[1046,0],[1318,0.18]].forEach(function(n){
+      var o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.value=n[0];
+      g.gain.setValueAtTime(0,ctx.currentTime+n[1]);
+      g.gain.linearRampToValueAtTime(0.25,ctx.currentTime+n[1]+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+n[1]+0.35);
+      o.start(ctx.currentTime+n[1]);
+      o.stop(ctx.currentTime+n[1]+0.35);
+    });
+  }catch(e){}
+}
 var _lastAlertTime={};
 function playAlert(id){
   var now=Date.now();
