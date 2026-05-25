@@ -424,10 +424,140 @@ var MKT={
   xau:{price:0,ema20:0,ema50:0,rsi:50,atr:8,  prevPrice:0,tick:0}
 };
 var TRADES={
-  btc:{1:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0},2:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0}},
-  xau:{1:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0},2:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0}}
+  btc:{1:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0,lot:0,margin:0,pipValue:0,breakEven:false,trailingText:'OFF'},2:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0,lot:0,margin:0,pipValue:0,breakEven:false,trailingText:'OFF'}},
+  xau:{1:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0,lot:0,margin:0,pipValue:0,breakEven:false,trailingText:'OFF'},2:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0,lot:0,margin:0,pipValue:0,breakEven:false,trailingText:'OFF'}}
 };
 var DIRS={btc:{1:'sell',2:'sell'},xau:{1:'sell',2:'sell'}};
+/* =========================================================
+   CAPA 4 PRO — MOTOR XM REAL
+========================================================= */
+
+/*
+  NUEVO:
+  + lotes XM reales
+  + margen requerido
+  + pip value real
+  + break even
+  + trailing stop
+  + pnl estilo broker
+*/
+
+function getPipMultiplier(act){
+  return act==='xau' ? 100 : 1;
+}
+
+function calcPipValue(act,lot){
+
+  if(act==='xau'){
+    return fp(lot*10,2);
+  }
+
+  return fp(lot*1,2);
+}
+
+function calcMarginXM(act,price,lot,leverage=200){
+
+  if(act==='xau'){
+
+    const contract=100;
+
+    return fp(
+      (price*contract*lot)/leverage,
+      2
+    );
+  }
+
+  return fp(
+    (price*lot)/leverage,
+    2
+  );
+}
+
+function calcAutoLot(act,balance,riskPercent,slPips){
+
+  const riskUSD=
+    balance*(riskPercent/100);
+
+  const pipValuePerLot=
+    act==='xau' ? 10 : 1;
+
+  let lot=
+    riskUSD/(slPips*pipValuePerLot);
+
+  if(lot<0.01) lot=0.01;
+
+  return fp(lot,2);
+}
+
+function calcPnLXM(act,entry,current,lot,side){
+
+  const multiplier=
+    getPipMultiplier(act);
+
+  let pips;
+
+  if(side==='buy'){
+    pips=(current-entry)*multiplier;
+  }else{
+    pips=(entry-current)*multiplier;
+  }
+
+  const pipValue=
+    calcPipValue(act,lot);
+
+  const usd=
+    pips*pipValue;
+
+  return{
+    pips:fp(pips,1),
+    usd:fp(usd,2)
+  };
+}
+
+function applyTrailingStop(trade,current,act){
+
+  if(!trade.tp||!trade.entry) return;
+
+  const total=
+    Math.abs(trade.tp-trade.entry);
+
+  const gain=
+    trade.isBuy
+      ? current-trade.entry
+      : trade.entry-current;
+
+  const progress=gain/total;
+
+  if(progress>=0.30 && !trade.breakEven){
+
+    trade.sl=trade.entry;
+
+    trade.breakEven=true;
+
+    trade.trailingText='BREAK EVEN ACTIVADO';
+  }
+
+  if(progress>=0.60){
+
+    const offset=
+      act==='xau'
+        ? 1.5
+        : 150;
+
+    if(trade.isBuy){
+
+      trade.sl=current-offset;
+
+    }else{
+
+      trade.sl=current+offset;
+    }
+
+    trade.trailingText='TRAILING STOP ACTIVO';
+  }
+
+}
+
 
 function setDir(act,n,dir){
   DIRS[act][n]=dir;
@@ -713,46 +843,192 @@ function renderActivo(act){
   renderCapital(act);
 }
 
+
 function calcTrade(act,n){
+
+  /* =====================================================
+     CAPA 4 PRO — CALCULO REAL XM
+  ===================================================== */
+
   var P=PARAMS[act];
+
   var entry=parseFloat(el(act+'-v'+n+'e').value);
   var cap=parseFloat(el(act+'-v'+n+'c').value);
-  var pts=parseFloat(el(act+'-v'+n+'r').value); /* puntos XM: usuario ingresa 3 → 300 puntos */
+  var pts=parseFloat(el(act+'-v'+n+'r').value);
   var rr=parseFloat(el(act+'-v'+n+'rr').value);
+
   if(!entry||!cap||!pts||!rr||pts<=0||rr<=0)return;
+
   var isBuy=DIRS[act][n]==='buy';
 
-  /* XM: usuario ingresa 3 puntos → distancia real = 3 × 100 = 300 puntos en precio */
-  var slDist=fp(pts*100, P.dec);
+  /* DISTANCIA SL */
 
-  /* COMPRA: SL abajo, TP arriba — VENTA: SL arriba, TP abajo */
-  var sl=isBuy ? fp(entry-slDist,P.dec) : fp(entry+slDist,P.dec);
-  var tp=isBuy ? fp(entry+slDist*rr,P.dec) : fp(entry-slDist*rr,P.dec);
+  var slDist=fp(pts*100,P.dec);
+
+  var sl=isBuy
+    ? fp(entry-slDist,P.dec)
+    : fp(entry+slDist,P.dec);
+
+  var tp=isBuy
+    ? fp(entry+(slDist*rr),P.dec)
+    : fp(entry-(slDist*rr),P.dec);
+
   if(tp<=0)tp=fp(entry*0.90,P.dec);
   if(sl<=0)sl=fp(entry*0.99,P.dec);
 
-  /* Dolares en riesgo = distancia SL en puntos × tamaño posicion */
-  var size=fp(cap/entry, act==='btc'?6:4); /* tamaño en BTC u oz segun capital */
-  var dr=fp(slDist*size,2);
-  var dg=fp(dr*rr,2);
-  TRADES[act][n]={sl:sl,tp:tp,entry:entry,cap:cap,size:size,dr:dr,dg:dg,isBuy:isBuy};
+  /* PIPS */
+
+  var slPips=
+    Math.abs(entry-sl)*
+    getPipMultiplier(act);
+
+  /* NUEVO — LOTE AUTOMATICO */
+
+  var lot=
+    calcAutoLot(
+      act,
+      cap,
+      2,
+      slPips
+    );
+
+  /* NUEVO — PIP VALUE */
+
+  var pipValue=
+    calcPipValue(
+      act,
+      lot
+    );
+
+  /* NUEVO — MARGEN XM */
+
+  var margin=
+    calcMarginXM(
+      act,
+      entry,
+      lot
+    );
+
+  /* TAMAÑO */
+
+  var size=fp(
+    cap/entry,
+    act==='btc'?6:4
+  );
+
+  /* RIESGO / GANANCIA */
+
+  var dr=fp(
+    slPips*pipValue,
+    2
+  );
+
+  var dg=fp(
+    dr*rr,
+    2
+  );
+
+  TRADES[act][n]={
+    sl:sl,
+    tp:tp,
+    entry:entry,
+    cap:cap,
+    size:size,
+    dr:dr,
+    dg:dg,
+    isBuy:isBuy,
+
+    /* NUEVO */
+
+    lot:lot,
+    pipValue:pipValue,
+    margin:margin,
+    breakEven:false,
+    trailingText:'OFF'
+  };
+
+  /* UI */
+
   el(act+'-v'+n+'-sl').textContent=fc(sl,P.dec);
   el(act+'-v'+n+'-tp').textContent=fc(tp,P.dec);
+
   el(act+'-v'+n+'-dr').textContent='-$'+dr.toFixed(2);
   el(act+'-v'+n+'-dg').textContent='+$'+dg.toFixed(2);
-  el(act+'-v'+n+'-sz').textContent=size+(act==='btc'?' BTC':' oz');
-  /* Color barra segun direccion */
+
+  el(act+'-v'+n+'-sz').textContent=
+    size+(act==='btc'?' BTC':' oz')+
+    ' | Lot '+lot;
+
+  /* NUEVO — INFO XM */
+
+  if(!el(act+'-v'+n+'-lot')){
+
+    var box=
+      el(act+'-v'+n+'-sz').parentNode.parentNode;
+
+    box.insertAdjacentHTML(
+      'beforeend',
+
+      '<div class="res-row">'+
+      '<span class="rl">Lotes XM</span>'+
+      '<span class="rv" id="'+act+'-v'+n+'-lot"></span>'+
+      '</div>'+
+
+      '<div class="res-row">'+
+      '<span class="rl">Valor Pip</span>'+
+      '<span class="rv" id="'+act+'-v'+n+'-pipv"></span>'+
+      '</div>'+
+
+      '<div class="res-row">'+
+      '<span class="rl">Margen XM</span>'+
+      '<span class="rv" id="'+act+'-v'+n+'-mg"></span>'+
+      '</div>'+
+
+      '<div class="res-row">'+
+      '<span class="rl">Trailing</span>'+
+      '<span class="rv" id="'+act+'-v'+n+'-trail"></span>'+
+      '</div>'
+    );
+  }
+
+  el(act+'-v'+n+'-lot').textContent=lot.toFixed(2);
+  el(act+'-v'+n+'-pipv').textContent='$'+pipValue.toFixed(2)+'/pip';
+  el(act+'-v'+n+'-mg').textContent='$'+margin.toFixed(2);
+  el(act+'-v'+n+'-trail').textContent='OFF';
+
+  /* VALIDACION MARGEN */
+
+  if(margin>cap){
+
+    el(act+'-v'+n+'-mg').style.color='var(--red)';
+
+  }else{
+
+    el(act+'-v'+n+'-mg').style.color='var(--green)';
+  }
+
   var pnlEl=el(act+'-v'+n+'-pnl');
-  if(pnlEl) pnlEl.style.background=isBuy?'var(--green)':'var(--red)';
+
+  if(pnlEl)
+    pnlEl.style.background=
+      isBuy
+        ? 'var(--green)'
+        : 'var(--red)';
+
   el(act+'-v'+n+'-res').style.display='block';
-  /* Autocompletar Precio XM si esta vacio */
+
   var xmInput=el(act+'-v'+n+'xm');
+
   if(xmInput&&!xmInput.value&&MKT[act].price>0){
+
     xmInput.value=MKT[act].price;
+
     calcPnL(act,n);
   }
+
   renderTrade(act,n,decision(act));
 }
+
 
 /* Sonido tipo iPhone — tono limpio de notificacion */
 var _lastSignal={btc:'',xau:''};
@@ -865,40 +1141,49 @@ function renderTrade(act,n,d){
   }
 }
 
+
 function calcPnL(act,n){
-  var t=TRADES[act][n];if(!t||!t.entry)return;
-  var P=PARAMS[act];
-  var xmPrice=parseFloat(el(act+'-v'+n+'xm').value);
-  if(!xmPrice||isNaN(xmPrice))return;
-  var isBuy=t.isBuy;
-  /* PnL = (precioActual - entrada) * size para compra, inverso para venta */
-  var pnl = isBuy
-    ? fp((xmPrice - t.entry) * t.size, 2)
-    : fp((t.entry - xmPrice) * t.size, 2);
-  var pnlEl=el(act+'-v'+n+'-pnlxm');
-  var distToSL=Math.abs(xmPrice-t.sl)/Math.abs(t.entry-t.sl||1);
-  var atSL=isBuy?xmPrice<=t.sl:xmPrice>=t.sl;
-  var atTP=isBuy?xmPrice>=t.tp:xmPrice<=t.tp;
-  if(atSL){
-    pnlEl.textContent='STOP LOSS ALCANZADO — '+( pnl>=0?'+':'')+pnl+' USD';
-    pnlEl.style.color='var(--red)';
-    el(act+'-v'+n+'-ad').style.display='block';
-    el(act+'-v'+n+'-btn').style.display='block';
-  } else if(atTP){
-    pnlEl.textContent='TAKE PROFIT ALCANZADO — +'+Math.abs(pnl)+' USD';
-    pnlEl.style.color='var(--green)';
-  } else if(pnl>=0){
-    pnlEl.textContent='Ganando +$'+pnl+' USD en XM';
-    pnlEl.style.color='var(--green)';
-  } else {
-    pnlEl.textContent='Perdiendo -$'+Math.abs(pnl)+' USD en XM';
-    pnlEl.style.color='var(--red)';
-    if(distToSL<=0.20){
-      el(act+'-v'+n+'-aw').style.display='block';
-      el(act+'-v'+n+'-btn').style.display='block';
-    }
+
+  var T=TRADES[act][n];
+
+  if(!T.entry||!T.tp)return;
+
+  var current=
+    parseFloat(
+      el(act+'-v'+n+'xm').value
+    );
+
+  if(!current)return;
+
+  var pnl=
+    calcPnLXM(
+      act,
+      T.entry,
+      current,
+      T.lot,
+      T.isBuy?'buy':'sell'
+    );
+
+  applyTrailingStop(
+    T,
+    current,
+    act
+  );
+
+  el(act+'-v'+n+'-pnlxm').textContent=
+    (pnl.usd>=0?'+':'')+
+    '$'+pnl.usd+
+    ' | '+
+    pnl.pips+
+    ' pips';
+
+  if(el(act+'-v'+n+'-trail')){
+    el(act+'-v'+n+'-trail').textContent=
+      T.trailingText;
   }
+
 }
+
 
 function cerrarPos(act,n){
   var t=TRADES[act][n],m=MKT[act],P=PARAMS[act];
