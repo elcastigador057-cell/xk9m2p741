@@ -918,15 +918,15 @@ function calcTrade(act,n){
 
   /* RIESGO / GANANCIA */
 
-  var dr=fp(
-    slPips*pipValue,
-    2
-  );
+var dr = fp(
+  cap * 0.02,
+  2
+);
 
-  var dg=fp(
-    dr*rr,
-    2
-  );
+  var dg = fp(
+  dr * rr,
+  2
+);
 
   TRADES[act][n]={
     sl:sl,
