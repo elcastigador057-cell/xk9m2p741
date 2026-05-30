@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Codigo de Oro — BTC/USD & XAU/USD v5.0</title>
+<title>Codigo de Oro — BTC/USD & XAU/USD v5.1</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -17,7 +17,7 @@
   --blue:#3b82f6;--blue-bg:rgba(59,130,246,0.12);--blue-bdr:rgba(59,130,246,0.3);
   --radius:8px;--radius-lg:12px;--mono:'Courier New',monospace;
 }
-body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13px;min-height:100vh;padding:12px;padding-top:110px;line-height:1.5}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13px;min-height:100vh;padding:12px;padding-top:120px;line-height:1.5}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
 /* STICKY HEADER */
@@ -29,6 +29,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 .clock{font-size:11px;color:var(--text2)}
 .horario-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700}
+
+/* AUDIO TEST BUTTON */
+.audio-test-btn{padding:3px 10px;background:rgba(232,184,75,0.15);border:0.5px solid rgba(232,184,75,0.5);border-radius:4px;color:var(--gold2);font-family:var(--mono);font-size:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px}
+.audio-test-btn:hover{background:rgba(232,184,75,0.28)}
+.audio-pulse{animation:audioPulse 1.5s infinite}
+@keyframes audioPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.15)}}
 
 /* TABS FIJAS */
 .tabs{display:flex;gap:6px}
@@ -101,8 +107,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 .cap-fill{height:100%;border-radius:8px;transition:width .8s,background .5s}
 .divider{height:0.5px;background:var(--border);margin:10px 0}
 .status-tag{display:inline-block;padding:1px 6px;background:var(--gold);color:#0d0f14;border-radius:3px;font-size:9px;font-weight:700;vertical-align:middle;margin-left:4px}
-
-/* API CONFIG AL FINAL */
 .api-config{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px}
 .api-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .api-row label{font-size:10px;color:var(--text3);min-width:60px;text-transform:uppercase}
@@ -121,10 +125,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 <!-- STICKY HEADER FIJO -->
 <div class="sticky-header">
   <div class="topbar">
-    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v5.0</span></div>
+    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v5.1 TV</span></div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div class="online"><div class="dot"></div>ONLINE</div>
       <span class="horario-badge bg" id="horario-badge">10AM-10PM</span>
+      <!-- BOTON TEST DE SONIDO -->
+      <button class="audio-test-btn" id="btn-audio-test" onclick="testAudio()">
+        <span class="audio-pulse">&#9834;</span> TEST SONIDO
+      </button>
       <button class="btn-encender btn-enc-on" id="btn-manual" onclick="toggleManual()" style="display:none">&#9654; ENCENDER API</button>
       <div class="clock" id="clk">--</div>
     </div>
@@ -411,10 +419,151 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 </div>
 <div class="divider"></div>
 <div style="text-align:center;font-size:10px;color:var(--text3);padding:6px 0">
-  Codigo de Oro v5.0 &nbsp;|&nbsp; BTC/USD + XAU/USD &nbsp;|&nbsp; Horario 10AM-10PM &nbsp;|&nbsp; TwelveData API
+  Codigo de Oro v5.1 TV &nbsp;|&nbsp; BTC/USD + XAU/USD &nbsp;|&nbsp; Horario 10AM-10PM &nbsp;|&nbsp; TwelveData API
 </div>
 
 <script>
+/* =========================================================
+   AUDIO ENGINE v5.1 — OPTIMIZADO PARA TV + ESCRITORIO
+   AudioContext global — se desbloquea al primer clic/toque
+========================================================= */
+var _audioCtx = null;
+var _audioReady = false;
+
+function _initAudio() {
+  if (_audioCtx) {
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+    _audioReady = true;
+    return;
+  }
+  try {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+    _audioReady = true;
+  } catch(e) { _audioReady = false; }
+}
+
+/* Desbloquear con cualquier interaccion del usuario */
+document.addEventListener('click',    function(){ _initAudio(); }, { once: true });
+document.addEventListener('touchstart', function(){ _initAudio(); }, { once: true });
+document.addEventListener('keydown',  function(){ _initAudio(); }, { once: true });
+
+/* -------------------------------------------------------
+   SONIDO ENTRADA — Acorde DO-MI-SOL (tono tipo iPhone)
+   Volumen alto para TV — seno limpio con reverb corto
+------------------------------------------------------- */
+var _lastSignal = {btc:'', xau:''};
+
+function playEntrySound() {
+  if (!_audioCtx) return;
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  try {
+    /* Acorde Do5-Mi5-Sol5 con ataque rapido y cola larga */
+    var notas = [
+      { freq: 523.25, t: 0.00, vol: 0.38 },   /* Do5 */
+      { freq: 659.25, t: 0.06, vol: 0.34 },   /* Mi5 */
+      { freq: 783.99, t: 0.12, vol: 0.30 }    /* Sol5 */
+    ];
+    var now = _audioCtx.currentTime;
+
+    /* Reverb corto — convolucion simplificada con delay */
+    notas.forEach(function(n, i) {
+      /* Oscilador principal — sine limpio */
+      var osc = _audioCtx.createOscillator();
+      var gain = _audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(_audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = n.freq;
+      gain.gain.setValueAtTime(0, now + n.t);
+      gain.gain.linearRampToValueAtTime(n.vol, now + n.t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + 0.65);
+      osc.start(now + n.t);
+      osc.stop(now + n.t + 0.7);
+
+      /* Cola de reverb — misma nota, volumen muy bajo, delay 80ms */
+      var oscR = _audioCtx.createOscillator();
+      var gainR = _audioCtx.createGain();
+      oscR.connect(gainR);
+      gainR.connect(_audioCtx.destination);
+      oscR.type = 'sine';
+      oscR.frequency.value = n.freq;
+      gainR.gain.setValueAtTime(0, now + n.t + 0.08);
+      gainR.gain.linearRampToValueAtTime(n.vol * 0.18, now + n.t + 0.10);
+      gainR.gain.exponentialRampToValueAtTime(0.001, now + n.t + 0.90);
+      oscR.start(now + n.t + 0.08);
+      oscR.stop(now + n.t + 0.95);
+    });
+
+    /* Indicador visual en el boton test */
+    var btn = document.getElementById('btn-audio-test');
+    if (btn) {
+      btn.style.background = 'rgba(34,197,94,0.35)';
+      btn.style.borderColor = 'rgba(34,197,94,0.8)';
+      btn.style.color = '#22c55e';
+      setTimeout(function(){
+        btn.style.background = 'rgba(232,184,75,0.15)';
+        btn.style.borderColor = 'rgba(232,184,75,0.5)';
+        btn.style.color = 'var(--gold2)';
+      }, 900);
+    }
+  } catch(e) {}
+}
+
+/* -------------------------------------------------------
+   SONIDO ALERTA — Triple beep agresivo para TV
+   Cuadrada + diente de sierra — mas presencia en TV
+------------------------------------------------------- */
+var _lastAlertTime = {};
+
+function playAlert(id) {
+  var now = Date.now();
+  if (_lastAlertTime[id] && now - _lastAlertTime[id] < 8000) return;
+  _lastAlertTime[id] = now;
+  if (!_audioCtx) return;
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  try {
+    var t = _audioCtx.currentTime;
+    /* 3 pulsos: La4-Fa4-La4 con cuadrada para corte */
+    var seq = [
+      { freq: 880, t: 0.00 },
+      { freq: 698, t: 0.22 },
+      { freq: 880, t: 0.44 }
+    ];
+    seq.forEach(function(s) {
+      /* Oscilador cuadrado — mas agresivo y audible en TV */
+      var osc = _audioCtx.createOscillator();
+      var gain = _audioCtx.createGain();
+      /* Filtro paso-bajo para suavizar un poco la cuadrada en TV */
+      var filter = _audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 2200;
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(_audioCtx.destination);
+      osc.type = 'square';
+      osc.frequency.value = s.freq;
+      gain.gain.setValueAtTime(0, t + s.t);
+      gain.gain.linearRampToValueAtTime(0.42, t + s.t + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + s.t + 0.18);
+      osc.start(t + s.t);
+      osc.stop(t + s.t + 0.20);
+    });
+  } catch(e) {}
+}
+
+/* -------------------------------------------------------
+   BOTON TEST — se activa manualmente para desbloquear
+   audio en TV y verificar que suena
+------------------------------------------------------- */
+function testAudio() {
+  _initAudio();
+  playEntrySound();
+}
+
+/* =========================================================
+   PARAMS & ESTADO
+========================================================= */
 var PARAMS={
   btc:{rsiAlcista:60,rsiBajista:45,velocidadRapida:100,atrMultTP:2.0,atrMultSL:1.0,vpp:0.01,dec:0,symbol:'BTC/USD'},
   xau:{rsiAlcista:58,rsiBajista:44,velocidadRapida:2,  atrMultTP:1.5,atrMultSL:1.0,vpp:0.10,dec:2,symbol:'XAU/USD'}
@@ -428,136 +577,13 @@ var TRADES={
   xau:{1:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0,lot:0,margin:0,pipValue:0,breakEven:false,trailingText:'OFF'},2:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0,lot:0,margin:0,pipValue:0,breakEven:false,trailingText:'OFF'}}
 };
 var DIRS={btc:{1:'sell',2:'sell'},xau:{1:'sell',2:'sell'}};
-/* =========================================================
-   CAPA 4 PRO — MOTOR XM REAL
-========================================================= */
 
-/*
-  NUEVO:
-  + lotes XM reales
-  + margen requerido
-  + pip value real
-  + break even
-  + trailing stop
-  + pnl estilo broker
-*/
-
-function getPipMultiplier(act){
-  return act==='xau' ? 100 : 1;
-}
-
-function calcPipValue(act,lot){
-
-  if(act==='xau'){
-    return fp(lot*10,2);
-  }
-
-  return fp(lot*1,2);
-}
-
-function calcMarginXM(act,price,lot,leverage=200){
-
-  if(act==='xau'){
-
-    const contract=100;
-
-    return fp(
-      (price*contract*lot)/leverage,
-      2
-    );
-  }
-
-  return fp(
-    (price*lot)/leverage,
-    2
-  );
-}
-
-function calcAutoLot(act,balance,riskPercent,slPips){
-
-  const riskUSD=
-    balance*(riskPercent/100);
-
-  const pipValuePerLot=
-    act==='xau' ? 10 : 1;
-
-  let lot=
-    riskUSD/(slPips*pipValuePerLot);
-
-  if(lot<0.01) lot=0.01;
-
-  return fp(lot,2);
-}
-
-function calcPnLXM(act,entry,current,lot,side){
-
-  const multiplier=
-    getPipMultiplier(act);
-
-  let pips;
-
-  if(side==='buy'){
-    pips=(current-entry)*multiplier;
-  }else{
-    pips=(entry-current)*multiplier;
-  }
-
-  const pipValue=
-    calcPipValue(act,lot);
-
-  const usd=
-    pips*pipValue;
-
-  return{
-    pips:fp(pips,1),
-    usd:fp(usd,2)
-  };
-}
-
-function applyTrailingStop(trade,current,act){
-
-  if(!trade.tp||!trade.entry) return;
-
-  const total=
-    Math.abs(trade.tp-trade.entry);
-
-  const gain=
-    trade.isBuy
-      ? current-trade.entry
-      : trade.entry-current;
-
-  const progress=gain/total;
-
-  if(progress>=0.30 && !trade.breakEven){
-
-    trade.sl=trade.entry;
-
-    trade.breakEven=true;
-
-    trade.trailingText='BREAK EVEN ACTIVADO';
-  }
-
-  if(progress>=0.60){
-
-    const offset=
-      act==='xau'
-        ? 1.5
-        : 150;
-
-    if(trade.isBuy){
-
-      trade.sl=current-offset;
-
-    }else{
-
-      trade.sl=current+offset;
-    }
-
-    trade.trailingText='TRAILING STOP ACTIVO';
-  }
-
-}
-
+function getPipMultiplier(act){ return act==='xau' ? 100 : 1; }
+function calcPipValue(act,lot){ return act==='xau' ? fp(lot*10,2) : fp(lot*1,2); }
+function calcMarginXM(act,price,lot,leverage){ leverage=leverage||200; if(act==='xau'){return fp((price*100*lot)/leverage,2);} return fp((price*lot)/leverage,2); }
+function calcAutoLot(act,balance,riskPercent,slPips){ var riskUSD=balance*(riskPercent/100); var ppv=act==='xau'?10:1; var lot=riskUSD/(slPips*ppv); if(lot<0.01)lot=0.01; return fp(lot,2); }
+function calcPnLXM(act,entry,current,lot,side){ var mult=getPipMultiplier(act); var pips=side==='buy'?(current-entry)*mult:(entry-current)*mult; var pv=calcPipValue(act,lot); return{pips:fp(pips,1),usd:fp(pips*pv,2)}; }
+function applyTrailingStop(trade,current,act){ if(!trade.tp||!trade.entry)return; var total=Math.abs(trade.tp-trade.entry); var gain=trade.isBuy?current-trade.entry:trade.entry-current; var prog=gain/total; if(prog>=0.30&&!trade.breakEven){trade.sl=trade.entry;trade.breakEven=true;trade.trailingText='BREAK EVEN ACTIVADO';} if(prog>=0.60){var off=act==='xau'?1.5:150; trade.sl=trade.isBuy?current-off:current+off; trade.trailingText='TRAILING STOP ACTIVO';} }
 
 function setDir(act,n,dir){
   DIRS[act][n]=dir;
@@ -579,50 +605,35 @@ function setDir(act,n,dir){
   }
   calcTrade(act,n);
 }
+
 var API={keys:[],idx:0,conectada:false};
-var credits=[0,0,0,0]; /* Se llenan con valores reales via /api_usage al arrancar */
+var credits=[0,0,0,0];
 var _loopTimer=null;
 var HORA_INICIO=10, HORA_FIN=22;
-var manualEncendido=false; /* Estado del boton manual fuera de horario */
+var manualEncendido=false;
 
 function fp(v,d){return parseFloat(Number(v).toFixed(d===undefined?2:d));}
 function fc(v,d){var x=fp(v,d===undefined?0:d);return '$'+x.toLocaleString('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});}
 function el(id){return document.getElementById(id);}
 function bdg(cls,txt){return '<span class="badge '+cls+'">'+txt+'</span>';}
 
-function enHorario(){
-  var h=new Date().getHours();
-  return h>=HORA_INICIO && h<HORA_FIN;
-}
+function enHorario(){var h=new Date().getHours();return h>=HORA_INICIO&&h<HORA_FIN;}
+function apiActiva(){if(enHorario())return true;return manualEncendido;}
 
-/* Decide si la API debe estar activa: horario automatico O boton manual encendido */
-function apiActiva(){
-  if(enHorario()) return true;
-  return manualEncendido;
-}
-
-/* Boton manual: solo funciona fuera de horario */
 function toggleManual(){
-  if(enHorario()) return; /* Dentro de horario el boton no hace nada */
-  manualEncendido = !manualEncendido;
+  if(enHorario())return;
+  manualEncendido=!manualEncendido;
   var btn=el('btn-manual');
   if(manualEncendido){
-    btn.textContent='⏹ APAGAR API';
-    btn.className='btn-encender btn-enc-off';
-    el('api-status').textContent='Encendido manual fuera de horario — se apaga automatico a las 10PM';
-    el('api-status').style.color='var(--yellow)';
-    /* Arrancar el loop de API si no estaba corriendo */
-    if(_loopTimer) clearInterval(_loopTimer);
+    btn.textContent='⏹ APAGAR API';btn.className='btn-encender btn-enc-off';
+    el('api-status').textContent='Encendido manual fuera de horario';el('api-status').style.color='var(--yellow)';
+    if(_loopTimer)clearInterval(_loopTimer);
     _loopTimer=setInterval(tickAPI,62000);
-    fetchActivo('btc');
-    setTimeout(function(){fetchActivo('xau');},5000);
-  } else {
-    btn.textContent='▶ ENCENDER API';
-    btn.className='btn-encender btn-enc-on';
-    el('api-status').textContent='Apagado manualmente — simulando';
-    el('api-status').style.color='var(--text2)';
-    /* Volver al loop de simulacion */
-    if(_loopTimer) clearInterval(_loopTimer);
+    fetchActivo('btc');setTimeout(function(){fetchActivo('xau');},5000);
+  }else{
+    btn.textContent='▶ ENCENDER API';btn.className='btn-encender btn-enc-on';
+    el('api-status').textContent='Apagado manualmente';el('api-status').style.color='var(--text2)';
+    if(_loopTimer)clearInterval(_loopTimer);
     _loopTimer=setInterval(tickSim,3000);
   }
 }
@@ -640,53 +651,43 @@ function updateClock(){
   el('clk').textContent=ds[n.getDay()]+' '+n.getDate()+' '+ms[n.getMonth()]+' '+n.getFullYear()+' - '+n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0')+':'+n.getSeconds().toString().padStart(2,'0');
   var ok=enHorario();
   var hb=el('horario-badge');
-  hb.className='horario-badge '+(ok?'bg': manualEncendido?'by':'by');
-  hb.textContent=ok?'Horario activo': manualEncendido?'Manual activo':'Fuera de horario';
+  hb.className='horario-badge '+(ok?'bg':manualEncendido?'by':'by');
+  hb.textContent=ok?'Horario activo':manualEncendido?'Manual activo':'Fuera de horario';
   el('fuera-horario').style.display=ok?'none':'block';
-  /* Mostrar u ocultar boton manual segun horario */
   el('btn-manual').style.display=ok?'none':'inline-block';
-  /* Si llego las 10PM y estaba encendido manual → apagar automaticamente */
-  if(ok && manualEncendido){
-    manualEncendido=false;
-    el('btn-manual').textContent='▶ ENCENDER API';
-    el('btn-manual').className='btn-encender btn-enc-on';
-  }
+  if(ok&&manualEncendido){manualEncendido=false;el('btn-manual').textContent='▶ ENCENDER API';el('btn-manual').className='btn-encender btn-enc-on';}
 }
 
-/* Valida los creditos reales de las 4 cuentas via /api_usage de TwelveData */
 function validarCreditos(callback){
-  var keys=API.keys;
-  var resultados=[0,0,0,0];
-  var pendientes=keys.length;
+  var keys=API.keys;var pendientes=keys.length;
   if(!pendientes){if(callback)callback();return;}
-  el('api-status').textContent='Validando creditos reales de las '+keys.length+' cuentas...';
-  el('api-status').style.color='var(--yellow)';
+  /* Inicializar con 750 por defecto — si la validacion falla se mantiene el maximo */
+  for(var k=0;k<4;k++) credits[k]=750;
+  el('api-status').textContent='Validando creditos — '+keys.length+' cuentas...';el('api-status').style.color='var(--yellow)';
   keys.forEach(function(key,i){
     fetch('https://api.twelvedata.com/api_usage?apikey='+key)
       .then(function(r){return r.json();})
       .then(function(data){
-        /* TwelveData devuelve: data.current_usage y data.plan_limit */
-        var limite=data.plan_limit||750;
-        var usado=data.current_usage||0;
-        resultados[i]=Math.max(0, limite-usado);
-        credits[i]=resultados[i];
+        /* Solo actualizar si la respuesta trae datos validos */
+        if(data && (data.current_usage!==undefined || data.plan_limit!==undefined)){
+          var lim=data.plan_limit||750;
+          var usado=data.current_usage||0;
+          credits[i]=Math.max(0,lim-usado);
+        }
+        /* Si no trae datos validos mantiene los 750 por defecto */
       })
       .catch(function(){
-        /* Si falla la validacion, asumimos 0 para no gastar llamadas a ciegas */
-        resultados[i]=0;
-        credits[i]=0;
+        /* Si falla el fetch mantiene los 750 por defecto — no penalizar */
       })
       .finally(function(){
         pendientes--;
         if(pendientes===0){
           renderCredits();
           var total=credits.reduce(function(a,b){return a+b;},0);
-          el('api-status').textContent='Creditos validados — pool disponible: '+total+' llamadas';
-          el('api-status').style.color=total>0?'var(--green)':'var(--red)';
-          /* Ajustar idx al primer indice con creditos disponibles */
-          API.idx=0;
-          for(var j=0;j<credits.length;j++){if(credits[j]>0){API.idx=j;break;}}
-          if(callback) callback();
+          el('api-status').textContent='Creditos listos — pool: '+total+' llamadas disponibles';
+          el('api-status').style.color='var(--green)';
+          API.idx=0;for(var j=0;j<credits.length;j++){if(credits[j]>0){API.idx=j;break;}}
+          if(callback)callback();
         }
       });
   });
@@ -697,7 +698,6 @@ function conectarAPI(){
   for(var i=1;i<=4;i++){var v=el('api'+i).value.trim();if(v)keys.push(v);}
   if(!keys.length){el('api-status').textContent='Error: ingresa al menos 1 key';el('api-status').style.color='var(--red)';return;}
   API.keys=keys;API.conectada=true;
-  /* Primero validar creditos reales, luego arrancar el loop */
   validarCreditos(function(){
     if(_loopTimer)clearInterval(_loopTimer);
     _loopTimer=setInterval(tickAPI,62000);
@@ -707,28 +707,16 @@ function conectarAPI(){
 
 function fetchActivo(act){
   if(!API.conectada||!API.keys.length)return;
-  /* Usar apiActiva() en lugar de enHorario() para respetar el boton manual */
   if(!apiActiva()){simular(act);renderActivo(act);return;}
   var P=PARAMS[act];
-  var key=null;
-  var keyIdx=-1;
-  /* Rotacion secuencial: busca la siguiente cuenta CON creditos disponibles */
-  for(var a=0;a<API.keys.length;a++){
-    var idx=(API.idx+a)%API.keys.length;
-    if(credits[idx]>0){key=API.keys[idx];keyIdx=idx;API.idx=(idx+1)%API.keys.length;credits[idx]--;break;}
-  }
-  if(!key){
-    el('api-status').textContent='Todas las cuentas agotadas — simulando';
-    el('api-status').style.color='var(--yellow)';
-    simular(act);renderActivo(act);return;
-  }
+  var key=null,keyIdx=-1;
+  for(var a=0;a<API.keys.length;a++){var idx=(API.idx+a)%API.keys.length;if(credits[idx]>0){key=API.keys[idx];keyIdx=idx;API.idx=(idx+1)%API.keys.length;credits[idx]--;break;}}
+  if(!key){el('api-status').textContent='Cuentas agotadas — simulando';el('api-status').style.color='var(--yellow)';simular(act);renderActivo(act);return;}
   fetch('https://api.twelvedata.com/quote?symbol='+encodeURIComponent(P.symbol)+'&apikey='+key)
     .then(function(r){return r.json();})
     .then(function(q){
       if(q.status==='error'){simular(act);renderActivo(act);renderCredits();return;}
-      var m=MKT[act];
-      m.prevPrice=m.price||parseFloat(q.previous_close||q.close);
-      m.price=fp(parseFloat(q.close),P.dec);
+      var m=MKT[act];m.prevPrice=m.price||parseFloat(q.previous_close||q.close);m.price=fp(parseFloat(q.close),P.dec);
       fetch('https://api.twelvedata.com/time_series?symbol='+encodeURIComponent(P.symbol)+'&interval=10min&outputsize=55&apikey='+key)
         .then(function(r2){return r2.json();})
         .then(function(ts){
@@ -748,19 +736,8 @@ function fetchActivo(act){
     .catch(function(){simular(act);renderActivo(act);});
 }
 
-function calcEMA(cls,period){
-  if(cls.length<period)return cls[cls.length-1];
-  var k=2/(period+1),ema=cls[0];
-  for(var i=1;i<cls.length;i++)ema=cls[i]*k+ema*(1-k);
-  return ema;
-}
-function calcRSI(cls,period){
-  if(cls.length<period+1)return 50;
-  var g=0,l=0;
-  for(var i=cls.length-period;i<cls.length;i++){var d=cls[i]-cls[i-1];d>0?g+=d:l-=d;}
-  if(l===0)return 100;if(g===0)return 0;
-  return fp(100-(100/(1+(g/l))),1);
-}
+function calcEMA(cls,period){if(cls.length<period)return cls[cls.length-1];var k=2/(period+1),ema=cls[0];for(var i=1;i<cls.length;i++)ema=cls[i]*k+ema*(1-k);return ema;}
+function calcRSI(cls,period){if(cls.length<period+1)return 50;var g=0,l=0;for(var i=cls.length-period;i<cls.length;i++){var d=cls[i]-cls[i-1];d>0?g+=d:l-=d;}if(l===0)return 100;if(g===0)return 0;return fp(100-(100/(1+(g/l))),1);}
 
 function simular(act){
   var m=MKT[act];m.tick++;
@@ -815,9 +792,9 @@ function renderActivo(act){
   var rb=el(id+'rsi-badge');rb.className='badge '+rsiCls;rb.textContent=m.rsi.toFixed(1)+' - '+rsiTxt;
   var sigEl=el(id+'signal');
   sigEl.textContent=d.sig;
-  if(d.alin&&d.esAlc){ sigEl.style.color='var(--green)'; }
-  else if(d.alin&&!d.esAlc){ sigEl.style.color='var(--red)'; }
-  else{ sigEl.style.color='var(--text)'; }
+  if(d.alin&&d.esAlc){sigEl.style.color='var(--green)';}
+  else if(d.alin&&!d.esAlc){sigEl.style.color='var(--red)';}
+  else{sigEl.style.color='var(--text)';}
   el(id+'action').textContent='Accion: '+d.action+' - Riesgo: '+(d.conf>=75?'bajo':d.conf>=50?'medio':'alto');
   el(id+'next').textContent='Proxima revision: '+d.prox+' - '+d.accionInm;
   el(id+'trend').innerHTML=bdg(d.esAlc?'bg':'br',d.esAlc?'Alcista':'Bajista');
@@ -826,12 +803,11 @@ function renderActivo(act){
   var cf=el(id+'conf');cf.style.width=d.conf+'%';cf.style.background=d.conf>=75?'#22c55e':d.conf>=50?'#eab308':'#ef4444';
   el(id+'conf-pct').textContent=d.conf+'%';
 
-  /* Sonido iPhone cuando cambia a señal de entrada con confianza >= 75% */
-  var sigKey=(d.action==='Abrir Long'||d.action==='Abrir Short')&&d.conf>=75 ? d.action : '';
-  if(sigKey && sigKey!==_lastSignal[act]){
-    playEntrySound();
-  }
+  /* Sonido de entrada — acorde Do-Mi-Sol cuando hay senal con confianza >= 75% */
+  var sigKey=(d.action==='Abrir Long'||d.action==='Abrir Short')&&d.conf>=75?d.action:'';
+  if(sigKey&&sigKey!==_lastSignal[act]){ playEntrySound(); }
   _lastSignal[act]=sigKey;
+
   el(id+'s1').innerHTML=bdg(m.price>m.ema20?'bg':'br',m.price>m.ema20?'Sobre EMA20':'Bajo EMA20');
   el(id+'s2').innerHTML=bdg(m.price>m.ema50?'bg':'br',m.price>m.ema50?'Sobre EMA50':'Bajo EMA50');
   el(id+'s3').innerHTML=bdg(m.ema20>m.ema50?'bg':'br',m.ema20>m.ema50?'EMA20>EMA50 alcista':'EMA20<EMA50 bajista');
@@ -843,237 +819,79 @@ function renderActivo(act){
   renderCapital(act);
 }
 
-
 function calcTrade(act,n){
-
-  /* =====================================================
-     CAPA 4 PRO — CALCULO REAL XM
-  ===================================================== */
-
   var P=PARAMS[act];
-
   var entry=parseFloat(el(act+'-v'+n+'e').value);
   var cap=parseFloat(el(act+'-v'+n+'c').value);
   var pts=parseFloat(el(act+'-v'+n+'r').value);
   var rr=parseFloat(el(act+'-v'+n+'rr').value);
-
   if(!entry||!cap||!pts||!rr||pts<=0||rr<=0)return;
-
   var isBuy=DIRS[act][n]==='buy';
-
-  /* DISTANCIA SL */
-
   var slDist=fp(pts*100,P.dec);
-
-  var sl=isBuy
-    ? fp(entry-slDist,P.dec)
-    : fp(entry+slDist,P.dec);
-
-  var tp=isBuy
-    ? fp(entry+(slDist*rr),P.dec)
-    : fp(entry-(slDist*rr),P.dec);
-
-  if(tp<=0)tp=fp(entry*0.90,P.dec);
-  if(sl<=0)sl=fp(entry*0.99,P.dec);
-
-  /* PIPS */
-
-  var slPips=
-    Math.abs(entry-sl)*
-    getPipMultiplier(act);
-
-  /* NUEVO — LOTE AUTOMATICO */
-
-  var lot=
-    calcAutoLot(
-      act,
-      cap,
-      2,
-      slPips
-    );
-
-  /* NUEVO — PIP VALUE */
-
-  var pipValue=
-    calcPipValue(
-      act,
-      lot
-    );
-
-  /* NUEVO — MARGEN XM */
-
-  var margin=
-    calcMarginXM(
-      act,
-      entry,
-      lot
-    );
-
-  /* TAMAÑO */
-
-  var size=fp(
-    cap/entry,
-    act==='btc'?6:4
-  );
-
-  /* RIESGO / GANANCIA */
-
-var dr = fp(
-  cap * 0.02,
-  2
-);
-
-  var dg = fp(
-  dr * rr,
-  2
-);
-
-  TRADES[act][n]={
-    sl:sl,
-    tp:tp,
-    entry:entry,
-    cap:cap,
-    size:size,
-    dr:dr,
-    dg:dg,
-    isBuy:isBuy,
-
-    /* NUEVO */
-
-    lot:lot,
-    pipValue:pipValue,
-    margin:margin,
-    breakEven:false,
-    trailingText:'OFF'
-  };
-
-  /* UI */
-
+  var sl=isBuy?fp(entry-slDist,P.dec):fp(entry+slDist,P.dec);
+  var tp=isBuy?fp(entry+(slDist*rr),P.dec):fp(entry-(slDist*rr),P.dec);
+  if(tp<=0)tp=fp(entry*0.90,P.dec);if(sl<=0)sl=fp(entry*0.99,P.dec);
+  var slPips=Math.abs(entry-sl)*getPipMultiplier(act);
+  var lot=calcAutoLot(act,cap,2,slPips);
+  var pipValue=calcPipValue(act,lot);
+  var margin=calcMarginXM(act,entry,lot);
+  var size=fp(cap/entry,act==='btc'?6:4);
+  var dr=fp(cap*0.02,2);
+  var dg=fp(dr*rr,2);
+  TRADES[act][n]={sl:sl,tp:tp,entry:entry,cap:cap,size:size,dr:dr,dg:dg,isBuy:isBuy,lot:lot,pipValue:pipValue,margin:margin,breakEven:false,trailingText:'OFF'};
   el(act+'-v'+n+'-sl').textContent=fc(sl,P.dec);
   el(act+'-v'+n+'-tp').textContent=fc(tp,P.dec);
-
   el(act+'-v'+n+'-dr').textContent='-$'+dr.toFixed(2);
   el(act+'-v'+n+'-dg').textContent='+$'+dg.toFixed(2);
-
-  el(act+'-v'+n+'-sz').textContent=
-    size+(act==='btc'?' BTC':' oz')+
-    ' | Lot '+lot;
-
-  /* NUEVO — INFO XM */
-
+  el(act+'-v'+n+'-sz').textContent=size+(act==='btc'?' BTC':' oz')+' | Lot '+lot;
   if(!el(act+'-v'+n+'-lot')){
-
-    var box=
-      el(act+'-v'+n+'-sz').parentNode.parentNode;
-
-    box.insertAdjacentHTML(
-      'beforeend',
-
-      '<div class="res-row">'+
-      '<span class="rl">Lotes XM</span>'+
-      '<span class="rv" id="'+act+'-v'+n+'-lot"></span>'+
-      '</div>'+
-
-      '<div class="res-row">'+
-      '<span class="rl">Valor Pip</span>'+
-      '<span class="rv" id="'+act+'-v'+n+'-pipv"></span>'+
-      '</div>'+
-
-      '<div class="res-row">'+
-      '<span class="rl">Margen XM</span>'+
-      '<span class="rv" id="'+act+'-v'+n+'-mg"></span>'+
-      '</div>'+
-
-      '<div class="res-row">'+
-      '<span class="rl">Trailing</span>'+
-      '<span class="rv" id="'+act+'-v'+n+'-trail"></span>'+
-      '</div>'
+    var box=el(act+'-v'+n+'-sz').parentNode.parentNode;
+    box.insertAdjacentHTML('beforeend',
+      '<div class="res-row"><span class="rl">Lotes XM</span><span class="rv" id="'+act+'-v'+n+'-lot"></span></div>'+
+      '<div class="res-row"><span class="rl">Valor Pip</span><span class="rv" id="'+act+'-v'+n+'-pipv"></span></div>'+
+      '<div class="res-row"><span class="rl">Margen XM</span><span class="rv" id="'+act+'-v'+n+'-mg"></span></div>'+
+      '<div class="res-row"><span class="rl">Trailing</span><span class="rv" id="'+act+'-v'+n+'-trail"></span></div>'
     );
   }
-
   el(act+'-v'+n+'-lot').textContent=lot.toFixed(2);
   el(act+'-v'+n+'-pipv').textContent='$'+pipValue.toFixed(2)+'/pip';
   el(act+'-v'+n+'-mg').textContent='$'+margin.toFixed(2);
+  el(act+'-v'+n+'-mg').style.color=margin>cap?'var(--red)':'var(--green)';
   el(act+'-v'+n+'-trail').textContent='OFF';
-
-  /* VALIDACION MARGEN */
-
-  if(margin>cap){
-
-    el(act+'-v'+n+'-mg').style.color='var(--red)';
-
-  }else{
-
-    el(act+'-v'+n+'-mg').style.color='var(--green)';
-  }
-
   var pnlEl=el(act+'-v'+n+'-pnl');
-
-  if(pnlEl)
-    pnlEl.style.background=
-      isBuy
-        ? 'var(--green)'
-        : 'var(--red)';
-
+  if(pnlEl)pnlEl.style.background=isBuy?'var(--green)':'var(--red)';
   el(act+'-v'+n+'-res').style.display='block';
-
   var xmInput=el(act+'-v'+n+'xm');
-
-  if(xmInput&&!xmInput.value&&MKT[act].price>0){
-
-    xmInput.value=MKT[act].price;
-
-    calcPnL(act,n);
-  }
-
+  if(xmInput&&!xmInput.value&&MKT[act].price>0){xmInput.value=MKT[act].price;calcPnL(act,n);}
   renderTrade(act,n,decision(act));
 }
 
-
-/* Sonido tipo iPhone — tono limpio de notificacion */
-var _lastSignal={btc:'',xau:''};
-function playEntrySound(){
-  try{
-    var ctx=new(window.AudioContext||window.webkitAudioContext)();
-    /* Dos notas suaves: Do5 + Mi5 — imita notificacion iPhone */
-    [[1046,0],[1318,0.18]].forEach(function(n){
-      var o=ctx.createOscillator(),g=ctx.createGain();
-      o.connect(g);g.connect(ctx.destination);
-      o.type='sine';o.frequency.value=n[0];
-      g.gain.setValueAtTime(0,ctx.currentTime+n[1]);
-      g.gain.linearRampToValueAtTime(0.25,ctx.currentTime+n[1]+0.02);
-      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+n[1]+0.35);
-      o.start(ctx.currentTime+n[1]);
-      o.stop(ctx.currentTime+n[1]+0.35);
-    });
-  }catch(e){}
+function calcPnL(act,n){
+  var T=TRADES[act][n];if(!T.entry||!T.tp)return;
+  var current=parseFloat(el(act+'-v'+n+'xm').value);if(!current)return;
+  var pnl=calcPnLXM(act,T.entry,current,T.lot,T.isBuy?'buy':'sell');
+  applyTrailingStop(T,current,act);
+  el(act+'-v'+n+'-pnlxm').textContent=(pnl.usd>=0?'+':'')+'$'+pnl.usd+' | '+pnl.pips+' pips';
+  if(el(act+'-v'+n+'-trail'))el(act+'-v'+n+'-trail').textContent=T.trailingText;
 }
-var _lastAlertTime={};
-function playAlert(id){
-  var now=Date.now();
-  if(_lastAlertTime[id]&&now-_lastAlertTime[id]<8000)return; /* max 1 vez cada 8s */
-  _lastAlertTime[id]=now;
-  try{
-    var ctx=new(window.AudioContext||window.webkitAudioContext)();
-    [440,330,440].forEach(function(freq,i){
-      var o=ctx.createOscillator(),g=ctx.createGain();
-      o.connect(g);g.connect(ctx.destination);
-      o.frequency.value=freq;o.type='square';
-      g.gain.setValueAtTime(0.15,ctx.currentTime+i*0.18);
-      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.18+0.15);
-      o.start(ctx.currentTime+i*0.18);
-      o.stop(ctx.currentTime+i*0.18+0.15);
-    });
-  }catch(e){}
+
+function cerrarPos(act,n){
+  var t=TRADES[act][n],m=MKT[act],P=PARAMS[act];
+  if(!t||!t.entry){alert('No hay posicion abierta en Venta #'+n);return;}
+  var pnl=fp((t.entry-m.price)*t.size,2);
+  alert((act==='btc'?'BTC/USD':'XAU/USD')+' - Venta #'+n+'\n'+(pnl>=0?'GANANCIA: +$'+pnl:'Perdida: -$'+Math.abs(pnl))+'\nPrecio de cierre: '+fc(m.price,P.dec)+'\n\n[Ejecutar orden CLOSE en tu broker]');
+  TRADES[act][n]={sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0};
+  ['e','c','r','rr'].forEach(function(x){el(act+'-v'+n+x).value='';});
+  el(act+'-v'+n+'-res').style.display='none';
+  ['as','aw','ad'].forEach(function(x){el(act+'-v'+n+'-'+x).style.display='none';});
+  el(act+'-v'+n+'-btn').style.display='none';
+  renderCapital(act);
 }
 
 function renderTrade(act,n,d){
   var t=TRADES[act][n];if(!t||!t.entry)return;
   var m=MKT[act],P=PARAMS[act];
-  var sl=t.sl,tp=t.tp,entry=t.entry,price=m.price;
-  var isBuy=t.isBuy;
-
-  /* Trailing stop — activa desde 30% */
+  var sl=t.sl,tp=t.tp,entry=t.entry,price=m.price,isBuy=t.isBuy;
   var distTP=Math.abs(tp-entry),distAct=Math.abs(price-entry);
   var prog=distTP>0?Math.max(0,Math.min(100,(distAct/distTP)*100)):0;
   var tsEl=el(act+'-v'+n+'-ts');
@@ -1081,121 +899,37 @@ function renderTrade(act,n,d){
     if(prog>=30){var buf=m.atr*0.4;var ts=isBuy?fp(price-buf,P.dec):fp(price+buf,P.dec);tsEl.textContent=fc(ts,P.dec)+' activo';}
     else tsEl.textContent='Inactivo - activa al 30% del recorrido';
   }
-
-  /* Barra PNL — COMPRA: SL izq TP der — VENTA: SL der TP izq */
   var fullRange=Math.abs(sl-tp);if(fullRange<=0)return;
   var pos,entPos;
-  if(isBuy){
-    /* izquierda=SL, derecha=TP */
-    pos=Math.max(2,Math.min(98,fp(((price-sl)/fullRange)*100,1)));
-    entPos=Math.max(2,Math.min(98,fp(((entry-sl)/fullRange)*100,1)));
-  }else{
-    /* izquierda=TP, derecha=SL */
-    pos=Math.max(2,Math.min(98,fp(((sl-price)/fullRange)*100,1)));
-    entPos=Math.max(2,Math.min(98,fp(((sl-entry)/fullRange)*100,1)));
-  }
+  if(isBuy){pos=Math.max(2,Math.min(98,fp(((price-sl)/fullRange)*100,1)));entPos=Math.max(2,Math.min(98,fp(((entry-sl)/fullRange)*100,1)));}
+  else{pos=Math.max(2,Math.min(98,fp(((sl-price)/fullRange)*100,1)));entPos=Math.max(2,Math.min(98,fp(((sl-entry)/fullRange)*100,1)));}
   el(act+'-v'+n+'-pnl').style.width=pos+'%';
   el(act+'-v'+n+'-line').style.left=entPos+'%';
-
-  /* Color segun direccion y distancia al SL */
-  var atSL = isBuy ? price<=sl : price>=sl;
+  var atSL=isBuy?price<=sl:price>=sl;
   var distToSL=Math.abs(price-sl)/Math.abs(entry-sl||1);
   var warnZone=distToSL<=0.20;
   var poolOk=credits.reduce(function(a,b){return a+b;},0)>0;
-
-  if(atSL||!poolOk){
-    el(act+'-v'+n+'-pnl').style.background='#ef4444';
-  }else if(warnZone){
-    el(act+'-v'+n+'-pnl').style.background='#eab308';
-  }else{
-    el(act+'-v'+n+'-pnl').style.background=isBuy?'#22c55e':'#ef4444';
-  }
-
+  if(atSL||!poolOk){el(act+'-v'+n+'-pnl').style.background='#ef4444';}
+  else if(warnZone){el(act+'-v'+n+'-pnl').style.background='#eab308';}
+  else{el(act+'-v'+n+'-pnl').style.background=isBuy?'#22c55e':'#ef4444';}
   var as=el(act+'-v'+n+'-as'),aw=el(act+'-v'+n+'-aw'),ad=el(act+'-v'+n+'-ad'),btn=el(act+'-v'+n+'-btn');
   var pnlFill=el(act+'-v'+n+'-pnl');
   as.style.display='none';aw.style.display='none';ad.style.display='none';btn.style.display='none';
-
   if(atSL||!poolOk){
-    /* Parpadeo rojo en barra + sonido de alerta */
-    if(pnlFill) pnlFill.classList.add('pnl-fill-blink');
-    ad.className='a-box a-danger-blink';
-    ad.style.display='block';btn.style.display='block';
+    if(pnlFill)pnlFill.classList.add('pnl-fill-blink');
+    ad.className='a-box a-danger-blink';ad.style.display='block';btn.style.display='block';
     ad.textContent=!poolOk&&!atSL?'⚠ CIERRE INMEDIATO — credito API agotado':'🚨 CIERRE INMEDIATO — Stop Loss alcanzado';
     playAlert(act+n);
   }else if(warnZone){
-    if(pnlFill) pnlFill.classList.remove('pnl-fill-blink');
-    ad.className='a-box a-danger';
-    aw.style.display='block';btn.style.display='block';
+    if(pnlFill)pnlFill.classList.remove('pnl-fill-blink');
+    ad.className='a-box a-danger';aw.style.display='block';btn.style.display='block';
     playAlert(act+n+'warn');
   }else{
-    if(pnlFill) pnlFill.classList.remove('pnl-fill-blink');
-    ad.className='a-box a-danger';
-    as.style.display='block';
+    if(pnlFill)pnlFill.classList.remove('pnl-fill-blink');
+    ad.className='a-box a-danger';as.style.display='block';
   }
-
-  /* Autocomplete Precio XM con precio de la API en cada tick */
   var xmInput=el(act+'-v'+n+'xm');
-  if(xmInput&&MKT[act].price>0){
-    xmInput.value=MKT[act].price;
-    calcPnL(act,n);
-  }
-}
-
-
-function calcPnL(act,n){
-
-  var T=TRADES[act][n];
-
-  if(!T.entry||!T.tp)return;
-
-  var current=
-    parseFloat(
-      el(act+'-v'+n+'xm').value
-    );
-
-  if(!current)return;
-
-  var pnl=
-    calcPnLXM(
-      act,
-      T.entry,
-      current,
-      T.lot,
-      T.isBuy?'buy':'sell'
-    );
-
-  applyTrailingStop(
-    T,
-    current,
-    act
-  );
-
-  el(act+'-v'+n+'-pnlxm').textContent=
-    (pnl.usd>=0?'+':'')+
-    '$'+pnl.usd+
-    ' | '+
-    pnl.pips+
-    ' pips';
-
-  if(el(act+'-v'+n+'-trail')){
-    el(act+'-v'+n+'-trail').textContent=
-      T.trailingText;
-  }
-
-}
-
-
-function cerrarPos(act,n){
-  var t=TRADES[act][n],m=MKT[act],P=PARAMS[act];
-  if(!t||!t.entry){alert('No hay posicion abierta en Venta #'+n);return;}
-  var pnl=fp((t.entry-m.price)*t.size,2);
-  alert((act==='btc'?'BTC/USD':'XAU/USD')+' - Venta #'+n+'\n'+(pnl>=0?'GANANCIA: +$'+pnl:'Perdida: -$'+Math.abs(pnl))+'\nPrecio de cierre: '+fc(m.price,P.dec)+'\n\n[En produccion: ejecutar orden CLOSE en tu broker]');
-  TRADES[act][n]={sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0};
-  ['e','c','r','rr'].forEach(function(x){el(act+'-v'+n+x).value='';});
-  el(act+'-v'+n+'-res').style.display='none';
-  ['as','aw','ad'].forEach(function(x){el(act+'-v'+n+'-'+x).style.display='none';});
-  el(act+'-v'+n+'-btn').style.display='none';
-  renderCapital(act);
+  if(xmInput&&MKT[act].price>0){xmInput.value=MKT[act].price;calcPnL(act,n);}
 }
 
 function renderCapital(act){
@@ -1214,8 +948,7 @@ function renderCredits(){
   var sum=0;
   for(var i=1;i<=4;i++){
     var u=credits[i-1],p=Math.round((u/750)*100);sum+=u;
-    el('c'+i+'b').style.width=p+'%';
-    el('c'+i+'b').style.background=p<35?'#ef4444':p<60?'#eab308':'#22c55e';
+    el('c'+i+'b').style.width=p+'%';el('c'+i+'b').style.background=p<35?'#ef4444':p<60?'#eab308':'#22c55e';
     el('c'+i+'t').textContent=u+'/750';
     el('c'+i+'s').textContent=p===0?'Agotada':p<35?'Bajo':'OK';
     el('c'+i+'s').style.color=p===0?'#ef4444':p<35?'#eab308':'#22c55e';
@@ -1231,33 +964,21 @@ function tickAPI(){
   else{simular('btc');simular('xau');renderActivo('btc');renderActivo('xau');}
 }
 
-/* ══ KEYS PRECARGADAS — no necesitas ingresarlas ══ */
-var KEYS_PRECARGADAS = [
-  '4b41d893c4a94827954f2a62f7c2b3cf',
-  '5fad4bb6de644394a8003e63bdcb5c3f',
-  '2af6b69b41594b0e96ae77b69ad7173d',
-  'ffab2053a03d4e6d8f8923251358f8ff'
-];
-API.keys = KEYS_PRECARGADAS;
-API.conectada = true;
-el('api1').value = KEYS_PRECARGADAS[0];
-el('api2').value = KEYS_PRECARGADAS[1];
-el('api3').value = KEYS_PRECARGADAS[2];
-el('api4').value = KEYS_PRECARGADAS[3];
+/* KEYS PRECARGADAS */
+var KEYS_PRECARGADAS=['4b41d893c4a94827954f2a62f7c2b3cf','5fad4bb6de644394a8003e63bdcb5c3f','2af6b69b41594b0e96ae77b69ad7173d','ffab2053a03d4e6d8f8923251358f8ff'];
+API.keys=KEYS_PRECARGADAS;API.conectada=true;
+el('api1').value=KEYS_PRECARGADAS[0];el('api2').value=KEYS_PRECARGADAS[1];
+el('api3').value=KEYS_PRECARGADAS[2];el('api4').value=KEYS_PRECARGADAS[3];
 
 setInterval(updateClock,1000);
 _loopTimer=setInterval(tickSim,3000);
-updateClock();
-simular('btc');simular('xau');
-renderActivo('btc');renderActivo('xau');
+updateClock();simular('btc');simular('xau');renderActivo('btc');renderActivo('xau');
 
-/* Validar creditos reales al arrancar y luego iniciar API si corresponde */
 validarCreditos(function(){
   if(apiActiva()){
-    if(_loopTimer) clearInterval(_loopTimer);
+    if(_loopTimer)clearInterval(_loopTimer);
     _loopTimer=setInterval(tickAPI,62000);
-    fetchActivo('btc');
-    setTimeout(function(){fetchActivo('xau');},5000);
+    fetchActivo('btc');setTimeout(function(){fetchActivo('xau');},5000);
   }
 });
 </script>
