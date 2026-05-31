@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Codigo de Oro — BTC/USD & XAU/USD v5.1</title>
+<title>Codigo de Oro — BTC/USD & XAU/USD v6.0</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -125,7 +125,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 <!-- STICKY HEADER FIJO -->
 <div class="sticky-header">
   <div class="topbar">
-    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v5.1 TV</span></div>
+    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v6.0 XM</span></div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div class="online"><div class="dot"></div>ONLINE</div>
       <span class="horario-badge bg" id="horario-badge">10AM-10PM</span>
@@ -168,7 +168,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="track-bg"><div class="track-fill" id="btc-rsi-fill" style="width:50%"></div></div>
     <div class="track-marks"><span>0 sobreventa</span><span>30</span><span>50</span><span>70</span><span>100 sobrecompra</span></div>
   </div>
-  <div class="sec">Senal IA — rsiAlcista:60 / rsiBajista:45 / atrTP:2.0</div>
+  <div class="sec">Senal IA v6 — EMA+RSI+MACD+Sesion de mercado</div>
+  <div class="ia-box" id="btc-signal-alert" style="display:none;border-color:var(--green);margin-bottom:6px">
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">🔔 NUEVA SEÑAL DETECTADA</div>
+    <div class="ia-signal" id="btc-signal-alert-txt" style="font-size:17px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px">
+      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Entrada sugerida</div><div style="font-size:13px;font-weight:700;color:var(--gold2)" id="btc-sig-entry">---</div></div>
+      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Stop Loss</div><div style="font-size:13px;font-weight:700;color:var(--red)" id="btc-sig-sl">---</div></div>
+      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Take Profit</div><div style="font-size:13px;font-weight:700;color:var(--green)" id="btc-sig-tp">---</div></div>
+    </div>
+    <div style="font-size:10px;color:var(--text2);margin-top:5px" id="btc-sig-reason"></div>
+  </div>
   <div class="ia-box">
     <div class="ia-signal" id="btc-signal">Esperando datos...</div>
     <div style="display:flex;align-items:center;gap:8px;margin:6px 0 4px">
@@ -190,6 +200,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="row"><span class="row-lbl">Precio vs EMA 50</span><span class="row-val" id="btc-s2">--</span></div>
     <div class="row"><span class="row-lbl">Tendencia EMA 20/50</span><span class="row-val" id="btc-s3">--</span></div>
     <div class="row"><span class="row-lbl">RSI impulso</span><span class="row-val" id="btc-s4">--</span></div>
+    <div class="row"><span class="row-lbl">MACD cruce</span><span class="row-val" id="btc-s-macd">--</span></div>
+    <div class="row"><span class="row-lbl">Sesion mercado</span><span class="row-val" id="btc-s-sesion">--</span></div>
     <div class="row"><span class="row-lbl">Senales alineadas</span><span class="row-val" id="btc-s5">--</span></div>
     <div class="row"><span class="row-lbl">Velocidad mercado</span><span class="row-val" id="btc-s6">--</span></div>
     <div class="row"><span class="row-lbl">Accion inmediata</span><span class="row-val" id="btc-s7">--</span></div>
@@ -286,7 +298,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="track-bg"><div class="track-fill" id="xau-rsi-fill" style="width:50%"></div></div>
     <div class="track-marks"><span>0 sobreventa</span><span>30</span><span>50</span><span>70</span><span>100 sobrecompra</span></div>
   </div>
-  <div class="sec">Senal IA — rsiAlcista:58 / rsiBajista:44 / atrTP:1.5</div>
+  <div class="sec">Senal IA v6 — EMA+RSI+MACD+Sesion de mercado</div>
+  <div class="ia-box" id="xau-signal-alert" style="display:none;border-color:var(--gold);margin-bottom:6px">
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">🔔 NUEVA SEÑAL DETECTADA</div>
+    <div class="ia-signal" id="xau-signal-alert-txt" style="font-size:17px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px">
+      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Entrada sugerida</div><div style="font-size:13px;font-weight:700;color:var(--gold2)" id="xau-sig-entry">---</div></div>
+      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Stop Loss</div><div style="font-size:13px;font-weight:700;color:var(--red)" id="xau-sig-sl">---</div></div>
+      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Take Profit</div><div style="font-size:13px;font-weight:700;color:var(--green)" id="xau-sig-tp">---</div></div>
+    </div>
+    <div style="font-size:10px;color:var(--text2);margin-top:5px" id="xau-sig-reason"></div>
+  </div>
   <div class="ia-box">
     <div class="ia-signal" id="xau-signal">Esperando datos...</div>
     <div style="display:flex;align-items:center;gap:8px;margin:6px 0 4px">
@@ -308,6 +330,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="row"><span class="row-lbl">Precio vs EMA 50</span><span class="row-val" id="xau-s2">--</span></div>
     <div class="row"><span class="row-lbl">Tendencia EMA 20/50</span><span class="row-val" id="xau-s3">--</span></div>
     <div class="row"><span class="row-lbl">RSI impulso</span><span class="row-val" id="xau-s4">--</span></div>
+    <div class="row"><span class="row-lbl">MACD cruce</span><span class="row-val" id="xau-s-macd">--</span></div>
+    <div class="row"><span class="row-lbl">Sesion mercado</span><span class="row-val" id="xau-s-sesion">--</span></div>
     <div class="row"><span class="row-lbl">Senales alineadas</span><span class="row-val" id="xau-s5">--</span></div>
     <div class="row"><span class="row-lbl">Velocidad mercado</span><span class="row-val" id="xau-s6">--</span></div>
     <div class="row"><span class="row-lbl">Accion inmediata</span><span class="row-val" id="xau-s7">--</span></div>
@@ -391,35 +415,37 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 
 <!-- CREDITOS API -->
 <div class="divider"></div>
-<div class="sec">Creditos API — rotacion ciclica (750 x 4 = 3,000 / dia)</div>
+<div class="sec">Creditos API — rotacion ciclica (750 x 5 = 3,750 / dia)</div>
 <div class="g4">
   <div class="mcard"><div class="mcard-lbl">Cuenta 1</div><div class="cred-bar-bg"><div class="cred-bar" id="c1b"></div></div><div style="font-size:12px;font-weight:700" id="c1t">0/750</div><div class="mcard-sub" id="c1s">--</div></div>
   <div class="mcard"><div class="mcard-lbl">Cuenta 2</div><div class="cred-bar-bg"><div class="cred-bar" id="c2b"></div></div><div style="font-size:12px;font-weight:700" id="c2t">0/750</div><div class="mcard-sub" id="c2s">--</div></div>
   <div class="mcard"><div class="mcard-lbl">Cuenta 3</div><div class="cred-bar-bg"><div class="cred-bar" id="c3b"></div></div><div style="font-size:12px;font-weight:700" id="c3t">0/750</div><div class="mcard-sub" id="c3s">--</div></div>
   <div class="mcard"><div class="mcard-lbl">Cuenta 4</div><div class="cred-bar-bg"><div class="cred-bar" id="c4b"></div></div><div style="font-size:12px;font-weight:700" id="c4t">0/750</div><div class="mcard-sub" id="c4s">--</div></div>
 </div>
-<div class="track-wrap" style="margin-top:2px">
-  <div class="track-hdr"><span class="track-lbl">Pool total diario</span><span style="font-size:11px;font-weight:700" id="pool-txt">0/3,000</span></div>
+<div class="mcard" style="margin-top:8px"><div class="mcard-lbl">Cuenta 5 (extra)</div><div class="cred-bar-bg"><div class="cred-bar" id="c5b"></div></div><div style="font-size:12px;font-weight:700" id="c5t">0/750</div><div class="mcard-sub" id="c5s">--</div></div>
+<div class="track-wrap" style="margin-top:8px">
+  <div class="track-hdr"><span class="track-lbl">Pool total diario</span><span style="font-size:11px;font-weight:700" id="pool-txt">0/3,750</span></div>
   <div class="track-bg"><div class="track-fill" id="pool-fill" style="width:0%"></div></div>
-  <div class="track-marks"><span>0</span><span>750</span><span>1,500</span><span>2,250</span><span>3,000</span></div>
+  <div class="track-marks"><span>0</span><span>750</span><span>1,500</span><span>2,500</span><span>3,750</span></div>
 </div>
 
 <!-- API CONFIG AL FINAL -->
 <div class="divider"></div>
-<div class="sec">Configuracion TwelveData — 4 cuentas API</div>
+<div class="sec">Configuracion TwelveData — 5 cuentas API</div>
 <div class="api-config">
   <div class="api-row"><label>API Key 1</label><input type="password" id="api1" placeholder="key cuenta 1"></div>
   <div class="api-row"><label>API Key 2</label><input type="password" id="api2" placeholder="key cuenta 2"></div>
   <div class="api-row"><label>API Key 3</label><input type="password" id="api3" placeholder="key cuenta 3"></div>
   <div class="api-row"><label>API Key 4</label><input type="password" id="api4" placeholder="key cuenta 4"></div>
+  <div class="api-row"><label>API Key 5</label><input type="password" id="api5" placeholder="key cuenta 5 (extra)"></div>
   <div class="api-row">
     <button class="api-btn" onclick="conectarAPI()">Conectar APIs</button>
-    <div class="api-status" id="api-status">Ingresa tus 4 keys y presiona conectar</div>
+    <div class="api-status" id="api-status">Ingresa tus keys y presiona conectar</div>
   </div>
 </div>
 <div class="divider"></div>
 <div style="text-align:center;font-size:10px;color:var(--text3);padding:6px 0">
-  Codigo de Oro v5.1 TV &nbsp;|&nbsp; BTC/USD + XAU/USD &nbsp;|&nbsp; Horario 10AM-10PM &nbsp;|&nbsp; TwelveData API
+  Codigo de Oro v6.0 XM &nbsp;|&nbsp; BTC/USD + XAU/USD &nbsp;|&nbsp; Horario 10AM-10PM &nbsp;|&nbsp; TwelveData API &nbsp;|&nbsp; MACD + Sesion + Entrada IA
 </div>
 
 <script>
@@ -561,9 +587,39 @@ function testAudio() {
   playEntrySound();
 }
 
-/* =========================================================
-   PARAMS & ESTADO
-========================================================= */
+/* SONIDO COMPRA — Do-Mi-Sol ascendente (alegre/bullish) */
+function playBuySound(){
+  if(!_audioReady||!_audioCtx)return;
+  try{
+    var t=_audioCtx.currentTime;
+    [{f:261.6,t:0},{f:329.6,t:0.13},{f:392,t:0.26},{f:523.2,t:0.40}].forEach(function(n){
+      var o=_audioCtx.createOscillator(),g=_audioCtx.createGain();
+      o.connect(g);g.connect(_audioCtx.destination);
+      o.type='triangle';o.frequency.value=n.f;
+      g.gain.setValueAtTime(0,t+n.t);g.gain.linearRampToValueAtTime(0.18,t+n.t+0.04);
+      g.gain.exponentialRampToValueAtTime(0.001,t+n.t+0.22);
+      o.start(t+n.t);o.stop(t+n.t+0.23);
+    });
+  }catch(e){}
+}
+
+/* SONIDO VENTA — Sol-Mi-Do descendente (advertencia/bearish) */
+function playSellSound(){
+  if(!_audioReady||!_audioCtx)return;
+  try{
+    var t=_audioCtx.currentTime;
+    [{f:392,t:0},{f:329.6,t:0.13},{f:261.6,t:0.26},{f:220,t:0.40}].forEach(function(n){
+      var o=_audioCtx.createOscillator(),g=_audioCtx.createGain();
+      o.connect(g);g.connect(_audioCtx.destination);
+      o.type='sawtooth';o.frequency.value=n.f;
+      g.gain.setValueAtTime(0,t+n.t);g.gain.linearRampToValueAtTime(0.14,t+n.t+0.04);
+      g.gain.exponentialRampToValueAtTime(0.001,t+n.t+0.22);
+      o.start(t+n.t);o.stop(t+n.t+0.23);
+    });
+  }catch(e){}
+}
+
+
 var PARAMS={
   btc:{rsiAlcista:60,rsiBajista:45,velocidadRapida:100,atrMultTP:2.0,atrMultSL:1.0,vpp:0.01,dec:0,symbol:'BTC/USD'},
   xau:{rsiAlcista:58,rsiBajista:44,velocidadRapida:2,  atrMultTP:1.5,atrMultSL:1.0,vpp:0.10,dec:2,symbol:'XAU/USD'}
@@ -607,7 +663,7 @@ function setDir(act,n,dir){
 }
 
 var API={keys:[],idx:0,conectada:false};
-var credits=[0,0,0,0];
+var credits=[0,0,0,0,0];
 var _loopTimer=null;
 var HORA_INICIO=10, HORA_FIN=22;
 var manualEncendido=false;
@@ -661,24 +717,20 @@ function updateClock(){
 function validarCreditos(callback){
   var keys=API.keys;var pendientes=keys.length;
   if(!pendientes){if(callback)callback();return;}
-  /* Inicializar con 750 por defecto — si la validacion falla se mantiene el maximo */
-  for(var k=0;k<4;k++) credits[k]=750;
+  /* Inicializar con 750 por defecto */
+  for(var k=0;k<5;k++) credits[k]=k<keys.length?750:0;
   el('api-status').textContent='Validando creditos — '+keys.length+' cuentas...';el('api-status').style.color='var(--yellow)';
   keys.forEach(function(key,i){
     fetch('https://api.twelvedata.com/api_usage?apikey='+key)
       .then(function(r){return r.json();})
       .then(function(data){
-        /* Solo actualizar si la respuesta trae datos validos */
         if(data && (data.current_usage!==undefined || data.plan_limit!==undefined)){
           var lim=data.plan_limit||750;
           var usado=data.current_usage||0;
           credits[i]=Math.max(0,lim-usado);
         }
-        /* Si no trae datos validos mantiene los 750 por defecto */
       })
-      .catch(function(){
-        /* Si falla el fetch mantiene los 750 por defecto — no penalizar */
-      })
+      .catch(function(){})
       .finally(function(){
         pendientes--;
         if(pendientes===0){
@@ -695,7 +747,7 @@ function validarCreditos(callback){
 
 function conectarAPI(){
   var keys=[];
-  for(var i=1;i<=4;i++){var v=el('api'+i).value.trim();if(v)keys.push(v);}
+  for(var i=1;i<=5;i++){var v=el('api'+i);if(v&&v.value.trim())keys.push(v.value.trim());}
   if(!keys.length){el('api-status').textContent='Error: ingresa al menos 1 key';el('api-status').style.color='var(--red)';return;}
   API.keys=keys;API.conectada=true;
   validarCreditos(function(){
@@ -723,9 +775,10 @@ function fetchActivo(act){
           if(ts.values&&ts.values.length>=20){
             var cls=ts.values.map(function(v){return parseFloat(v.close);}).reverse();
             m.ema20=fp(calcEMA(cls,20),P.dec);m.ema50=fp(calcEMA(cls,50),P.dec);m.rsi=fp(calcRSI(cls,14),1);
-            var d=0;for(var i=ts.values.length-1;i>=Math.max(0,ts.values.length-5);i--)d+=Math.abs(parseFloat(ts.values[i].close)-parseFloat(ts.values[Math.max(0,i-1)].close));
-            m.atr=fp(d/5,P.dec)||(act==='btc'?150:8);
-          }else{m.ema20=fp(m.price*0.9963,P.dec);m.ema50=fp(m.price*0.9897,P.dec);m.rsi=50;}
+            m.macdData=calcMACD(cls);
+            var d=0;for(var i=ts.values.length-1;i>=Math.max(0,ts.values.length-14);i--)d+=Math.abs(parseFloat(ts.values[i].close)-parseFloat(ts.values[Math.max(0,i-1)].close));
+            m.atr=fp(d/14,P.dec)||(act==='btc'?150:8);
+          }else{m.ema20=fp(m.price*0.9963,P.dec);m.ema50=fp(m.price*0.9897,P.dec);m.rsi=50;m.macdData={bull:false,bear:false,aboveSig:false,hist:0};}
           el('api-status').textContent='API activa — cta '+(keyIdx+1)+' — '+P.symbol+' — '+new Date().toLocaleTimeString();
           el('api-status').style.color='var(--green)';
           renderActivo(act);renderCredits();
@@ -746,33 +799,132 @@ function simular(act){
     var b=74600+Math.sin(m.tick/18)*900+Math.sin(m.tick/7)*200+(Math.random()-.5)*80;
     m.price=fp(b,0);m.ema20=fp(m.price-380+Math.sin(m.tick/25)*260,0);m.ema50=fp(m.price-1050+Math.sin(m.tick/40)*400,0);
     m.rsi=fp(Math.min(85,Math.max(18,52+Math.sin(m.tick/12)*24+(Math.random()-.5)*4)),1);m.atr=fp(Math.abs(m.price-m.prevPrice)*1.5+80,0)||150;
+    m.macdData={bull:m.tick%20===0,bear:m.tick%27===0,aboveSig:Math.sin(m.tick/15)>0,hist:Math.sin(m.tick/15)*50};
   }else{
     var b2=3300+Math.sin(m.tick/20)*15+Math.sin(m.tick/9)*5+(Math.random()-.5)*1.5;
     m.price=fp(b2,2);m.ema20=fp(m.price-3+Math.sin(m.tick/25)*2,2);m.ema50=fp(m.price-8+Math.sin(m.tick/40)*4,2);
     m.rsi=fp(Math.min(85,Math.max(18,52+Math.sin(m.tick/12)*20+(Math.random()-.5)*3)),1);m.atr=fp(Math.abs(m.price-m.prevPrice)*1.5+5,2)||8;
+    m.macdData={bull:m.tick%22===0,bear:m.tick%31===0,aboveSig:Math.sin(m.tick/18)>0,hist:Math.sin(m.tick/18)*3};
   }
   el('tab-'+act+'-price').textContent=act==='btc'?fc(m.price,0):fc(m.price,2);
 }
+
+/* =========================================================
+   MACD CALCULATOR
+========================================================= */
+function calcMACD(cls){
+  if(cls.length<26)return{macd:0,signal:0,hist:0,bull:false,bear:false};
+  function ema(arr,p){var k=2/(p+1),e=arr[0];for(var i=1;i<arr.length;i++)e=arr[i]*k+e*(1-k);return e;}
+  var ema12=ema(cls,12);
+  var ema26=ema(cls,26);
+  var macdLine=ema12-ema26;
+  /* Signal = EMA9 of MACD — approximate with last 9 values */
+  var macdArr=[];
+  for(var i=Math.max(0,cls.length-35);i<cls.length;i++){
+    var sl=cls.slice(0,i+1);
+    if(sl.length>=26)macdArr.push(ema(sl,12)-ema(sl,26));
+  }
+  var signalLine=macdArr.length>=9?ema(macdArr,9):macdLine;
+  var hist=macdLine-signalLine;
+  var prevMacd=macdArr.length>=2?macdArr[macdArr.length-2]:macdLine;
+  var prevSignal=macdArr.length>=10?ema(macdArr.slice(0,-1),9):signalLine;
+  var bull=(macdLine>signalLine)&&(prevMacd<=prevSignal);/* cruce alcista */
+  var bear=(macdLine<signalLine)&&(prevMacd>=prevSignal);/* cruce bajista */
+  return{macd:fp(macdLine,4),signal:fp(signalLine,4),hist:fp(hist,4),bull:bull,bear:bear,aboveSig:macdLine>signalLine};
+}
+
+/* =========================================================
+   SESION DE MERCADO (hora UTC)
+========================================================= */
+function getSesion(){
+  var h=new Date().getUTCHours();
+  /* Sydney:  21-06 UTC  */
+  /* Tokyo:   00-09 UTC  */
+  /* Londres: 07-16 UTC  */
+  /* NY:      12-21 UTC  */
+  if(h>=12&&h<16)return{nombre:'Londres + NY',activa:true,fuerza:'ALTA — maxima liquidez',cls:'bg'};
+  if(h>=7&&h<12) return{nombre:'Londres',activa:true,fuerza:'ALTA — sesion europea',cls:'bg'};
+  if(h>=16&&h<21)return{nombre:'Nueva York',activa:true,fuerza:'MEDIA — sesion americana',cls:'by'};
+  if(h>=0&&h<7)  return{nombre:'Tokyo/Sydney',activa:false,fuerza:'BAJA — poca liquidez',cls:'br'};
+  return{nombre:'Pre-mercado',activa:false,fuerza:'MUY BAJA — evitar operar',cls:'br'};
+}
+
+/* =========================================================
+   DECISION v6 — EMA + RSI + MACD + SESION
+========================================================= */
+/* _lastSignal ya definido en decision block */
+var _lastSignalAlert={btc:'',xau:''};
 
 function decision(act){
   var m=MKT[act],P=PARAMS[act];
   var esAlc=m.ema20>m.ema50,difEMA=fp(m.ema20-m.ema50,P.dec);
   var rapido=Math.abs(m.price-m.prevPrice)>P.velocidadRapida;
   var impAlc=m.rsi>=P.rsiAlcista,impBaj=m.rsi<=P.rsiBajista,neutral=!impAlc&&!impBaj;
-  var alin=(esAlc&&impAlc)||(!esAlc&&impBaj);
-  var tpCalc=esAlc?fp(m.price+m.atr*P.atrMultTP,P.dec):fp(m.price-m.atr*P.atrMultTP,P.dec);
-  var slCalc=esAlc?fp(m.price-m.atr*P.atrMultSL,P.dec):fp(m.price+m.atr*P.atrMultSL,P.dec);
+
+  /* MACD */
+  var macd=m.macdData||{bull:false,bear:false,aboveSig:false,hist:0};
+  var macdAlc=macd.aboveSig;
+  var macdCruce=macd.bull?'bull':macd.bear?'bear':'none';
+
+  /* Sesion */
+  var sesion=getSesion();
+  var bonSesion=sesion.activa?10:0;
+
+  /* Conteo de confirmaciones */
+  var confirmaCompra=0,confirmaVenta=0;
+  if(esAlc)confirmaCompra++;else confirmaVenta++;
+  if(impAlc)confirmaCompra++;else if(impBaj)confirmaVenta++;
+  if(macdAlc)confirmaCompra++;else confirmaVenta++;
+  if(macd.bull)confirmaCompra++;
+  if(macd.bear)confirmaVenta++;
+
+  var alin=confirmaCompra>=3||confirmaVenta>=3;
+  var esCompra=confirmaCompra>=3;
+
+  /* Calculo SL/TP con ATR */
+  var tpCalc=esCompra?fp(m.price+m.atr*P.atrMultTP,P.dec):fp(m.price-m.atr*P.atrMultTP,P.dec);
+  var slCalc=esCompra?fp(m.price-m.atr*P.atrMultSL,P.dec):fp(m.price+m.atr*P.atrMultSL,P.dec);
   if(slCalc<=0)slCalc=fp(m.price*0.99,P.dec);
+
+  /* Entrada exacta sugerida: precio actual + pequeño buffer de spread XM */
+  var spread=act==='xau'?0.30:15;
+  var entradaSug=esCompra?fp(m.price+spread,P.dec):fp(m.price-spread,P.dec);
+
+  /* Confianza */
   var bonD=Math.abs(difEMA)>(act==='btc'?100:5)?5:0;
   var bonR=(m.rsi>=P.rsiAlcista+5||m.rsi<=P.rsiBajista-5)?5:0;
+  var bonMACD=macd.bull||macd.bear?8:0;
   var conf,sig,action;
-  if(alin&&esAlc){sig='Entrar compra - EMA y RSI alineados';action='Abrir Long';conf=Math.min(70+bonD+bonR,95);}
-  else if(alin&&!esAlc){sig='Entrar venta - EMA y RSI alineados';action='Abrir Short';conf=Math.min(70+bonD+bonR,95);}
-  else if(neutral){sig='Esperar - RSI neutral ('+m.rsi.toFixed(1)+')';action='No abrir';conf=40;}
-  else{sig='Senales en conflicto - no operar';action='No operar';conf=30;}
+
+  if(alin&&esCompra){
+    sig='▲ COMPRAR — '+confirmaCompra+'/5 senales alineadas';
+    action='Abrir Long';
+    conf=Math.min(65+bonD+bonR+bonMACD+bonSesion,97);
+  }else if(alin&&!esCompra){
+    sig='▼ VENDER — '+confirmaVenta+'/5 senales alineadas';
+    action='Abrir Short';
+    conf=Math.min(65+bonD+bonR+bonMACD+bonSesion,97);
+  }else if(neutral){
+    sig='Esperar — RSI neutral ('+m.rsi.toFixed(1)+')';
+    action='No abrir';
+    conf=40;
+  }else{
+    sig='Senales en conflicto — no operar (' +confirmaCompra+'C/'+confirmaVenta+'V)';
+    action='No operar';
+    conf=30;
+  }
+
   var prox=alin?'5 min':neutral?'15 min':'30 min';
-  var accionInm=alin?(esAlc?'Oportunidad compra - senales a favor':'Oportunidad venta - senales a favor'):neutral?'Esperar - RSI sin direccion':'No operar - conflicto de senales';
-  return{esAlc:esAlc,difEMA:difEMA,rapido:rapido,impAlc:impAlc,impBaj:impBaj,neutral:neutral,alin:alin,tpCalc:tpCalc,slCalc:slCalc,conf:conf,sig:sig,action:action,prox:prox,accionInm:accionInm};
+  var accionInm=alin?(esCompra?'Oportunidad COMPRA — senales a favor':'Oportunidad VENTA — senales a favor'):neutral?'Esperar — RSI sin direccion':'No operar — conflicto de senales';
+  var razonSig=(esCompra?'COMPRA: ':'VENTA: ')+'EMA'+(esAlc?' alcista':' bajista')+' | RSI '+m.rsi.toFixed(1)+' | MACD '+(macdAlc?'positivo':'negativo')+(macd.bull?' + CRUCE ALCISTA':macd.bear?' + CRUCE BAJISTA':'')+' | Sesion: '+sesion.nombre;
+
+  return{
+    esAlc:esAlc,difEMA:difEMA,rapido:rapido,impAlc:impAlc,impBaj:impBaj,neutral:neutral,
+    alin:alin,esCompra:esCompra,tpCalc:tpCalc,slCalc:slCalc,entradaSug:entradaSug,
+    conf:conf,sig:sig,action:action,prox:prox,accionInm:accionInm,
+    macd:macd,macdCruce:macdCruce,sesion:sesion,razonSig:razonSig,
+    confirmaCompra:confirmaCompra,confirmaVenta:confirmaVenta
+  };
 }
 
 function renderActivo(act){
@@ -792,27 +944,54 @@ function renderActivo(act){
   var rb=el(id+'rsi-badge');rb.className='badge '+rsiCls;rb.textContent=m.rsi.toFixed(1)+' - '+rsiTxt;
   var sigEl=el(id+'signal');
   sigEl.textContent=d.sig;
-  if(d.alin&&d.esAlc){sigEl.style.color='var(--green)';}
-  else if(d.alin&&!d.esAlc){sigEl.style.color='var(--red)';}
+  if(d.alin&&d.esCompra){sigEl.style.color='var(--green)';}
+  else if(d.alin&&!d.esCompra){sigEl.style.color='var(--red)';}
   else{sigEl.style.color='var(--text)';}
-  el(id+'action').textContent='Accion: '+d.action+' - Riesgo: '+(d.conf>=75?'bajo':d.conf>=50?'medio':'alto');
-  el(id+'next').textContent='Proxima revision: '+d.prox+' - '+d.accionInm;
+  el(id+'action').textContent='Accion: '+d.action+' | Confirmaciones: '+Math.max(d.confirmaCompra,d.confirmaVenta)+'/5 | Riesgo: '+(d.conf>=75?'bajo':d.conf>=50?'medio':'alto');
+  el(id+'next').textContent='Proxima revision: '+d.prox+' | '+d.accionInm;
   el(id+'trend').innerHTML=bdg(d.esAlc?'bg':'br',d.esAlc?'Alcista':'Bajista');
   el(id+'difema').textContent=(d.difEMA>0?'+':'')+d.difEMA;
   el(id+'atr').textContent=m.atr+' pts';
   var cf=el(id+'conf');cf.style.width=d.conf+'%';cf.style.background=d.conf>=75?'#22c55e':d.conf>=50?'#eab308':'#ef4444';
   el(id+'conf-pct').textContent=d.conf+'%';
 
-  /* Sonido de entrada — acorde Do-Mi-Sol cuando hay senal con confianza >= 75% */
-  var sigKey=(d.action==='Abrir Long'||d.action==='Abrir Short')&&d.conf>=75?d.action:'';
-  if(sigKey&&sigKey!==_lastSignal[act]){ playEntrySound(); }
-  _lastSignal[act]=sigKey;
+  /* ALERTA SEÑAL NUEVA con entrada exacta */
+  var sigKey=d.alin&&d.conf>=72?d.action:'';
+  var alertBox=el(id+'signal-alert');
+  if(sigKey&&sigKey!==_lastSignalAlert[act]){
+    /* Mostrar caja de alerta con precio exacto */
+    alertBox.style.display='block';
+    alertBox.style.borderColor=d.esCompra?'var(--green)':'var(--red)';
+    var alertTxt=el(id+'signal-alert-txt');
+    alertTxt.textContent=d.esCompra?'▲ COMPRA — '+fc(d.entradaSug,P.dec):'▼ VENTA — '+fc(d.entradaSug,P.dec);
+    alertTxt.style.color=d.esCompra?'var(--green)':'var(--red)';
+    el(id+'sig-entry').textContent=fc(d.entradaSug,P.dec);
+    el(id+'sig-sl').textContent=fc(d.slCalc,P.dec);
+    el(id+'sig-tp').textContent=fc(d.tpCalc,P.dec);
+    el(id+'sig-reason').textContent=d.razonSig;
+    /* Sonido diferenciado: compra = Do-Mi-Sol ascendente, venta = Sol-Mi-Do descendente */
+    if(d.esCompra)playBuySound();else playSellSound();
+    _lastSignalAlert[act]=sigKey;
+  } else if(!sigKey){
+    alertBox.style.display='none';
+    _lastSignalAlert[act]='';
+  }
+
+  /* Sonido de entrada legacy */
+  var sigKeyOld=(d.action==='Abrir Long'||d.action==='Abrir Short')&&d.conf>=75?d.action:'';
+  _lastSignal[act]=sigKeyOld;
 
   el(id+'s1').innerHTML=bdg(m.price>m.ema20?'bg':'br',m.price>m.ema20?'Sobre EMA20':'Bajo EMA20');
   el(id+'s2').innerHTML=bdg(m.price>m.ema50?'bg':'br',m.price>m.ema50?'Sobre EMA50':'Bajo EMA50');
   el(id+'s3').innerHTML=bdg(m.ema20>m.ema50?'bg':'br',m.ema20>m.ema50?'EMA20>EMA50 alcista':'EMA20<EMA50 bajista');
   el(id+'s4').innerHTML=bdg(rsiCls,'RSI '+m.rsi.toFixed(1)+' - '+rsiTxt);
-  el(id+'s5').innerHTML=bdg(d.alin?'bg':'br',d.alin?'Si - operar':'No - esperar');
+  /* MACD badge */
+  var macdCls=d.macd.aboveSig?'bg':'br';
+  var macdTxt=d.macd.bull?'CRUCE ALCISTA ▲':d.macd.bear?'CRUCE BAJISTA ▼':(d.macd.aboveSig?'Positivo':'Negativo');
+  var macdEl=el(id+'s-macd');if(macdEl)macdEl.innerHTML=bdg(d.macd.bull?'bg':d.macd.bear?'br':macdCls,macdTxt);
+  /* Sesion badge */
+  var sesEl=el(id+'s-sesion');if(sesEl)sesEl.innerHTML=bdg(d.sesion.cls,d.sesion.nombre+' — '+d.sesion.fuerza);
+  el(id+'s5').innerHTML=bdg(d.alin?'bg':'br',d.alin?'Si — operar':'No — esperar');
   el(id+'s6').innerHTML=bdg(d.rapido?'by':'bb',d.rapido?'Mercado rapido':'Mercado lento');
   el(id+'s7').innerHTML=bdg(d.alin?'bg':d.neutral?'by':'br',d.accionInm);
   for(var n=1;n<=2;n++)renderTrade(act,n,d);
@@ -946,16 +1125,19 @@ function renderCapital(act){
 
 function renderCredits(){
   var sum=0;
-  for(var i=1;i<=4;i++){
-    var u=credits[i-1],p=Math.round((u/750)*100);sum+=u;
-    el('c'+i+'b').style.width=p+'%';el('c'+i+'b').style.background=p<35?'#ef4444':p<60?'#eab308':'#22c55e';
+  var maxAccounts=5;
+  for(var i=1;i<=maxAccounts;i++){
+    var u=credits[i-1]||0,p=Math.round((u/750)*100);sum+=u;
+    var cb=el('c'+i+'b');if(!cb)continue;
+    cb.style.width=p+'%';cb.style.background=p<35?'#ef4444':p<60?'#eab308':'#22c55e';
     el('c'+i+'t').textContent=u+'/750';
     el('c'+i+'s').textContent=p===0?'Agotada':p<35?'Bajo':'OK';
     el('c'+i+'s').style.color=p===0?'#ef4444':p<35?'#eab308':'#22c55e';
   }
-  var pp=Math.round((sum/3000)*100);
+  var maxPool=750*maxAccounts;
+  var pp=Math.round((sum/maxPool)*100);
   el('pool-fill').style.width=pp+'%';el('pool-fill').style.background=pp<35?'#ef4444':pp<60?'#eab308':'#22c55e';
-  el('pool-txt').textContent=sum+'/3,000 ('+pp+'%)';
+  el('pool-txt').textContent=sum+'/'+maxPool.toLocaleString()+' ('+pp+'%)';
 }
 
 function tickSim(){simular('btc');simular('xau');renderActivo('btc');renderActivo('xau');}
@@ -965,10 +1147,11 @@ function tickAPI(){
 }
 
 /* KEYS PRECARGADAS */
-var KEYS_PRECARGADAS=['4b41d893c4a94827954f2a62f7c2b3cf','5fad4bb6de644394a8003e63bdcb5c3f','2af6b69b41594b0e96ae77b69ad7173d','ffab2053a03d4e6d8f8923251358f8ff'];
-API.keys=KEYS_PRECARGADAS;API.conectada=true;
+var KEYS_PRECARGADAS=['4b41d893c4a94827954f2a62f7c2b3cf','5fad4bb6de644394a8003e63bdcb5c3f','2af6b69b41594b0e96ae77b69ad7173d','ffab2053a03d4e6d8f8923251358f8ff','4b8efbec21af4e28ab71ee3f6a83e0d7'];
+API.keys=KEYS_PRECARGADAS.filter(function(k){return k.length>0;});API.conectada=true;
 el('api1').value=KEYS_PRECARGADAS[0];el('api2').value=KEYS_PRECARGADAS[1];
 el('api3').value=KEYS_PRECARGADAS[2];el('api4').value=KEYS_PRECARGADAS[3];
+el('api5').value=KEYS_PRECARGADAS[4];
 
 setInterval(updateClock,1000);
 _loopTimer=setInterval(tickSim,3000);
