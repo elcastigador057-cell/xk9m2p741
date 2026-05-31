@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Codigo de Oro — BTC/USD & XAU/USD v6.0</title>
+<title>Codigo de Oro — BTC/USD & XAU/USD v7.0 Scalping</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -114,7 +114,30 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 .api-row input:focus{border-color:var(--gold)}
 .api-btn{padding:6px 14px;background:var(--gold);color:#0d0f14;border:none;border-radius:var(--radius);font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer}
 .api-status{font-size:10px;margin-top:4px}
-.fuera-horario{background:var(--yellow-bg);border:0.5px solid var(--yellow-bdr);border-radius:var(--radius-lg);padding:10px 14px;margin-bottom:8px;font-size:12px;color:var(--yellow);text-align:center;display:none}
+.scalp-box{border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px;border:1.5px solid}
+.scalp-buy{background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.5)}
+.scalp-sell{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.5)}
+.scalp-wait{background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.4)}
+.scalp-hold{background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.4)}
+.scalp-title{font-size:16px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.scalp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}
+.scalp-cell{background:var(--bg3);border-radius:6px;padding:7px 9px;text-align:center}
+.scalp-cell-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.scalp-cell-val{font-size:14px;font-weight:700;margin-top:2px}
+.filter-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:.5px solid var(--border);font-size:11px}
+.filter-row:last-child{border-bottom:none}
+.filter-icon{width:16px;text-align:center;font-size:12px}
+.filter-lbl{flex:1;color:var(--text2)}
+.filter-val{font-weight:700}
+.hold-card{background:var(--bg2);border:.5px solid var(--blue-bdr);border-radius:var(--radius-lg);padding:10px 12px;margin-bottom:8px}
+.hold-title{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:6px}
+.quality-bar{display:flex;align-items:center;gap:6px;margin:6px 0}
+.quality-label{font-size:10px;color:var(--text3);min-width:90px}
+.quality-bg{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.quality-fill{height:100%;border-radius:3px;transition:width .5s,background .4s}
+.interval-btn{padding:4px 10px;border:0.5px solid var(--border2);border-radius:4px;background:var(--bg2);color:var(--text2);font-family:var(--mono);font-size:10px;font-weight:700;cursor:pointer}
+.interval-btn.active{background:var(--gold);color:#0d0f14;border-color:var(--gold)}
+
 .btn-encender{padding:6px 18px;border:none;border-radius:var(--radius);font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
 .btn-enc-on{background:var(--green);color:#fff}
 .btn-enc-off{background:var(--red);color:#fff}
@@ -125,7 +148,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 <!-- STICKY HEADER FIJO -->
 <div class="sticky-header">
   <div class="topbar">
-    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v6.0 XM</span></div>
+    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v7.0 SCALP</span></div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div class="online"><div class="dot"></div>ONLINE</div>
       <span class="horario-badge bg" id="horario-badge">10AM-10PM</span>
@@ -168,17 +191,58 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="track-bg"><div class="track-fill" id="btc-rsi-fill" style="width:50%"></div></div>
     <div class="track-marks"><span>0 sobreventa</span><span>30</span><span>50</span><span>70</span><span>100 sobrecompra</span></div>
   </div>
-  <div class="sec">Senal IA v6 — EMA+RSI+MACD+Sesion de mercado</div>
-  <div class="ia-box" id="btc-signal-alert" style="display:none;border-color:var(--green);margin-bottom:6px">
-    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">🔔 NUEVA SEÑAL DETECTADA</div>
-    <div class="ia-signal" id="btc-signal-alert-txt" style="font-size:17px"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px">
-      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Entrada sugerida</div><div style="font-size:13px;font-weight:700;color:var(--gold2)" id="btc-sig-entry">---</div></div>
-      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Stop Loss</div><div style="font-size:13px;font-weight:700;color:var(--red)" id="btc-sig-sl">---</div></div>
-      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Take Profit</div><div style="font-size:13px;font-weight:700;color:var(--green)" id="btc-sig-tp">---</div></div>
-    </div>
-    <div style="font-size:10px;color:var(--text2);margin-top:5px" id="btc-sig-reason"></div>
+  <!-- SELECTOR DE INTERVALO -->
+  <div class="sec">Intervalo de velas — afecta velocidad de senales</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+    <button class="interval-btn active" id="iv-btc-1m"  onclick="setInterval_('btc','1min')">1m</button>
+    <button class="interval-btn"        id="iv-btc-5m"  onclick="setInterval_('btc','5min')">5m</button>
+    <button class="interval-btn"        id="iv-btc-15m" onclick="setInterval_('btc','15min')">15m</button>
+    <button class="interval-btn"        id="iv-btc-30m" onclick="setInterval_('btc','30min')">30m</button>
+    <span style="font-size:10px;color:var(--text3);align-self:center">Scalping → 1m/5m &nbsp;|&nbsp; Swing → 15m/30m</span>
   </div>
+
+  <div class="sec">Senal IA v7 — EMA+RSI+MACD+Sesion+Scalping</div>
+
+  <!-- CAJA PRINCIPAL DE SEÑAL SCALPING -->
+  <div id="btc-scalp-box" class="scalp-wait" style="border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px;border:1.5px solid rgba(234,179,8,0.4)">
+    <div class="scalp-title" id="btc-scalp-title">⏳ Analizando mercado...</div>
+    <div class="scalp-grid">
+      <div class="scalp-cell"><div class="scalp-cell-lbl">Entrada XM</div><div class="scalp-cell-val" id="btc-sc-entry" style="color:var(--gold2)">---</div></div>
+      <div class="scalp-cell"><div class="scalp-cell-lbl">Stop Loss</div><div class="scalp-cell-val" id="btc-sc-sl" style="color:var(--red)">---</div></div>
+      <div class="scalp-cell"><div class="scalp-cell-lbl">Take Profit</div><div class="scalp-cell-val" id="btc-sc-tp" style="color:var(--green)">---</div></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+      <span class="badge bb" id="btc-sc-tipo">--</span>
+      <span class="badge bb" id="btc-sc-pips">-- pips</span>
+      <span class="badge bb" id="btc-sc-tiempo">-- min</span>
+      <span class="badge bb" id="btc-sc-sesion">--</span>
+    </div>
+    <div style="font-size:10px;color:var(--text2)" id="btc-sc-reason">--</div>
+  </div>
+
+  <!-- FILTROS ANTI-SEÑAL FALSA -->
+  <div class="card" style="margin-bottom:8px">
+    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🔍 Filtros anti-señal falsa</div>
+    <div class="filter-row"><span class="filter-icon" id="btc-f1-ico">○</span><span class="filter-lbl">EMA 9 cruce EMA 21</span><span class="filter-val" id="btc-f1">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="btc-f2-ico">○</span><span class="filter-lbl">RSI en zona correcta</span><span class="filter-val" id="btc-f2">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="btc-f3-ico">○</span><span class="filter-lbl">MACD confirma direccion</span><span class="filter-val" id="btc-f3">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="btc-f4-ico">○</span><span class="filter-lbl">Vela fuerte (cuerpo &gt; 60%)</span><span class="filter-val" id="btc-f4">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="btc-f5-ico">○</span><span class="filter-lbl">Sesion con liquidez</span><span class="filter-val" id="btc-f5">--</span></div>
+    <div style="margin-top:8px">
+      <div class="quality-bar"><span class="quality-label">Calidad señal</span><div class="quality-bg"><div class="quality-fill" id="btc-qual-fill" style="width:0%"></div></div><span style="font-size:11px;font-weight:700;min-width:34px" id="btc-qual-pct">0%</span></div>
+    </div>
+  </div>
+
+  <!-- PANEL MANTENER OPERACION -->
+  <div class="hold-card" id="btc-hold-card">
+    <div class="hold-title">📊 Estado de permanencia — ¿mantener o cerrar?</div>
+    <div class="filter-row"><span class="filter-icon" id="btc-h1-ico">○</span><span class="filter-lbl">EMA 9 sigue encima/debajo EMA 21</span><span class="filter-val" id="btc-h1">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="btc-h2-ico">○</span><span class="filter-lbl">Precio sobre/bajo EMA 21</span><span class="filter-val" id="btc-h2">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="btc-h3-ico">○</span><span class="filter-lbl">RSI en zona 50-70 (compra) / 30-50 (venta)</span><span class="filter-val" id="btc-h3">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="btc-h4-ico">○</span><span class="filter-lbl">Maximos y minimos crecientes/decrecientes</span><span class="filter-val" id="btc-h4">--</span></div>
+    <div style="margin-top:8px;padding:7px 10px;border-radius:var(--radius);font-size:12px;font-weight:700" id="btc-hold-verdict">--</div>
+  </div>
+
   <div class="ia-box">
     <div class="ia-signal" id="btc-signal">Esperando datos...</div>
     <div style="display:flex;align-items:center;gap:8px;margin:6px 0 4px">
@@ -298,17 +362,58 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="track-bg"><div class="track-fill" id="xau-rsi-fill" style="width:50%"></div></div>
     <div class="track-marks"><span>0 sobreventa</span><span>30</span><span>50</span><span>70</span><span>100 sobrecompra</span></div>
   </div>
-  <div class="sec">Senal IA v6 — EMA+RSI+MACD+Sesion de mercado</div>
-  <div class="ia-box" id="xau-signal-alert" style="display:none;border-color:var(--gold);margin-bottom:6px">
-    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">🔔 NUEVA SEÑAL DETECTADA</div>
-    <div class="ia-signal" id="xau-signal-alert-txt" style="font-size:17px"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px">
-      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Entrada sugerida</div><div style="font-size:13px;font-weight:700;color:var(--gold2)" id="xau-sig-entry">---</div></div>
-      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Stop Loss</div><div style="font-size:13px;font-weight:700;color:var(--red)" id="xau-sig-sl">---</div></div>
-      <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Take Profit</div><div style="font-size:13px;font-weight:700;color:var(--green)" id="xau-sig-tp">---</div></div>
-    </div>
-    <div style="font-size:10px;color:var(--text2);margin-top:5px" id="xau-sig-reason"></div>
+  <!-- SELECTOR DE INTERVALO XAU -->
+  <div class="sec">Intervalo de velas — afecta velocidad de senales</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+    <button class="interval-btn active" id="iv-xau-1m"  onclick="setInterval_('xau','1min')">1m</button>
+    <button class="interval-btn"        id="iv-xau-5m"  onclick="setInterval_('xau','5min')">5m</button>
+    <button class="interval-btn"        id="iv-xau-15m" onclick="setInterval_('xau','15min')">15m</button>
+    <button class="interval-btn"        id="iv-xau-30m" onclick="setInterval_('xau','30min')">30m</button>
+    <span style="font-size:10px;color:var(--text3);align-self:center">Scalping → 1m/5m &nbsp;|&nbsp; Swing → 15m/30m</span>
   </div>
+
+  <div class="sec">Senal IA v7 — EMA+RSI+MACD+Sesion+Scalping</div>
+
+  <!-- CAJA PRINCIPAL SEÑAL SCALPING XAU -->
+  <div id="xau-scalp-box" class="scalp-wait" style="border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px;border:1.5px solid rgba(234,179,8,0.4)">
+    <div class="scalp-title" id="xau-scalp-title">⏳ Analizando mercado...</div>
+    <div class="scalp-grid">
+      <div class="scalp-cell"><div class="scalp-cell-lbl">Entrada XM</div><div class="scalp-cell-val" id="xau-sc-entry" style="color:var(--gold2)">---</div></div>
+      <div class="scalp-cell"><div class="scalp-cell-lbl">Stop Loss</div><div class="scalp-cell-val" id="xau-sc-sl" style="color:var(--red)">---</div></div>
+      <div class="scalp-cell"><div class="scalp-cell-lbl">Take Profit</div><div class="scalp-cell-val" id="xau-sc-tp" style="color:var(--green)">---</div></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+      <span class="badge bb" id="xau-sc-tipo">--</span>
+      <span class="badge bb" id="xau-sc-pips">-- pips</span>
+      <span class="badge bb" id="xau-sc-tiempo">-- min</span>
+      <span class="badge bb" id="xau-sc-sesion">--</span>
+    </div>
+    <div style="font-size:10px;color:var(--text2)" id="xau-sc-reason">--</div>
+  </div>
+
+  <!-- FILTROS ANTI-SEÑAL FALSA XAU -->
+  <div class="card" style="margin-bottom:8px">
+    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🔍 Filtros anti-señal falsa</div>
+    <div class="filter-row"><span class="filter-icon" id="xau-f1-ico">○</span><span class="filter-lbl">EMA 9 cruce EMA 21</span><span class="filter-val" id="xau-f1">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="xau-f2-ico">○</span><span class="filter-lbl">RSI en zona correcta</span><span class="filter-val" id="xau-f2">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="xau-f3-ico">○</span><span class="filter-lbl">MACD confirma direccion</span><span class="filter-val" id="xau-f3">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="xau-f4-ico">○</span><span class="filter-lbl">Vela fuerte (cuerpo &gt; 60%)</span><span class="filter-val" id="xau-f4">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="xau-f5-ico">○</span><span class="filter-lbl">Sesion con liquidez</span><span class="filter-val" id="xau-f5">--</span></div>
+    <div style="margin-top:8px">
+      <div class="quality-bar"><span class="quality-label">Calidad señal</span><div class="quality-bg"><div class="quality-fill" id="xau-qual-fill" style="width:0%"></div></div><span style="font-size:11px;font-weight:700;min-width:34px" id="xau-qual-pct">0%</span></div>
+    </div>
+  </div>
+
+  <!-- PANEL MANTENER OPERACION XAU -->
+  <div class="hold-card" id="xau-hold-card">
+    <div class="hold-title">📊 Estado de permanencia — ¿mantener o cerrar?</div>
+    <div class="filter-row"><span class="filter-icon" id="xau-h1-ico">○</span><span class="filter-lbl">EMA 9 sigue encima/debajo EMA 21</span><span class="filter-val" id="xau-h1">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="xau-h2-ico">○</span><span class="filter-lbl">Precio sobre/bajo EMA 21</span><span class="filter-val" id="xau-h2">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="xau-h3-ico">○</span><span class="filter-lbl">RSI en zona 50-70 (compra) / 30-50 (venta)</span><span class="filter-val" id="xau-h3">--</span></div>
+    <div class="filter-row"><span class="filter-icon" id="xau-h4-ico">○</span><span class="filter-lbl">Maximos y minimos crecientes/decrecientes</span><span class="filter-val" id="xau-h4">--</span></div>
+    <div style="margin-top:8px;padding:7px 10px;border-radius:var(--radius);font-size:12px;font-weight:700" id="xau-hold-verdict">--</div>
+  </div>
+
   <div class="ia-box">
     <div class="ia-signal" id="xau-signal">Esperando datos...</div>
     <div style="display:flex;align-items:center;gap:8px;margin:6px 0 4px">
@@ -445,7 +550,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 </div>
 <div class="divider"></div>
 <div style="text-align:center;font-size:10px;color:var(--text3);padding:6px 0">
-  Codigo de Oro v6.0 XM &nbsp;|&nbsp; BTC/USD + XAU/USD &nbsp;|&nbsp; Horario 10AM-10PM &nbsp;|&nbsp; TwelveData API &nbsp;|&nbsp; MACD + Sesion + Entrada IA
+  Codigo de Oro v7.0 XM &nbsp;|&nbsp; BTC/USD + XAU/USD &nbsp;|&nbsp; Scalping EMA9/21 + RSI + MACD + Velas + Sesion &nbsp;|&nbsp; Anti-señal falsa 5 filtros
 </div>
 
 <script>
@@ -621,12 +726,12 @@ function playSellSound(){
 
 
 var PARAMS={
-  btc:{rsiAlcista:60,rsiBajista:45,velocidadRapida:100,atrMultTP:2.0,atrMultSL:1.0,vpp:0.01,dec:0,symbol:'BTC/USD'},
-  xau:{rsiAlcista:58,rsiBajista:44,velocidadRapida:2,  atrMultTP:1.5,atrMultSL:1.0,vpp:0.10,dec:2,symbol:'XAU/USD'}
+  btc:{rsiAlcista:60,rsiBajista:45,velocidadRapida:100,atrMultTP:2.0,atrMultSL:1.0,vpp:0.01,dec:0,symbol:'BTC/USD',interval:'1min'},
+  xau:{rsiAlcista:58,rsiBajista:44,velocidadRapida:2,  atrMultTP:1.5,atrMultSL:1.0,vpp:0.10,dec:2,symbol:'XAU/USD',interval:'1min'}
 };
 var MKT={
-  btc:{price:0,ema20:0,ema50:0,rsi:50,atr:150,prevPrice:0,tick:0},
-  xau:{price:0,ema20:0,ema50:0,rsi:50,atr:8,  prevPrice:0,tick:0}
+  btc:{price:0,ema9:0,ema21:0,ema20:0,ema50:0,rsi:50,atr:150,prevPrice:0,tick:0,candles:[],macdData:{bull:false,bear:false,aboveSig:false,hist:0}},
+  xau:{price:0,ema9:0,ema21:0,ema20:0,ema50:0,rsi:50,atr:8,  prevPrice:0,tick:0,candles:[],macdData:{bull:false,bear:false,aboveSig:false,hist:0}}
 };
 var TRADES={
   btc:{1:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0,lot:0,margin:0,pipValue:0,breakEven:false,trailingText:'OFF'},2:{sl:0,tp:0,entry:0,cap:0,size:0,dr:0,dg:0,lot:0,margin:0,pipValue:0,breakEven:false,trailingText:'OFF'}},
@@ -769,16 +874,32 @@ function fetchActivo(act){
     .then(function(q){
       if(q.status==='error'){simular(act);renderActivo(act);renderCredits();return;}
       var m=MKT[act];m.prevPrice=m.price||parseFloat(q.previous_close||q.close);m.price=fp(parseFloat(q.close),P.dec);
-      fetch('https://api.twelvedata.com/time_series?symbol='+encodeURIComponent(P.symbol)+'&interval=10min&outputsize=55&apikey='+key)
+      fetch('https://api.twelvedata.com/time_series?symbol='+encodeURIComponent(P.symbol)+'&interval='+P.interval+'&outputsize=60&apikey='+key)
         .then(function(r2){return r2.json();})
         .then(function(ts){
-          if(ts.values&&ts.values.length>=20){
+          if(ts.values&&ts.values.length>=22){
             var cls=ts.values.map(function(v){return parseFloat(v.close);}).reverse();
-            m.ema20=fp(calcEMA(cls,20),P.dec);m.ema50=fp(calcEMA(cls,50),P.dec);m.rsi=fp(calcRSI(cls,14),1);
+            var opn=ts.values.map(function(v){return parseFloat(v.open);}).reverse();
+            var hgh=ts.values.map(function(v){return parseFloat(v.high);}).reverse();
+            var low=ts.values.map(function(v){return parseFloat(v.low);}).reverse();
+            m.ema9 =fp(calcEMA(cls,9), P.dec);
+            m.ema21=fp(calcEMA(cls,21),P.dec);
+            m.ema20=fp(calcEMA(cls,20),P.dec);
+            m.ema50=fp(calcEMA(cls,50),P.dec);
+            m.rsi=fp(calcRSI(cls,14),1);
             m.macdData=calcMACD(cls);
-            var d=0;for(var i=ts.values.length-1;i>=Math.max(0,ts.values.length-14);i--)d+=Math.abs(parseFloat(ts.values[i].close)-parseFloat(ts.values[Math.max(0,i-1)].close));
-            m.atr=fp(d/14,P.dec)||(act==='btc'?150:8);
-          }else{m.ema20=fp(m.price*0.9963,P.dec);m.ema50=fp(m.price*0.9897,P.dec);m.rsi=50;m.macdData={bull:false,bear:false,aboveSig:false,hist:0};}
+            /* guardar ultimas 5 velas para deteccion de patron */
+            m.candles=[];
+            for(var ci=cls.length-5;ci<cls.length;ci++){
+              m.candles.push({o:opn[ci],h:hgh[ci],l:low[ci],c:cls[ci]});
+            }
+            var d2=0;for(var i=ts.values.length-1;i>=Math.max(0,ts.values.length-14);i--)d2+=Math.abs(parseFloat(ts.values[i].close)-parseFloat(ts.values[Math.max(0,i-1)].close));
+            m.atr=fp(d2/14,P.dec)||(act==='btc'?150:8);
+          }else{
+            m.ema9=fp(m.price*0.9980,P.dec);m.ema21=fp(m.price*0.9963,P.dec);
+            m.ema20=fp(m.price*0.9963,P.dec);m.ema50=fp(m.price*0.9897,P.dec);
+            m.rsi=50;m.macdData={bull:false,bear:false,aboveSig:false,hist:0};m.candles=[];
+          }
           el('api-status').textContent='API activa — cta '+(keyIdx+1)+' — '+P.symbol+' — '+new Date().toLocaleTimeString();
           el('api-status').style.color='var(--green)';
           renderActivo(act);renderCredits();
@@ -799,19 +920,292 @@ function simular(act){
     var b=74600+Math.sin(m.tick/18)*900+Math.sin(m.tick/7)*200+(Math.random()-.5)*80;
     m.price=fp(b,0);m.ema20=fp(m.price-380+Math.sin(m.tick/25)*260,0);m.ema50=fp(m.price-1050+Math.sin(m.tick/40)*400,0);
     m.rsi=fp(Math.min(85,Math.max(18,52+Math.sin(m.tick/12)*24+(Math.random()-.5)*4)),1);m.atr=fp(Math.abs(m.price-m.prevPrice)*1.5+80,0)||150;
+    m.ema9 =fp(m.price-150+Math.sin(m.tick/10)*120,0);
+    m.ema21=fp(m.price-380+Math.sin(m.tick/25)*260,0);
     m.macdData={bull:m.tick%20===0,bear:m.tick%27===0,aboveSig:Math.sin(m.tick/15)>0,hist:Math.sin(m.tick/15)*50};
+    m.candles=_mockCandles(m.price,m.atr,5);
   }else{
     var b2=3300+Math.sin(m.tick/20)*15+Math.sin(m.tick/9)*5+(Math.random()-.5)*1.5;
     m.price=fp(b2,2);m.ema20=fp(m.price-3+Math.sin(m.tick/25)*2,2);m.ema50=fp(m.price-8+Math.sin(m.tick/40)*4,2);
     m.rsi=fp(Math.min(85,Math.max(18,52+Math.sin(m.tick/12)*20+(Math.random()-.5)*3)),1);m.atr=fp(Math.abs(m.price-m.prevPrice)*1.5+5,2)||8;
+    m.ema9 =fp(m.price-1+Math.sin(m.tick/10)*1,2);
+    m.ema21=fp(m.price-3+Math.sin(m.tick/25)*2,2);
     m.macdData={bull:m.tick%22===0,bear:m.tick%31===0,aboveSig:Math.sin(m.tick/18)>0,hist:Math.sin(m.tick/18)*3};
+    m.candles=_mockCandles(m.price,m.atr,5);
   }
   el('tab-'+act+'-price').textContent=act==='btc'?fc(m.price,0):fc(m.price,2);
 }
 
 /* =========================================================
-   MACD CALCULATOR
+   SELECTOR DE INTERVALO
 ========================================================= */
+function setInterval_(act,iv){
+  PARAMS[act].interval=iv;
+  ['1min','5min','15min','30min'].forEach(function(x){
+    var b=el('iv-'+act+'-'+x.replace('min','m'));
+    if(b)b.className='interval-btn'+(x===iv?' active':'');
+  });
+  /* refrescar inmediatamente */
+  if(API.conectada&&apiActiva()){fetchActivo(act);}
+}
+
+/* =========================================================
+   MOCK CANDLES (modo simulacion)
+========================================================= */
+function _mockCandles(price,atr,n){
+  var out=[];
+  for(var i=0;i<n;i++){
+    var rng=atr*(0.5+Math.random()*0.8);
+    var o=price+(Math.random()-.5)*rng*0.4;
+    var c=o+(Math.random()-.5)*rng;
+    var h=Math.max(o,c)+Math.random()*rng*0.3;
+    var l=Math.min(o,c)-Math.random()*rng*0.3;
+    out.push({o:fp(o,2),h:fp(h,2),l:fp(l,2),c:fp(c,2)});
+  }
+  return out;
+}
+
+/* =========================================================
+   DETECCION DE VELA FUERTE
+   Vela alcista envolvente o martillo: cuerpo > 60% del rango
+   Vela bajista envolvente: cuerpo > 60%
+========================================================= */
+function detectCandlePattern(candles,wantBull){
+  if(!candles||candles.length<2)return{ok:false,txt:'Sin datos'};
+  var last=candles[candles.length-1];
+  var prev=candles[candles.length-2];
+  var body=Math.abs(last.c-last.o);
+  var rng=last.h-last.l;
+  if(rng===0)return{ok:false,txt:'Vela plana'};
+  var bodyPct=body/rng;
+  var isBullCandle=last.c>last.o;
+  var isBearCandle=last.c<last.o;
+  /* Envolvente alcista */
+  var engulfBull=isBullCandle&&last.c>prev.o&&last.o<prev.c&&prev.c<prev.o;
+  /* Martillo: mecha inferior > 2x cuerpo */
+  var hammer=isBullCandle&&(last.o-last.l)>2*body;
+  /* Envolvente bajista */
+  var engulfBear=isBearCandle&&last.c<prev.o&&last.o>prev.c&&prev.c>prev.o;
+  if(wantBull){
+    var ok=(bodyPct>0.6&&isBullCandle)||engulfBull||hammer;
+    var txt=engulfBull?'Envolvente alcista ▲':hammer?'Martillo ▲':isBullCandle&&bodyPct>0.6?'Vela alcista fuerte ('+Math.round(bodyPct*100)+'%)':'Vela debil ('+Math.round(bodyPct*100)+'%)';
+    return{ok:ok,txt:txt};
+  }else{
+    var ok2=(bodyPct>0.6&&isBearCandle)||engulfBear;
+    var txt2=engulfBear?'Envolvente bajista ▼':isBearCandle&&bodyPct>0.6?'Vela bajista fuerte ('+Math.round(bodyPct*100)+'%)':'Vela debil ('+Math.round(bodyPct*100)+'%)';
+    return{ok:ok2,txt:txt2};
+  }
+}
+
+/* =========================================================
+   LOGICA SCALPING v7
+   Retorna: señal (buy/sell/wait), filtros, calidad, hold
+========================================================= */
+function decisionScalp(act){
+  var m=MKT[act],P=PARAMS[act];
+  var macd=m.macdData||{bull:false,bear:false,aboveSig:false,hist:0};
+  var sesion=getSesion();
+  var spread=act==='xau'?0.25:12;
+  var pipMult=act==='xau'?10:1; /* pips */
+
+  /* --- EMA 9 vs 21 cruce --- */
+  var ema9above21=m.ema9>m.ema21;
+  /* cruce = en tick anterior era diferente (approx: diff < 0.05% del precio) */
+  var emaDiff=Math.abs(m.ema9-m.ema21);
+  var emaCruce=emaDiff<m.price*0.0005;
+
+  /* --- RSI zonas --- */
+  var rsiReboteBull=m.rsi>=28&&m.rsi<=42; /* subiendo desde sobreventa */
+  var rsiReboteBear=m.rsi>=60&&m.rsi<=74; /* bajando desde sobrecompra */
+  var rsiMidBull=m.rsi>=50&&m.rsi<=70;
+  var rsiMidBear=m.rsi>=30&&m.rsi<=50;
+
+  /* --- Vela --- */
+  var velaAlc=detectCandlePattern(m.candles,true);
+  var velaBaj=detectCandlePattern(m.candles,false);
+
+  /* ======= SEÑALES SCALPING COMPRA ======= */
+  var f1Buy=ema9above21;
+  var f2Buy=rsiReboteBull||m.rsi>50;
+  var f3Buy=macd.aboveSig||macd.bull;
+  var f4Buy=velaAlc.ok;
+  var f5Buy=sesion.activa;
+  var scoreCompra=[f1Buy,f2Buy,f3Buy,f4Buy,f5Buy].filter(Boolean).length;
+
+  /* ======= SEÑALES SCALPING VENTA ======= */
+  var f1Sell=!ema9above21;
+  var f2Sell=rsiReboteBear||m.rsi<50;
+  var f3Sell=!macd.aboveSig||macd.bear;
+  var f4Sell=velaBaj.ok;
+  var f5Sell=sesion.activa;
+  var scoreVenta=[f1Sell,f2Sell,f3Sell,f4Sell,f5Sell].filter(Boolean).length;
+
+  var isCompra=scoreCompra>=4;
+  var isVenta=scoreVenta>=4&&!isCompra;
+  var calidad=isCompra?Math.round((scoreCompra/5)*100):isVenta?Math.round((scoreVenta/5)*100):Math.round((Math.max(scoreCompra,scoreVenta)/5)*60);
+
+  /* SL / TP scalping: ATR reducido para scalp */
+  var slDist=fp(m.atr*0.6,P.dec);
+  var tpDist=fp(m.atr*1.2,P.dec);
+  var entrada,sl,tp,pips,tiempo,tipo;
+
+  if(isCompra){
+    entrada=fp(m.price+spread,P.dec);
+    sl=fp(entrada-slDist,P.dec);
+    tp=fp(entrada+tpDist,P.dec);
+    pips=fp(tpDist*pipMult,1);
+    tiempo=P.interval==='1min'?'3-8 min':P.interval==='5min'?'10-20 min':'20-45 min';
+    tipo='🚀 SCALP COMPRA';
+  }else if(isVenta){
+    entrada=fp(m.price-spread,P.dec);
+    sl=fp(entrada+slDist,P.dec);
+    tp=fp(entrada-tpDist,P.dec);
+    pips=fp(tpDist*pipMult,1);
+    tiempo=P.interval==='1min'?'3-8 min':P.interval==='5min'?'10-20 min':'20-45 min';
+    tipo='🔻 SCALP VENTA';
+  }else{
+    entrada=fp(m.price,P.dec);
+    sl=fp(m.price-(m.atr),P.dec);
+    tp=fp(m.price+(m.atr),P.dec);
+    pips=0;tiempo='--';tipo='⏳ ESPERAR';
+  }
+
+  var razon=(isCompra?'COMPRA: ':isVenta?'VENTA: ':'ESPERAR: ')
+    +'EMA9'+(ema9above21?' sobre':' bajo')+' EMA21'
+    +' | RSI '+m.rsi.toFixed(1)
+    +' | MACD '+(macd.aboveSig?'positivo':'negativo')
+    +(macd.bull?' +CRUCE BULL':macd.bear?' +CRUCE BEAR':'')
+    +' | '+velaAlc.txt
+    +' | Sesion: '+sesion.nombre;
+
+  /* ======= LOGICA DE PERMANENCIA ======= */
+  var holdBuy={
+    h1:ema9above21,
+    h2:m.price>m.ema21,
+    h3:rsiMidBull,
+    h4:m.candles.length>=3?m.candles[m.candles.length-1].c>m.candles[m.candles.length-3].c:false
+  };
+  var holdSell={
+    h1:!ema9above21,
+    h2:m.price<m.ema21,
+    h3:rsiMidBear,
+    h4:m.candles.length>=3?m.candles[m.candles.length-1].c<m.candles[m.candles.length-3].c:false
+  };
+  var holdBuyScore=[holdBuy.h1,holdBuy.h2,holdBuy.h3,holdBuy.h4].filter(Boolean).length;
+  var holdSellScore=[holdSell.h1,holdSell.h2,holdSell.h3,holdSell.h4].filter(Boolean).length;
+
+  return{
+    isCompra:isCompra,isVenta:isVenta,calidad:calidad,entrada:entrada,sl:sl,tp:tp,
+    pips:pips,tiempo:tiempo,tipo:tipo,razon:razon,sesion:sesion,
+    f1Buy:f1Buy,f2Buy:f2Buy,f3Buy:f3Buy,f4Buy:f4Buy,f5Buy:f5Buy,
+    f1Sell:f1Sell,f2Sell:f2Sell,f3Sell:f3Sell,f4Sell:f4Sell,f5Sell:f5Sell,
+    velaAlc:velaAlc,velaBaj:velaBaj,
+    holdBuy:holdBuy,holdSell:holdSell,holdBuyScore:holdBuyScore,holdSellScore:holdSellScore,
+    ema9above21:ema9above21,scoreCompra:scoreCompra,scoreVenta:scoreVenta
+  };
+}
+
+/* =========================================================
+   RENDER SCALPING PANEL
+========================================================= */
+function renderScalp(act,ds){
+  var P=PARAMS[act],id=act+'-';
+  var box=el(id+'scalp-box');
+  var isC=ds.isCompra,isV=ds.isVenta;
+
+  /* Color del box */
+  if(isC){box.style.borderColor='rgba(34,197,94,0.6)';box.style.background='rgba(34,197,94,0.07)';}
+  else if(isV){box.style.borderColor='rgba(239,68,68,0.6)';box.style.background='rgba(239,68,68,0.07)';}
+  else{box.style.borderColor='rgba(234,179,8,0.4)';box.style.background='rgba(234,179,8,0.05)';}
+
+  var titleEl=el(id+'scalp-title');
+  titleEl.textContent=ds.tipo+(isC?' — '+ds.sesion.nombre:isV?' — '+ds.sesion.nombre:'');
+  titleEl.style.color=isC?'var(--green)':isV?'var(--red)':'var(--yellow)';
+
+  el(id+'sc-entry').textContent=fc(ds.entrada,P.dec);
+  el(id+'sc-sl').textContent=fc(ds.sl,P.dec);
+  el(id+'sc-tp').textContent=fc(ds.tp,P.dec);
+
+  var tipoBadge=el(id+'sc-tipo');
+  tipoBadge.className='badge '+(isC?'bg':isV?'br':'by');
+  tipoBadge.textContent=isC?'COMPRA':isV?'VENTA':'ESPERAR';
+
+  var pipsBadge=el(id+'sc-pips');
+  pipsBadge.className='badge '+(isC?'bg':isV?'br':'bb');
+  pipsBadge.textContent=ds.pips>0?'+'+ds.pips+' pips objetivo':'-- pips';
+
+  var timeBadge=el(id+'sc-tiempo');
+  timeBadge.className='badge bb';
+  timeBadge.textContent=ds.tiempo;
+
+  var sesBadge=el(id+'sc-sesion');
+  sesBadge.className='badge '+ds.sesion.cls;
+  sesBadge.textContent=ds.sesion.nombre;
+
+  el(id+'sc-reason').textContent=ds.razon;
+
+  /* Filtros */
+  function setFilter(num,ok,txt){
+    var ico=el(id+'f'+num+'-ico');var val=el(id+'f'+num);
+    if(!ico||!val)return;
+    ico.textContent=ok?'✅':'❌';ico.style.fontSize='11px';
+    val.textContent=txt;val.style.color=ok?'var(--green)':'var(--red)';
+  }
+  if(isC||(!isC&&!isV)){
+    setFilter(1,ds.f1Buy,'EMA9 '+(ds.ema9above21?'sobre':'bajo')+' EMA21');
+    setFilter(2,ds.f2Buy,'RSI '+MKT[act].rsi.toFixed(1));
+    setFilter(3,ds.f3Buy,'MACD '+(MKT[act].macdData.aboveSig?'positivo':'negativo')+(MKT[act].macdData.bull?' CRUCE':''));
+    setFilter(4,ds.f4Buy,ds.velaAlc.txt);
+    setFilter(5,ds.f5Buy,ds.sesion.nombre+' — '+ds.sesion.fuerza);
+  }else{
+    setFilter(1,ds.f1Sell,'EMA9 '+(ds.ema9above21?'sobre':'bajo')+' EMA21');
+    setFilter(2,ds.f2Sell,'RSI '+MKT[act].rsi.toFixed(1));
+    setFilter(3,ds.f3Sell,'MACD '+(MKT[act].macdData.aboveSig?'positivo':'negativo')+(MKT[act].macdData.bear?' CRUCE':''));
+    setFilter(4,ds.f4Sell,ds.velaBaj.txt);
+    setFilter(5,ds.f5Sell,ds.sesion.nombre+' — '+ds.sesion.fuerza);
+  }
+
+  /* Barra calidad */
+  var qf=el(id+'qual-fill');
+  qf.style.width=ds.calidad+'%';
+  qf.style.background=ds.calidad>=80?'#22c55e':ds.calidad>=60?'#eab308':'#ef4444';
+  el(id+'qual-pct').textContent=ds.calidad+'%';
+
+  /* Panel mantener */
+  function setHold(num,ok,txt){
+    var ico=el(id+'h'+num+'-ico');var val=el(id+'h'+num);
+    if(!ico||!val)return;
+    ico.textContent=ok?'✅':'⚠️';
+    val.textContent=txt;val.style.color=ok?'var(--green)':'var(--yellow)';
+  }
+  var useHold=isC?ds.holdBuy:ds.holdSell;
+  var holdScore=isC?ds.holdBuyScore:ds.holdSellScore;
+  setHold(1,useHold.h1,'EMA9 '+(useHold.h1?'mantiene posicion':'cruzando — precaucion'));
+  setHold(2,useHold.h2,'Precio '+(useHold.h2?'respeta EMA21':'bajo EMA21'));
+  setHold(3,useHold.h3,'RSI '+MKT[act].rsi.toFixed(1)+' — '+(useHold.h3?'zona correcta':'fuera de zona'));
+  setHold(4,useHold.h4,useHold.h4?'Estructura '+(isC?'alcista':'bajista')+' confirmada':'Estructura perdiendo fuerza');
+
+  var verdict=el(id+'hold-verdict');
+  if(holdScore>=3){
+    verdict.textContent='✅ MANTENER — '+holdScore+'/4 condiciones activas';
+    verdict.style.background='var(--green-bg)';verdict.style.color='var(--green)';verdict.style.border='0.5px solid var(--green-bdr)';
+  }else if(holdScore===2){
+    verdict.textContent='⚠️ PRECAUCION — '+holdScore+'/4 condiciones activas. Ajustar SL.';
+    verdict.style.background='var(--yellow-bg)';verdict.style.color='var(--yellow)';verdict.style.border='0.5px solid var(--yellow-bdr)';
+  }else{
+    verdict.textContent='🔴 CERRAR — solo '+holdScore+'/4 condiciones. Tendencia debilitandose.';
+    verdict.style.background='var(--red-bg)';verdict.style.color='var(--red)';verdict.style.border='0.5px solid var(--red-bdr)';
+  }
+
+  /* Alerta sonora solo si señal nueva */
+  var sigKey=isC?'buy':isV?'sell':'';
+  if(sigKey&&sigKey!==_lastSignalAlert[act]){
+    if(isC)playBuySound();else playSellSound();
+  }
+  _lastSignalAlert[act]=sigKey;
+}
+
+
 function calcMACD(cls){
   if(cls.length<26)return{macd:0,signal:0,hist:0,bull:false,bear:false};
   function ema(arr,p){var k=2/(p+1),e=arr[0];for(var i=1;i<arr.length;i++)e=arr[i]*k+e*(1-k);return e;}
@@ -929,6 +1323,7 @@ function decision(act){
 
 function renderActivo(act){
   var m=MKT[act],P=PARAMS[act],d=decision(act),id=act+'-';
+  var ds=decisionScalp(act);
   var rsiCls=m.rsi<30?'bg':m.rsi>70?'br':m.rsi>55?'by':'bb';
   var rsiTxt=m.rsi<30?'Sobreventa':m.rsi>70?'Sobrecompra':m.rsi>55?'Zona alcista':m.rsi<45?'Zona bajista':'Neutral';
   var chg=m.prevPrice>0?fp(((m.price-m.prevPrice)/m.prevPrice)*100,2):0,up=chg>=0;
@@ -942,58 +1337,33 @@ function renderActivo(act){
   el(id+'rsis').innerHTML=bdg(rsiCls,rsiTxt);
   var rf=el(id+'rsi-fill');rf.style.width=m.rsi+'%';rf.style.background=m.rsi<30?'#22c55e':m.rsi>70?'#ef4444':'#eab308';
   var rb=el(id+'rsi-badge');rb.className='badge '+rsiCls;rb.textContent=m.rsi.toFixed(1)+' - '+rsiTxt;
+
+  /* Señal principal (caja IA legacy) */
   var sigEl=el(id+'signal');
-  sigEl.textContent=d.sig;
-  if(d.alin&&d.esCompra){sigEl.style.color='var(--green)';}
-  else if(d.alin&&!d.esCompra){sigEl.style.color='var(--red)';}
-  else{sigEl.style.color='var(--text)';}
-  el(id+'action').textContent='Accion: '+d.action+' | Confirmaciones: '+Math.max(d.confirmaCompra,d.confirmaVenta)+'/5 | Riesgo: '+(d.conf>=75?'bajo':d.conf>=50?'medio':'alto');
-  el(id+'next').textContent='Proxima revision: '+d.prox+' | '+d.accionInm;
-  el(id+'trend').innerHTML=bdg(d.esAlc?'bg':'br',d.esAlc?'Alcista':'Bajista');
-  el(id+'difema').textContent=(d.difEMA>0?'+':'')+d.difEMA;
+  sigEl.textContent=ds.isCompra?'🚀 SCALP COMPRA — '+ds.scoreCompra+'/5 filtros ok':ds.isVenta?'🔻 SCALP VENTA — '+ds.scoreVenta+'/5 filtros ok':'⏳ ESPERAR — senales insuficientes';
+  sigEl.style.color=ds.isCompra?'var(--green)':ds.isVenta?'var(--red)':'var(--yellow)';
+  el(id+'action').textContent='Calidad: '+ds.calidad+'% | Entrada: '+fc(ds.entrada,P.dec)+' | Sesion: '+ds.sesion.nombre;
+  el(id+'next').textContent='SL: '+fc(ds.sl,P.dec)+' | TP: '+fc(ds.tp,P.dec)+' | Objetivo: '+ds.pips+' pips | '+ds.tiempo;
+  el(id+'trend').innerHTML=bdg(ds.ema9above21?'bg':'br',ds.ema9above21?'EMA9 > EMA21':'EMA9 < EMA21');
+  el(id+'difema').textContent=(fp(m.ema9-m.ema21,P.dec)>0?'+':'')+fp(m.ema9-m.ema21,P.dec);
   el(id+'atr').textContent=m.atr+' pts';
-  var cf=el(id+'conf');cf.style.width=d.conf+'%';cf.style.background=d.conf>=75?'#22c55e':d.conf>=50?'#eab308':'#ef4444';
-  el(id+'conf-pct').textContent=d.conf+'%';
+  var cf=el(id+'conf');cf.style.width=ds.calidad+'%';cf.style.background=ds.calidad>=80?'#22c55e':ds.calidad>=60?'#eab308':'#ef4444';
+  el(id+'conf-pct').textContent=ds.calidad+'%';
 
-  /* ALERTA SEÑAL NUEVA con entrada exacta */
-  var sigKey=d.alin&&d.conf>=72?d.action:'';
-  var alertBox=el(id+'signal-alert');
-  if(sigKey&&sigKey!==_lastSignalAlert[act]){
-    /* Mostrar caja de alerta con precio exacto */
-    alertBox.style.display='block';
-    alertBox.style.borderColor=d.esCompra?'var(--green)':'var(--red)';
-    var alertTxt=el(id+'signal-alert-txt');
-    alertTxt.textContent=d.esCompra?'▲ COMPRA — '+fc(d.entradaSug,P.dec):'▼ VENTA — '+fc(d.entradaSug,P.dec);
-    alertTxt.style.color=d.esCompra?'var(--green)':'var(--red)';
-    el(id+'sig-entry').textContent=fc(d.entradaSug,P.dec);
-    el(id+'sig-sl').textContent=fc(d.slCalc,P.dec);
-    el(id+'sig-tp').textContent=fc(d.tpCalc,P.dec);
-    el(id+'sig-reason').textContent=d.razonSig;
-    /* Sonido diferenciado: compra = Do-Mi-Sol ascendente, venta = Sol-Mi-Do descendente */
-    if(d.esCompra)playBuySound();else playSellSound();
-    _lastSignalAlert[act]=sigKey;
-  } else if(!sigKey){
-    alertBox.style.display='none';
-    _lastSignalAlert[act]='';
-  }
-
-  /* Sonido de entrada legacy */
-  var sigKeyOld=(d.action==='Abrir Long'||d.action==='Abrir Short')&&d.conf>=75?d.action:'';
-  _lastSignal[act]=sigKeyOld;
+  /* Panel scalping */
+  renderScalp(act,ds);
 
   el(id+'s1').innerHTML=bdg(m.price>m.ema20?'bg':'br',m.price>m.ema20?'Sobre EMA20':'Bajo EMA20');
   el(id+'s2').innerHTML=bdg(m.price>m.ema50?'bg':'br',m.price>m.ema50?'Sobre EMA50':'Bajo EMA50');
-  el(id+'s3').innerHTML=bdg(m.ema20>m.ema50?'bg':'br',m.ema20>m.ema50?'EMA20>EMA50 alcista':'EMA20<EMA50 bajista');
+  el(id+'s3').innerHTML=bdg(m.ema9>m.ema21?'bg':'br',m.ema9>m.ema21?'EMA9>EMA21 alcista':'EMA9<EMA21 bajista');
   el(id+'s4').innerHTML=bdg(rsiCls,'RSI '+m.rsi.toFixed(1)+' - '+rsiTxt);
-  /* MACD badge */
   var macdCls=d.macd.aboveSig?'bg':'br';
   var macdTxt=d.macd.bull?'CRUCE ALCISTA ▲':d.macd.bear?'CRUCE BAJISTA ▼':(d.macd.aboveSig?'Positivo':'Negativo');
   var macdEl=el(id+'s-macd');if(macdEl)macdEl.innerHTML=bdg(d.macd.bull?'bg':d.macd.bear?'br':macdCls,macdTxt);
-  /* Sesion badge */
   var sesEl=el(id+'s-sesion');if(sesEl)sesEl.innerHTML=bdg(d.sesion.cls,d.sesion.nombre+' — '+d.sesion.fuerza);
-  el(id+'s5').innerHTML=bdg(d.alin?'bg':'br',d.alin?'Si — operar':'No — esperar');
+  el(id+'s5').innerHTML=bdg(ds.isCompra||ds.isVenta?'bg':'br',ds.isCompra||ds.isVenta?'Si — operar':'No — esperar');
   el(id+'s6').innerHTML=bdg(d.rapido?'by':'bb',d.rapido?'Mercado rapido':'Mercado lento');
-  el(id+'s7').innerHTML=bdg(d.alin?'bg':d.neutral?'by':'br',d.accionInm);
+  el(id+'s7').innerHTML=bdg(ds.isCompra?'bg':ds.isVenta?'br':'by',ds.isCompra?'Oportunidad COMPRA':ds.isVenta?'Oportunidad VENTA':'Esperar confirmacion');
   for(var n=1;n<=2;n++)renderTrade(act,n,d);
   renderCapital(act);
 }
