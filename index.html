@@ -185,6 +185,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="mcard"><div class="mcard-lbl">EMA 50</div><div class="mcard-val" id="btc-ema50">---</div><div class="mcard-sub" id="btc-ema50s">--</div></div>
     <div class="mcard"><div class="mcard-lbl">RSI 14</div><div class="mcard-val" id="btc-rsi">---</div><div class="mcard-sub" id="btc-rsis">--</div></div>
   </div>
+  <div style="background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius);padding:7px 12px;margin-bottom:8px;display:flex;gap:16px;flex-wrap:wrap;font-size:11px">
+    <span style="color:var(--text3)">📡 Refresco: <b style="color:var(--green)">15 seg</b></span>
+    <span style="color:var(--text3)">📊 Spread XM BTC: <b style="color:var(--yellow)">~$40-60</b> (incluido en entrada)</span>
+    <span style="color:var(--text3)">🪙 Unidad: <b style="color:var(--gold2)">Token(s) — min 0.01</b></span>
+    <span style="color:var(--text3)">⚡ Pip BTC: <b style="color:var(--text)">$1 por token</b></span>
+  </div>
   <div class="sec">Monitor RSI</div>
   <div class="track-wrap">
     <div class="track-hdr"><span class="track-lbl">RSI momentum BTC</span><span class="badge bb" id="btc-rsi-badge">--</span></div>
@@ -355,6 +361,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="mcard"><div class="mcard-lbl">EMA 20</div><div class="mcard-val" id="xau-ema20">---</div><div class="mcard-sub" id="xau-ema20s">--</div></div>
     <div class="mcard"><div class="mcard-lbl">EMA 50</div><div class="mcard-val" id="xau-ema50">---</div><div class="mcard-sub" id="xau-ema50s">--</div></div>
     <div class="mcard"><div class="mcard-lbl">RSI 14</div><div class="mcard-val" id="xau-rsi">---</div><div class="mcard-sub" id="xau-rsis">--</div></div>
+  </div>
+  <div style="background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius);padding:7px 12px;margin-bottom:8px;display:flex;gap:16px;flex-wrap:wrap;font-size:11px">
+    <span style="color:var(--text3)">📡 Refresco: <b style="color:var(--green)">15 seg</b></span>
+    <span style="color:var(--text3)">📊 Spread XM XAU: <b style="color:var(--yellow)">~$0.30</b> (incluido en entrada)</span>
+    <span style="color:var(--text3)">🪙 Unidad: <b style="color:var(--gold2)">Lote — min 0.01</b></span>
+    <span style="color:var(--text3)">⚡ Pip XAU: <b style="color:var(--text)">$1 por 0.1 Lot</b></span>
   </div>
   <div class="sec">Monitor RSI</div>
   <div class="track-wrap">
@@ -550,7 +562,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 </div>
 <div class="divider"></div>
 <div style="text-align:center;font-size:10px;color:var(--text3);padding:6px 0">
-  Codigo de Oro v7.0 XM &nbsp;|&nbsp; BTC/USD + XAU/USD &nbsp;|&nbsp; Scalping EMA9/21 + RSI + MACD + Velas + Sesion &nbsp;|&nbsp; Anti-señal falsa 5 filtros
+  Codigo de Oro v7.1 XM &nbsp;|&nbsp; Refresco 15s &nbsp;|&nbsp; BTC Token Model &nbsp;|&nbsp; Spread real XM &nbsp;|&nbsp; Scalping EMA9/21 + 5 filtros
 </div>
 
 <script>
@@ -739,11 +751,49 @@ var TRADES={
 };
 var DIRS={btc:{1:'sell',2:'sell'},xau:{1:'sell',2:'sell'}};
 
+/* =========================================================
+   XM TOKEN MODEL — valores reales verificados
+   BTC/USD: 1 Token = 1 BTC | min 0.01 Token
+   Spread real XM BTC: ~$40-60 (variable)
+   Pip BTC en XM: 1 pip = $1 movimiento x lot
+   0.01 Token -> $0.01 por pip (pip = $1 en precio)
+   XAU/USD: 1 lot = 100 oz | pip = $0.01
+   Spread real XM XAU: ~$0.25-0.40
+========================================================= */
 function getPipMultiplier(act){ return act==='xau' ? 100 : 1; }
-function calcPipValue(act,lot){ return act==='xau' ? fp(lot*10,2) : fp(lot*1,2); }
-function calcMarginXM(act,price,lot,leverage){ leverage=leverage||200; if(act==='xau'){return fp((price*100*lot)/leverage,2);} return fp((price*lot)/leverage,2); }
-function calcAutoLot(act,balance,riskPercent,slPips){ var riskUSD=balance*(riskPercent/100); var ppv=act==='xau'?10:1; var lot=riskUSD/(slPips*ppv); if(lot<0.01)lot=0.01; return fp(lot,2); }
-function calcPnLXM(act,entry,current,lot,side){ var mult=getPipMultiplier(act); var pips=side==='buy'?(current-entry)*mult:(entry-current)*mult; var pv=calcPipValue(act,lot); return{pips:fp(pips,1),usd:fp(pips*pv,2)}; }
+/* XM Token: 0.01 Token BTC = $0.01/pip donde pip=$1 movimiento */
+function calcPipValue(act,lot){
+  if(act==='xau') return fp(lot*10,2);   /* XAU: $10/pip por lote */
+  return fp(lot*1,4);                    /* BTC Token: $1/pip por token, 0.01 token=$0.01/pip */
+}
+function calcMarginXM(act,price,lot,leverage){
+  leverage=leverage||200;
+  if(act==='xau') return fp((price*100*lot)/leverage,2);
+  /* BTC Token XM: margen = precio * tokens / apalancamiento */
+  return fp((price*lot)/leverage,2);
+}
+function calcAutoLot(act,balance,riskPercent,slPips){
+  var riskUSD=balance*(riskPercent/100);
+  var ppv=act==='xau'?10:0.01; /* BTC: $0.01/pip con 0.01 token */
+  var lot=riskUSD/(slPips*ppv);
+  if(lot<0.01)lot=0.01;
+  if(act==='btc'&&lot>1)lot=1; /* max 1 token por seguridad */
+  return fp(lot,2);
+}
+/* PnL real XM — usa precio directo no pips para BTC Token */
+function calcPnLXM(act,entry,current,lot,side){
+  if(act==='btc'){
+    /* BTC Token XM: PnL = (precio_actual - entrada) * tokens * direccion */
+    var diff=side==='buy'?(current-entry):(entry-current);
+    var usd=fp(diff*lot,4);
+    var pips=fp(diff*1,1); /* 1 pip = $1 en BTC */
+    return{pips:pips,usd:usd};
+  }
+  var mult=getPipMultiplier(act);
+  var pips=side==='buy'?(current-entry)*mult:(entry-current)*mult;
+  var pv=calcPipValue(act,lot);
+  return{pips:fp(pips,1),usd:fp(pips*pv,2)};
+}
 function applyTrailingStop(trade,current,act){ if(!trade.tp||!trade.entry)return; var total=Math.abs(trade.tp-trade.entry); var gain=trade.isBuy?current-trade.entry:trade.entry-current; var prog=gain/total; if(prog>=0.30&&!trade.breakEven){trade.sl=trade.entry;trade.breakEven=true;trade.trailingText='BREAK EVEN ACTIVADO';} if(prog>=0.60){var off=act==='xau'?1.5:150; trade.sl=trade.isBuy?current-off:current+off; trade.trailingText='TRAILING STOP ACTIVO';} }
 
 function setDir(act,n,dir){
@@ -789,7 +839,7 @@ function toggleManual(){
     btn.textContent='⏹ APAGAR API';btn.className='btn-encender btn-enc-off';
     el('api-status').textContent='Encendido manual fuera de horario';el('api-status').style.color='var(--yellow)';
     if(_loopTimer)clearInterval(_loopTimer);
-    _loopTimer=setInterval(tickAPI,62000);
+    _loopTimer=setInterval(tickAPI,15000);
     fetchActivo('btc');setTimeout(function(){fetchActivo('xau');},5000);
   }else{
     btn.textContent='▶ ENCENDER API';btn.className='btn-encender btn-enc-on';
@@ -857,12 +907,12 @@ function conectarAPI(){
   API.keys=keys;API.conectada=true;
   validarCreditos(function(){
     if(_loopTimer)clearInterval(_loopTimer);
-    _loopTimer=setInterval(tickAPI,62000);
+    _loopTimer=setInterval(tickAPI,15000); /* 15s — precio real XM */
     if(apiActiva()){fetchActivo('btc');setTimeout(function(){fetchActivo('xau');},5000);}
   });
 }
 
-function fetchActivo(act){
+function fetchActivo
   if(!API.conectada||!API.keys.length)return;
   if(!apiActiva()){simular(act);renderActivo(act);return;}
   var P=PARAMS[act];
@@ -1005,7 +1055,7 @@ function decisionScalp(act){
   var m=MKT[act],P=PARAMS[act];
   var macd=m.macdData||{bull:false,bear:false,aboveSig:false,hist:0};
   var sesion=getSesion();
-  var spread=act==='xau'?0.25:12;
+  var spread=act==='xau'?0.30:50; /* XM real: BTC ~$40-60, XAU ~$0.30 */
   var pipMult=act==='xau'?10:1; /* pips */
 
   /* --- EMA 9 vs 21 cruce --- */
@@ -1281,7 +1331,7 @@ function decision(act){
   if(slCalc<=0)slCalc=fp(m.price*0.99,P.dec);
 
   /* Entrada exacta sugerida: precio actual + pequeño buffer de spread XM */
-  var spread=act==='xau'?0.30:15;
+  var spread=act==='xau'?0.30:50;
   var entradaSug=esCompra?fp(m.price+spread,P.dec):fp(m.price-spread,P.dec);
 
   /* Confianza */
@@ -1392,7 +1442,7 @@ function calcTrade(act,n){
   el(act+'-v'+n+'-tp').textContent=fc(tp,P.dec);
   el(act+'-v'+n+'-dr').textContent='-$'+dr.toFixed(2);
   el(act+'-v'+n+'-dg').textContent='+$'+dg.toFixed(2);
-  el(act+'-v'+n+'-sz').textContent=size+(act==='btc'?' BTC':' oz')+' | Lot '+lot;
+  el(act+'-v'+n+'-sz').textContent=size+(act==='btc'?' Token(s)':' oz')+' | '+(act==='btc'?'Token':'Lot')+' '+lot;
   if(!el(act+'-v'+n+'-lot')){
     var box=el(act+'-v'+n+'-sz').parentNode.parentNode;
     box.insertAdjacentHTML('beforeend',
@@ -1402,8 +1452,8 @@ function calcTrade(act,n){
       '<div class="res-row"><span class="rl">Trailing</span><span class="rv" id="'+act+'-v'+n+'-trail"></span></div>'
     );
   }
-  el(act+'-v'+n+'-lot').textContent=lot.toFixed(2);
-  el(act+'-v'+n+'-pipv').textContent='$'+pipValue.toFixed(2)+'/pip';
+  el(act+'-v'+n+'-lot').textContent=lot.toFixed(2)+(act==='btc'?' Token(s)':' Lot');
+  el(act+'-v'+n+'-pipv').textContent='$'+fp(pipValue,4)+'/pip (Token XM)';
   el(act+'-v'+n+'-mg').textContent='$'+margin.toFixed(2);
   el(act+'-v'+n+'-mg').style.color=margin>cap?'var(--red)':'var(--green)';
   el(act+'-v'+n+'-trail').textContent='OFF';
@@ -1530,7 +1580,7 @@ updateClock();simular('btc');simular('xau');renderActivo('btc');renderActivo('xa
 validarCreditos(function(){
   if(apiActiva()){
     if(_loopTimer)clearInterval(_loopTimer);
-    _loopTimer=setInterval(tickAPI,62000);
+    _loopTimer=setInterval(tickAPI,15000);
     fetchActivo('btc');setTimeout(function(){fetchActivo('xau');},5000);
   }
 });
