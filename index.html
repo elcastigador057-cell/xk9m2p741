@@ -912,7 +912,7 @@ function conectarAPI(){
   });
 }
 
-function fetchActivo
+function fetchActivo(act){
   if(!API.conectada||!API.keys.length)return;
   if(!apiActiva()){simular(act);renderActivo(act);return;}
   var P=PARAMS[act];
