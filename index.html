@@ -265,8 +265,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="mcard"><div class="mcard-lbl">Dif EMA 20-50</div><div style="font-size:13px;font-weight:700;margin-top:3px" id="btc-difema">--</div></div>
     <div class="mcard"><div class="mcard-lbl">ATR volatilidad</div><div style="font-size:13px;font-weight:700;margin-top:3px" id="btc-atr">--</div></div>
   </div>
-  <div class="sec">Senales basicas</div>
-  <div class="card">
+  <div class="sec" onclick="toggleSec('btc-basicas')" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+    <span>Senales basicas</span>
+    <span id="btc-basicas-ico" style="font-size:11px;color:var(--text3)">▼ ocultar</span>
+  </div>
+  <div id="btc-basicas" class="card">
     <div class="row"><span class="row-lbl">Precio vs EMA 20</span><span class="row-val" id="btc-s1">--</span></div>
     <div class="row"><span class="row-lbl">Precio vs EMA 50</span><span class="row-val" id="btc-s2">--</span></div>
     <div class="row"><span class="row-lbl">Tendencia EMA 20/50</span><span class="row-val" id="btc-s3">--</span></div>
@@ -442,8 +445,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="mcard"><div class="mcard-lbl">Dif EMA 20-50</div><div style="font-size:13px;font-weight:700;margin-top:3px" id="xau-difema">--</div></div>
     <div class="mcard"><div class="mcard-lbl">ATR volatilidad</div><div style="font-size:13px;font-weight:700;margin-top:3px" id="xau-atr">--</div></div>
   </div>
-  <div class="sec">Senales basicas</div>
-  <div class="card">
+  <div class="sec" onclick="toggleSec('xau-basicas')" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+    <span>Senales basicas</span>
+    <span id="xau-basicas-ico" style="font-size:11px;color:var(--text3)">▼ ocultar</span>
+  </div>
+  <div id="xau-basicas" class="card">
     <div class="row"><span class="row-lbl">Precio vs EMA 20</span><span class="row-val" id="xau-s1">--</span></div>
     <div class="row"><span class="row-lbl">Precio vs EMA 50</span><span class="row-val" id="xau-s2">--</span></div>
     <div class="row"><span class="row-lbl">Tendencia EMA 20/50</span><span class="row-val" id="xau-s3">--</span></div>
@@ -781,24 +787,38 @@ function calcAutoLot(act,balance,riskPercent,slPips){
   if(act==='btc'&&lot>1)lot=1; /* max 1 token por seguridad */
   return fp(lot,2);
 }
-/* PnL real XM — usa precio directo no pips para BTC Token */
+/* PnL real XM — verificado con 0.01 Token BTC XM
+   Ejemplo: entrada 73966, precio 73587, lot 0.01 venta
+   diff = 73966 - 73587 = 379
+   PnL = 379 * 0.01 = $3.79 ✓ */
 function calcPnLXM(act,entry,current,lot,side){
   if(act==='btc'){
-    /* BTC Token XM: PnL = (precio_actual - entrada) * tokens * direccion */
     var diff=side==='buy'?(current-entry):(entry-current);
-    var usd=fp(diff*lot,4);
-    var pips=fp(diff*1,1); /* 1 pip = $1 en BTC */
-    return{pips:pips,usd:usd};
+    var usd=Math.round(diff*lot*100)/100; /* redondeo a centavos */
+    var pips=Math.round(diff*10)/10;
+    return{pips:pips,usd:fp(usd,2)};
   }
   var mult=getPipMultiplier(act);
   var pips=side==='buy'?(current-entry)*mult:(entry-current)*mult;
   var pv=calcPipValue(act,lot);
-  return{pips:fp(pips,1),usd:fp(pips*pv,2)};
+  return{pips:fp(pips,1),usd:fp(Math.round(pips*pv*100)/100,2)};
 }
 function applyTrailingStop(trade,current,act){ if(!trade.tp||!trade.entry)return; var total=Math.abs(trade.tp-trade.entry); var gain=trade.isBuy?current-trade.entry:trade.entry-current; var prog=gain/total; if(prog>=0.30&&!trade.breakEven){trade.sl=trade.entry;trade.breakEven=true;trade.trailingText='BREAK EVEN ACTIVADO';} if(prog>=0.60){var off=act==='xau'?1.5:150; trade.sl=trade.isBuy?current-off:current+off; trade.trailingText='TRAILING STOP ACTIVO';} }
 
+function toggleSec(id){
+  var div=el(id);
+  var ico=el(id+'-ico');
+  if(!div)return;
+  if(div.style.display==='none'){
+    div.style.display='';
+    if(ico)ico.textContent='▼ ocultar';
+  }else{
+    div.style.display='none';
+    if(ico)ico.textContent='► mostrar';
+  }
+}
+
 function setDir(act,n,dir){
-  DIRS[act][n]=dir;
   var isBuy=dir==='buy';
   var titleEl=el(act+'-v'+n+'-title');
   var buyBtn=el(act+'-v'+n+'-buy');
