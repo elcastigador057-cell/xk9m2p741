@@ -186,7 +186,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="mcard"><div class="mcard-lbl">RSI 14</div><div class="mcard-val" id="btc-rsi">---</div><div class="mcard-sub" id="btc-rsis">--</div></div>
   </div>
   <div style="background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius);padding:7px 12px;margin-bottom:8px;display:flex;gap:16px;flex-wrap:wrap;font-size:11px">
-    <span style="color:var(--text3)">📡 Refresco: <b style="color:var(--green)">15 seg</b></span>
+    <span style="color:var(--text3)">📡 BTC: <b style="color:var(--green)">Binance RT (5s)</b></span>
+    <span style="color:var(--text3)">📡 XAU: <b style="color:var(--yellow)">TwelveData (60s)</b></span>
     <span style="color:var(--text3)">📊 Spread XM BTC: <b style="color:var(--yellow)">~$40-60</b> (incluido en entrada)</span>
     <span style="color:var(--text3)">🪙 Unidad: <b style="color:var(--gold2)">Token(s) — min 0.01</b></span>
     <span style="color:var(--text3)">⚡ Pip BTC: <b style="color:var(--text)">$1 por token</b></span>
@@ -562,7 +563,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 </div>
 <div class="divider"></div>
 <div style="text-align:center;font-size:10px;color:var(--text3);padding:6px 0">
-  Codigo de Oro v7.1 XM &nbsp;|&nbsp; Refresco 15s &nbsp;|&nbsp; BTC Token Model &nbsp;|&nbsp; Spread real XM &nbsp;|&nbsp; Scalping EMA9/21 + 5 filtros
+  Codigo de Oro v7.2 XM &nbsp;|&nbsp; BTC: Binance RT 5s &nbsp;|&nbsp; XAU: TwelveData 60s &nbsp;|&nbsp; Scalping EMA9/21 + 5 filtros anti-falsa
 </div>
 
 <script>
@@ -839,8 +840,7 @@ function toggleManual(){
     btn.textContent='⏹ APAGAR API';btn.className='btn-encender btn-enc-off';
     el('api-status').textContent='Encendido manual fuera de horario';el('api-status').style.color='var(--yellow)';
     if(_loopTimer)clearInterval(_loopTimer);
-    _loopTimer=setInterval(tickAPI,15000);
-    fetchActivo('btc');setTimeout(function(){fetchActivo('xau');},5000);
+    iniciarTimers();
   }else{
     btn.textContent='▶ ENCENDER API';btn.className='btn-encender btn-enc-on';
     el('api-status').textContent='Apagado manualmente';el('api-status').style.color='var(--text2)';
@@ -907,24 +907,93 @@ function conectarAPI(){
   API.keys=keys;API.conectada=true;
   validarCreditos(function(){
     if(_loopTimer)clearInterval(_loopTimer);
-    _loopTimer=setInterval(tickAPI,15000); /* 15s — precio real XM */
-    if(apiActiva()){fetchActivo('btc');setTimeout(function(){fetchActivo('xau');},5000);}
+    iniciarTimers();
   });
 }
 
-function fetchActivo(act){
-  if(!API.conectada||!API.keys.length)return;
-  if(!apiActiva()){simular(act);renderActivo(act);return;}
-  var P=PARAMS[act];
+/* =========================================================
+   FETCH BTC — Binance API (tiempo real, sin key, sin delay)
+========================================================= */
+function fetchBTC(){
+  if(!apiActiva()){simular('btc');renderActivo('btc');return;}
+  var m=MKT['btc'],P=PARAMS['btc'];
+  /* 1. Precio en tiempo real desde Binance */
+  fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(!d.price)throw new Error('no price');
+      m.prevPrice=m.price||parseFloat(d.price);
+      m.price=fp(parseFloat(d.price),0);
+      el('tab-btc-price').textContent=fc(m.price,0);
+      /* 2. Velas para indicadores — Binance klines */
+      var ivMap={'1min':'1m','5min':'5m','15min':'15m','30min':'30m'};
+      var biv=ivMap[P.interval]||'1m';
+      return fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval='+biv+'&limit=60');
+    })
+    .then(function(r){return r.json();})
+    .then(function(klines){
+      if(!Array.isArray(klines)||klines.length<22)throw new Error('no klines');
+      /* Binance kline: [openTime,open,high,low,close,...] */
+      var cls=klines.map(function(k){return parseFloat(k[4]);});
+      var opn=klines.map(function(k){return parseFloat(k[1]);});
+      var hgh=klines.map(function(k){return parseFloat(k[2]);});
+      var low=klines.map(function(k){return parseFloat(k[3]);});
+      m.ema9 =fp(calcEMA(cls,9), 0);
+      m.ema21=fp(calcEMA(cls,21),0);
+      m.ema20=fp(calcEMA(cls,20),0);
+      m.ema50=fp(calcEMA(cls,50),0);
+      m.rsi=fp(calcRSI(cls,14),1);
+      m.macdData=calcMACD(cls);
+      m.candles=[];
+      for(var ci=cls.length-5;ci<cls.length;ci++){
+        m.candles.push({o:opn[ci],h:hgh[ci],l:low[ci],c:cls[ci]});
+      }
+      var d2=0;for(var i=cls.length-1;i>=Math.max(0,cls.length-14);i--)d2+=Math.abs(cls[i]-(cls[i-1]||cls[i]));
+      m.atr=fp(d2/14,0)||150;
+      el('api-status').textContent='BTC: Binance RT — XAU: TwelveData — '+new Date().toLocaleTimeString();
+      el('api-status').style.color='var(--green)';
+      renderActivo('btc');renderCredits();
+    })
+    .catch(function(e){
+      /* Fallback: si Binance falla usar TwelveData para BTC */
+      fetchBTCfallback();
+    });
+}
+
+function fetchBTCfallback(){
+  /* Fallback a TwelveData si Binance no responde */
+  var m=MKT['btc'],P=PARAMS['btc'];
   var key=null,keyIdx=-1;
   for(var a=0;a<API.keys.length;a++){var idx=(API.idx+a)%API.keys.length;if(credits[idx]>0){key=API.keys[idx];keyIdx=idx;API.idx=(idx+1)%API.keys.length;credits[idx]--;break;}}
-  if(!key){el('api-status').textContent='Cuentas agotadas — simulando';el('api-status').style.color='var(--yellow)';simular(act);renderActivo(act);return;}
-  fetch('https://api.twelvedata.com/quote?symbol='+encodeURIComponent(P.symbol)+'&apikey='+key)
+  if(!key){simular('btc');renderActivo('btc');return;}
+  fetch('https://api.twelvedata.com/quote?symbol=BTC%2FUSD&apikey='+key)
     .then(function(r){return r.json();})
     .then(function(q){
-      if(q.status==='error'){simular(act);renderActivo(act);renderCredits();return;}
-      var m=MKT[act];m.prevPrice=m.price||parseFloat(q.previous_close||q.close);m.price=fp(parseFloat(q.close),P.dec);
-      fetch('https://api.twelvedata.com/time_series?symbol='+encodeURIComponent(P.symbol)+'&interval='+P.interval+'&outputsize=60&apikey='+key)
+      if(q.status==='error'){simular('btc');renderActivo('btc');return;}
+      m.prevPrice=m.price||parseFloat(q.previous_close||q.close);
+      m.price=fp(parseFloat(q.close),0);
+      el('api-status').textContent='BTC: TwelveData fallback — '+new Date().toLocaleTimeString();
+      renderActivo('btc');renderCredits();
+    })
+    .catch(function(){simular('btc');renderActivo('btc');});
+}
+
+/* =========================================================
+   FETCH XAU — TwelveData (tus 5 keys, cada 60s)
+========================================================= */
+function fetchXAU(){
+  if(!apiActiva()){simular('xau');renderActivo('xau');return;}
+  var m=MKT['xau'],P=PARAMS['xau'];
+  var key=null,keyIdx=-1;
+  for(var a=0;a<API.keys.length;a++){var idx=(API.idx+a)%API.keys.length;if(credits[idx]>0){key=API.keys[idx];keyIdx=idx;API.idx=(idx+1)%API.keys.length;credits[idx]--;break;}}
+  if(!key){el('api-status').textContent='Cuentas XAU agotadas — simulando';el('api-status').style.color='var(--yellow)';simular('xau');renderActivo('xau');return;}
+  fetch('https://api.twelvedata.com/quote?symbol=XAU%2FUSD&apikey='+key)
+    .then(function(r){return r.json();})
+    .then(function(q){
+      if(q.status==='error'){simular('xau');renderActivo('xau');renderCredits();return;}
+      m.prevPrice=m.price||parseFloat(q.previous_close||q.close);
+      m.price=fp(parseFloat(q.close),2);
+      fetch('https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval='+P.interval+'&outputsize=60&apikey='+key)
         .then(function(r2){return r2.json();})
         .then(function(ts){
           if(ts.values&&ts.values.length>=22){
@@ -932,33 +1001,36 @@ function fetchActivo(act){
             var opn=ts.values.map(function(v){return parseFloat(v.open);}).reverse();
             var hgh=ts.values.map(function(v){return parseFloat(v.high);}).reverse();
             var low=ts.values.map(function(v){return parseFloat(v.low);}).reverse();
-            m.ema9 =fp(calcEMA(cls,9), P.dec);
-            m.ema21=fp(calcEMA(cls,21),P.dec);
-            m.ema20=fp(calcEMA(cls,20),P.dec);
-            m.ema50=fp(calcEMA(cls,50),P.dec);
+            m.ema9 =fp(calcEMA(cls,9), 2);
+            m.ema21=fp(calcEMA(cls,21),2);
+            m.ema20=fp(calcEMA(cls,20),2);
+            m.ema50=fp(calcEMA(cls,50),2);
             m.rsi=fp(calcRSI(cls,14),1);
             m.macdData=calcMACD(cls);
-            /* guardar ultimas 5 velas para deteccion de patron */
             m.candles=[];
             for(var ci=cls.length-5;ci<cls.length;ci++){
               m.candles.push({o:opn[ci],h:hgh[ci],l:low[ci],c:cls[ci]});
             }
             var d2=0;for(var i=ts.values.length-1;i>=Math.max(0,ts.values.length-14);i--)d2+=Math.abs(parseFloat(ts.values[i].close)-parseFloat(ts.values[Math.max(0,i-1)].close));
-            m.atr=fp(d2/14,P.dec)||(act==='btc'?150:8);
+            m.atr=fp(d2/14,2)||8;
           }else{
-            m.ema9=fp(m.price*0.9980,P.dec);m.ema21=fp(m.price*0.9963,P.dec);
-            m.ema20=fp(m.price*0.9963,P.dec);m.ema50=fp(m.price*0.9897,P.dec);
+            m.ema9=fp(m.price*0.9995,2);m.ema21=fp(m.price*0.9990,2);
+            m.ema20=fp(m.price*0.9990,2);m.ema50=fp(m.price*0.9975,2);
             m.rsi=50;m.macdData={bull:false,bear:false,aboveSig:false,hist:0};m.candles=[];
           }
-          el('api-status').textContent='API activa — cta '+(keyIdx+1)+' — '+P.symbol+' — '+new Date().toLocaleTimeString();
-          el('api-status').style.color='var(--green)';
-          renderActivo(act);renderCredits();
-          el('tab-'+act+'-price').textContent=act==='btc'?fc(m.price,0):fc(m.price,2);
+          el('tab-xau-price').textContent=fc(m.price,2);
+          renderActivo('xau');renderCredits();
         })
-        .catch(function(){m.ema20=fp(m.price*0.9963,P.dec);m.ema50=fp(m.price*0.9897,P.dec);m.rsi=50;renderActivo(act);});
+        .catch(function(){m.rsi=50;renderActivo('xau');});
     })
-    .catch(function(){simular(act);renderActivo(act);});
+    .catch(function(){simular('xau');renderActivo('xau');});
 }
+
+/* fetchActivo — wrapper para compatibilidad con setInterval_ */
+function fetchActivo(act){
+  if(act==='btc')fetchBTC();else fetchXAU();
+}
+
 
 function calcEMA(cls,period){if(cls.length<period)return cls[cls.length-1];var k=2/(period+1),ema=cls[0];for(var i=1;i<cls.length;i++)ema=cls[i]*k+ema*(1-k);return ema;}
 function calcRSI(cls,period){if(cls.length<period+1)return 50;var g=0,l=0;for(var i=cls.length-period;i<cls.length;i++){var d=cls[i]-cls[i-1];d>0?g+=d:l-=d;}if(l===0)return 100;if(g===0)return 0;return fp(100-(100/(1+(g/l))),1);}
@@ -1561,9 +1633,30 @@ function renderCredits(){
 }
 
 function tickSim(){simular('btc');simular('xau');renderActivo('btc');renderActivo('xau');}
+var _btcTimer=null;
+var _xauTimer=null;
+
 function tickAPI(){
-  if(apiActiva()){fetchActivo('btc');setTimeout(function(){fetchActivo('xau');},5000);}
+  if(apiActiva()){fetchBTC();}
   else{simular('btc');simular('xau');renderActivo('btc');renderActivo('xau');}
+}
+
+function iniciarTimers(){
+  /* BTC — Binance tiempo real: cada 5 segundos */
+  if(_btcTimer)clearInterval(_btcTimer);
+  _btcTimer=setInterval(function(){
+    if(apiActiva())fetchBTC();
+    else{simular('btc');renderActivo('btc');}
+  },5000);
+  /* XAU — TwelveData: cada 60 segundos (ahorra créditos) */
+  if(_xauTimer)clearInterval(_xauTimer);
+  _xauTimer=setInterval(function(){
+    if(apiActiva())fetchXAU();
+    else{simular('xau');renderActivo('xau');}
+  },60000);
+  /* Fetch inmediato al arrancar */
+  fetchBTC();
+  setTimeout(fetchXAU,3000);
 }
 
 /* KEYS PRECARGADAS */
@@ -1580,8 +1673,7 @@ updateClock();simular('btc');simular('xau');renderActivo('btc');renderActivo('xa
 validarCreditos(function(){
   if(apiActiva()){
     if(_loopTimer)clearInterval(_loopTimer);
-    _loopTimer=setInterval(tickAPI,15000);
-    fetchActivo('btc');setTimeout(function(){fetchActivo('xau');},5000);
+    iniciarTimers();
   }
 });
 </script>
