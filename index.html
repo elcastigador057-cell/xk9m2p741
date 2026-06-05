@@ -1092,16 +1092,20 @@ function fetchBTCfallback(){
    Total: ~720 créditos/hora vs 2,160 antes → 3x ahorro
 ========================================================= */
 var _xauIndTick=0; /* contador para disparar indicadores cada 6 ticks de precio (30s) */
+var _xauPrecioRealRecibido=false; /* flag: ya recibimos al menos 1 precio real de la API */
 
 function fetchXAU(){
-  if(!apiActiva()){simular('xau');renderActivo('xau');return;}
+  if(!apiActiva()){
+    /* Solo simular si NUNCA hemos recibido precio real */
+    if(!_xauPrecioRealRecibido){simular('xau');}
+    renderActivo('xau');return;
+  }
   var m=MKT['xau'],P=PARAMS['xau'];
   var key=null,keyIdx=-1;
   for(var a=0;a<API.keys.length;a++){var idx=(API.idx+a)%API.keys.length;if(credits[idx]>0){key=API.keys[idx];keyIdx=idx;API.idx=(idx+1)%API.keys.length;credits[idx]--;break;}}
   if(!key){
     el('api-status').textContent='Cuentas XAU agotadas — precio congelado';
     el('api-status').style.color='var(--yellow)';
-    /* NO simular: mantener último precio real, solo re-renderizar */
     renderActivo('xau');
     return;
   }
@@ -1111,12 +1115,17 @@ function fetchXAU(){
     .then(function(r){return r.json();})
     .then(function(q){
       if(q.status==='error'||!q.close){
-        /* Error de API: NO simular, mantener último precio válido */
         renderActivo('xau');renderCredits();return;
       }
       var nuevoPrecio=fp(parseFloat(q.close),2);
-      /* Validar que el precio sea coherente (XAU > 1000 siempre) */
-      if(nuevoPrecio>1000){
+      /* Validar rango real del oro */
+      if(nuevoPrecio>1500 && nuevoPrecio<9000){
+        /* Primera vez que recibimos precio real: limpiar historial simulado */
+        if(!_xauPrecioRealRecibido){
+          _xauPrecioRealRecibido=true;
+          HIST_XAU=[];
+          console.log('[CodigoDeOro] Primer precio real recibido: '+nuevoPrecio+'. Historial limpiado.');
+        }
         m.prevPrice=m.price||nuevoPrecio;
         m.price=nuevoPrecio;
       }
@@ -1128,12 +1137,10 @@ function fetchXAU(){
         _xauIndTick=0;
         fetchXAUIndicadores(P,key);
       }else{
-        /* Solo actualizar precio y re-render con EMAs/RSI guardados */
         renderActivo('xau');renderCredits();
       }
     })
     .catch(function(){
-      /* Red caída: mantener último precio, no simular */
       renderActivo('xau');
     });
 }
@@ -2027,8 +2034,8 @@ function renderImpulsoXAU(){
 
 function tickSim(){
   simular('btc');
-  /* Solo simular XAU si NO tenemos precio real válido todavía */
-  if(MKT['xau'].price < 1500) simular('xau');
+  /* Solo simular XAU si NUNCA hemos recibido precio real de la API */
+  if(!_xauPrecioRealRecibido) simular('xau');
   renderActivo('btc');renderActivo('xau');
 }
 var _btcTimer=null;
@@ -2038,7 +2045,7 @@ function tickAPI(){
   if(apiActiva()){fetchBTC();}
   else{
     simular('btc');
-    if(MKT['xau'].price < 1500) simular('xau');
+    if(!_xauPrecioRealRecibido) simular('xau');
     renderActivo('btc');renderActivo('xau');
   }
 }
@@ -2055,8 +2062,7 @@ function iniciarTimers(){
   _xauTimer=setInterval(function(){
     if(apiActiva())fetchXAU();
     else{
-      /* Solo simular si no hay precio real */
-      if(MKT['xau'].price < 1500){simular('xau');}
+      if(!_xauPrecioRealRecibido){simular('xau');}
       renderActivo('xau');
     }
   },5000);
@@ -2073,8 +2079,8 @@ el('api3').value=KEYS_PRECARGADAS[2];el('api4').value=KEYS_PRECARGADAS[3];
 el('api5').value=KEYS_PRECARGADAS[4];
 
 setInterval(updateClock,1000);
-_loopTimer=setInterval(tickSim,3000);
-updateClock();simular('btc');simular('xau');renderActivo('btc');renderActivo('xau');
+/* NO iniciar tickSim para XAU — esperamos precio real de la API */
+updateClock();simular('btc');renderActivo('btc');renderActivo('xau');
 
 validarCreditos(function(){
   if(apiActiva()){
