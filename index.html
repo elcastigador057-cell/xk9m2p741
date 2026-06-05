@@ -217,7 +217,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
   </div>
   <div style="background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius);padding:7px 12px;margin-bottom:8px;display:flex;gap:16px;flex-wrap:wrap;font-size:11px">
     <span style="color:var(--text3)">📡 BTC: <b style="color:var(--green)">Binance RT (5s)</b></span>
-    <span style="color:var(--text3)">📡 XAU: <b style="color:var(--yellow)">TwelveData (5s)</b></span>
+    <span style="color:var(--text3)">📡 XAU: <b style="color:var(--yellow)">Precio 5s / Indicadores 30s</b></span>
     <span style="color:var(--text3)">📊 Spread XM BTC: <b style="color:var(--yellow)">~$40-60</b> (incluido en entrada)</span>
     <span style="color:var(--text3)">🪙 Unidad: <b style="color:var(--gold2)">Token(s) — min 0.01</b></span>
     <span style="color:var(--text3)">⚡ Pip BTC: <b style="color:var(--text)">$1 por token</b></span>
@@ -397,7 +397,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="mcard"><div class="mcard-lbl">RSI 14</div><div class="mcard-val" id="xau-rsi">---</div><div class="mcard-sub" id="xau-rsis">--</div></div>
   </div>
   <div style="background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius);padding:7px 12px;margin-bottom:8px;display:flex;gap:16px;flex-wrap:wrap;font-size:11px">
-    <span style="color:var(--text3)">📡 Refresco: <b style="color:var(--green)">5 seg (sincronizado XM)</b></span>
+    <span style="color:var(--text3)">📡 Refresco: <b style="color:var(--green)">Precio 5s | Indicadores 30s</b></span>
     <span style="color:var(--text3)">📊 Spread XM XAU: <b style="color:var(--yellow)">~$0.30</b> (incluido en entrada)</span>
     <span style="color:var(--text3)">🪙 Unidad: <b style="color:var(--gold2)">Lote — min 0.01</b></span>
     <span style="color:var(--text3)">⚡ Pip XAU: <b style="color:var(--text)">$1 por 0.1 Lot</b></span>
@@ -1086,51 +1086,91 @@ function fetchBTCfallback(){
 }
 
 /* =========================================================
-   FETCH XAU — TwelveData (tus 5 keys, cada 60s)
+   FETCH XAU — Estrategia de ahorro de créditos v9:
+   • Precio (/quote)      → cada 5s  (1 crédito)
+   • Indicadores (/time_series) → cada 30s (1 crédito)
+   Total: ~720 créditos/hora vs 2,160 antes → 3x ahorro
 ========================================================= */
+var _xauIndTick=0; /* contador para disparar indicadores cada 6 ticks de precio (30s) */
+
 function fetchXAU(){
   if(!apiActiva()){simular('xau');renderActivo('xau');return;}
   var m=MKT['xau'],P=PARAMS['xau'];
   var key=null,keyIdx=-1;
   for(var a=0;a<API.keys.length;a++){var idx=(API.idx+a)%API.keys.length;if(credits[idx]>0){key=API.keys[idx];keyIdx=idx;API.idx=(idx+1)%API.keys.length;credits[idx]--;break;}}
-  if(!key){el('api-status').textContent='Cuentas XAU agotadas — simulando';el('api-status').style.color='var(--yellow)';simular('xau');renderActivo('xau');return;}
+  if(!key){
+    el('api-status').textContent='Cuentas XAU agotadas — precio congelado';
+    el('api-status').style.color='var(--yellow)';
+    /* NO simular: mantener último precio real, solo re-renderizar */
+    renderActivo('xau');
+    return;
+  }
+
+  /* === Siempre: precio en tiempo real === */
   fetch('https://api.twelvedata.com/quote?symbol=XAU%2FUSD&apikey='+key)
     .then(function(r){return r.json();})
     .then(function(q){
-      if(q.status==='error'){simular('xau');renderActivo('xau');renderCredits();return;}
-      m.prevPrice=m.price||parseFloat(q.previous_close||q.close);
-      m.price=fp(parseFloat(q.close),2);
-      fetch('https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval='+P.interval+'&outputsize=60&apikey='+key)
-        .then(function(r2){return r2.json();})
-        .then(function(ts){
-          if(ts.values&&ts.values.length>=22){
-            var cls=ts.values.map(function(v){return parseFloat(v.close);}).reverse();
-            var opn=ts.values.map(function(v){return parseFloat(v.open);}).reverse();
-            var hgh=ts.values.map(function(v){return parseFloat(v.high);}).reverse();
-            var low=ts.values.map(function(v){return parseFloat(v.low);}).reverse();
-            m.ema9 =fp(calcEMA(cls,9), 2);
-            m.ema21=fp(calcEMA(cls,21),2);
-            m.ema20=fp(calcEMA(cls,20),2);
-            m.ema50=fp(calcEMA(cls,50),2);
-            m.rsi=fp(calcRSI(cls,14),1);
-            m.macdData=calcMACD(cls);
-            m.candles=[];
-            for(var ci=cls.length-5;ci<cls.length;ci++){
-              m.candles.push({o:opn[ci],h:hgh[ci],l:low[ci],c:cls[ci]});
-            }
-            var d2=0;for(var i=ts.values.length-1;i>=Math.max(0,ts.values.length-14);i--)d2+=Math.abs(parseFloat(ts.values[i].close)-parseFloat(ts.values[Math.max(0,i-1)].close));
-            m.atr=fp(d2/14,2)||8;
-          }else{
-            m.ema9=fp(m.price*0.9995,2);m.ema21=fp(m.price*0.9990,2);
-            m.ema20=fp(m.price*0.9990,2);m.ema50=fp(m.price*0.9975,2);
-            m.rsi=50;m.macdData={bull:false,bear:false,aboveSig:false,hist:0};m.candles=[];
-          }
-          el('tab-xau-price').textContent=fc(m.price,2);
-          renderActivo('xau');renderCredits();
-        })
-        .catch(function(){m.rsi=50;renderActivo('xau');});
+      if(q.status==='error'||!q.close){
+        /* Error de API: NO simular, mantener último precio válido */
+        renderActivo('xau');renderCredits();return;
+      }
+      var nuevoPrecio=fp(parseFloat(q.close),2);
+      /* Validar que el precio sea coherente (XAU > 1000 siempre) */
+      if(nuevoPrecio>1000){
+        m.prevPrice=m.price||nuevoPrecio;
+        m.price=nuevoPrecio;
+      }
+      el('tab-xau-price').textContent=fc(m.price,2);
+
+      /* === Cada 6 ticks (30s): actualizar indicadores === */
+      _xauIndTick++;
+      if(_xauIndTick>=6||m.ema20===0){
+        _xauIndTick=0;
+        fetchXAUIndicadores(P,key);
+      }else{
+        /* Solo actualizar precio y re-render con EMAs/RSI guardados */
+        renderActivo('xau');renderCredits();
+      }
     })
-    .catch(function(){simular('xau');renderActivo('xau');});
+    .catch(function(){
+      /* Red caída: mantener último precio, no simular */
+      renderActivo('xau');
+    });
+}
+
+function fetchXAUIndicadores(P,key){
+  var m=MKT['xau'];
+  var key2=null;
+  /* Usar crédito para la serie temporal */
+  for(var a=0;a<API.keys.length;a++){var idx=(API.idx+a)%API.keys.length;if(credits[idx]>0){key2=API.keys[idx];API.idx=(idx+1)%API.keys.length;credits[idx]--;break;}}
+  if(!key2){renderActivo('xau');return;}
+
+  fetch('https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval='+P.interval+'&outputsize=60&apikey='+key2)
+    .then(function(r2){return r2.json();})
+    .then(function(ts){
+      if(ts.values&&ts.values.length>=22){
+        var cls=ts.values.map(function(v){return parseFloat(v.close);}).reverse();
+        var opn=ts.values.map(function(v){return parseFloat(v.open);}).reverse();
+        var hgh=ts.values.map(function(v){return parseFloat(v.high);}).reverse();
+        var low=ts.values.map(function(v){return parseFloat(v.low);}).reverse();
+        m.ema9 =fp(calcEMA(cls,9), 2);
+        m.ema21=fp(calcEMA(cls,21),2);
+        m.ema20=fp(calcEMA(cls,20),2);
+        m.ema50=fp(calcEMA(cls,50),2);
+        m.rsi=fp(calcRSI(cls,14),1);
+        m.macdData=calcMACD(cls);
+        m.candles=[];
+        for(var ci=cls.length-5;ci<cls.length;ci++){
+          m.candles.push({o:opn[ci],h:hgh[ci],l:low[ci],c:cls[ci]});
+        }
+        var d2=0;for(var i=ts.values.length-1;i>=Math.max(0,ts.values.length-14);i--)d2+=Math.abs(parseFloat(ts.values[i].close)-parseFloat(ts.values[Math.max(0,i-1)].close));
+        m.atr=fp(d2/14,2)||8;
+        el('api-status').textContent='XAU precio 5s | Indicadores 30s — '+new Date().toLocaleTimeString();
+        el('api-status').style.color='var(--green)';
+      }
+      renderActivo('xau');renderCredits();
+    })
+    .catch(function(){renderActivo('xau');});
 }
 
 /* fetchActivo — wrapper para compatibilidad con setInterval_ */
@@ -1144,7 +1184,7 @@ function calcRSI(cls,period){if(cls.length<period+1)return 50;var g=0,l=0;for(va
 
 function simular(act){
   var m=MKT[act];m.tick++;
-  m.prevPrice=m.price||(act==='btc'?74600:3300);
+  m.prevPrice=m.price||(act==='btc'?74600:4400);
   if(act==='btc'){
     var b=74600+Math.sin(m.tick/18)*900+Math.sin(m.tick/7)*200+(Math.random()-.5)*80;
     m.price=fp(b,0);m.ema20=fp(m.price-380+Math.sin(m.tick/25)*260,0);m.ema50=fp(m.price-1050+Math.sin(m.tick/40)*400,0);
@@ -1154,7 +1194,7 @@ function simular(act){
     m.macdData={bull:m.tick%20===0,bear:m.tick%27===0,aboveSig:Math.sin(m.tick/15)>0,hist:Math.sin(m.tick/15)*50};
     m.candles=_mockCandles(m.price,m.atr,5);
   }else{
-    var b2=3300+Math.sin(m.tick/20)*15+Math.sin(m.tick/9)*5+(Math.random()-.5)*1.5;
+    var b2=4400+Math.sin(m.tick/20)*15+Math.sin(m.tick/9)*5+(Math.random()-.5)*1.5;
     m.price=fp(b2,2);m.ema20=fp(m.price-3+Math.sin(m.tick/25)*2,2);m.ema50=fp(m.price-8+Math.sin(m.tick/40)*4,2);
     m.rsi=fp(Math.min(85,Math.max(18,52+Math.sin(m.tick/12)*20+(Math.random()-.5)*3)),1);m.atr=fp(Math.abs(m.price-m.prevPrice)*1.5+5,2)||8;
     m.ema9 =fp(m.price-1+Math.sin(m.tick/10)*1,2);
