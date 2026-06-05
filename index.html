@@ -171,6 +171,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 .soporte-input-row label{font-size:10px;color:var(--text3);min-width:90px;text-transform:uppercase}
 .soporte-input-row input{flex:1;padding:5px 8px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:11px;font-family:var(--mono);outline:none}
 .soporte-input-row input:focus{border-color:var(--gold)}
+
+/* ===== PANEL TELEGRAM v10 ===== */
+.tg-card{background:var(--bg2);border:0.5px solid rgba(59,130,246,0.4);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px}
+.tg-title{font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.tg-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tg-row label{font-size:10px;color:var(--text3);min-width:60px;text-transform:uppercase}
+.tg-row input{flex:1;padding:5px 8px;background:var(--bg3);border:.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:11px;font-family:var(--mono);outline:none}
+.tg-row input:focus{border-color:var(--blue)}
+.tg-status{font-size:10px;margin-top:6px;padding:5px 8px;border-radius:var(--radius);background:var(--bg3)}
+.tg-btn{padding:5px 12px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-family:var(--mono);font-size:10px;font-weight:700;cursor:pointer;margin-top:6px}
+.tg-badge-on{color:var(--green);font-weight:700}
+.tg-badge-off{color:var(--text3)}
 </style>
 </head>
 <body>
@@ -178,7 +190,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 <!-- STICKY HEADER FIJO -->
 <div class="sticky-header">
   <div class="topbar">
-    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v9.0 SCALP</span></div>
+    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v10.0 SCALP</span></div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div class="online"><div class="dot"></div>ONLINE</div>
       <span class="horario-badge bg" id="horario-badge">10AM-10PM</span>
@@ -461,6 +473,34 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
           <span style="font-size:10px;color:var(--text3)">Sin registros aun...</span>
         </div>
       </div>
+    </div>
+  </div>
+
+
+  <!-- ===== PANEL TELEGRAM v10 =====
+       CAMBIO v10: Panel de configuracion de notificaciones Telegram.
+       El usuario ingresa su Token y Chat ID. Se guarda en memoria de sesion.
+       Las alertas solo se envian cuando hay tendencia ALCISTA confirmada.
+  ===== -->
+  <div class="sec">&#128242; Notificaciones Telegram — alertas al movil</div>
+  <div class="tg-card">
+    <div class="tg-title">&#128276; Telegram Bot <span id="tg-estado-badge" class="tg-badge-off">● desconectado</span></div>
+    <div class="tg-row">
+      <label>Token</label>
+      <input type="password" id="tg-token" placeholder="8804236118:AAEsOW..." oninput="tgGuardar()">
+    </div>
+    <div class="tg-row">
+      <label>Chat ID</label>
+      <input type="text" id="tg-chatid" placeholder="1842727203" oninput="tgGuardar()">
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+      <button class="tg-btn" onclick="tgTest()">&#9654; Enviar mensaje de prueba</button>
+      <button class="tg-btn" style="background:var(--bg3);color:var(--text2)" onclick="tgLimpiar()">&#215; Limpiar</button>
+    </div>
+    <div class="tg-status" id="tg-status-txt">Ingresa Token y Chat ID para activar.</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--text3)">
+      &#9888; Solo se envian alertas de <b style="color:var(--green)">tendencia ALCISTA</b>:<br>
+      ▲ Subida +10 pts / ▲▲ Subida fuerte +20 pts / &#128640; Disparo +30 pts / &#128308; Soporte roto (precio subio desde soporte)
     </div>
   </div>
 
@@ -1820,6 +1860,122 @@ function renderCredits(){
 }
 
 
+
+/* =========================================================
+   TELEGRAM v10 — Motor de notificaciones
+   CAMBIO v10: Sistema completo de envio a Telegram.
+   Solo envia alertas cuando la tendencia es ALCISTA:
+   - Subida +10 pts en 5 min (nivel 1 alcista)
+   - Subida fuerte +20 pts en 5 min (nivel 2 alcista)
+   - Disparo alcista +30 pts en 5 min (nivel 3 alcista)
+   - Soporte respetado (precio reboto desde soporte hacia arriba)
+   Las alertas bajistas SOLO suenan en pantalla, NO van a Telegram.
+========================================================= */
+var TG = {
+  token:   '8804236118:AAEsOWK0sk8ZAcUTXAD8ZYWiMm5OGPn07Xs',  // CAMBIO v10: token precargado
+  chatId:  '1842727203',                                        // CAMBIO v10: chatId precargado
+  activo:  true,
+  cooldowns: {},  // id -> timestamp ultimo envio
+  COOLDOWN_MS: { n1: 120000, n2: 90000, n3: 60000, soporte: 300000 }
+};
+
+function tgGuardar(){
+  /* CAMBIO v10: Lee campos del panel y actualiza el objeto TG */
+  var tok = document.getElementById('tg-token').value.trim();
+  var cid = document.getElementById('tg-chatid').value.trim();
+  if(tok) TG.token = tok;
+  if(cid) TG.chatId = cid;
+  tgActualizarBadge();
+}
+
+function tgActualizarBadge(){
+  var badge = document.getElementById('tg-estado-badge');
+  var status = document.getElementById('tg-status-txt');
+  if(!badge) return;
+  var ok = TG.token.length > 20 && TG.chatId.length > 4;
+  TG.activo = ok;
+  badge.textContent = ok ? '● activo' : '● desconectado';
+  badge.className   = ok ? 'tg-badge-on' : 'tg-badge-off';
+  if(status) status.textContent = ok
+    ? 'Conectado — alertas alcistas XAU se enviaran a tu movil.'
+    : 'Ingresa Token y Chat ID para activar.';
+}
+
+function tgEnCooldown(id){
+  /* CAMBIO v10: Evita spam — cada tipo de alerta tiene su propio cooldown */
+  var ahora = Date.now();
+  var cd = TG.COOLDOWN_MS[id] || 60000;
+  if(TG.cooldowns[id] && ahora - TG.cooldowns[id] < cd) return true;
+  TG.cooldowns[id] = ahora;
+  return false;
+}
+
+function tgEnviar(mensaje){
+  /* CAMBIO v10: Llama a la API de Telegram via fetch desde el navegador.
+     Funciona mientras la pestaña este abierta. */
+  if(!TG.activo || !TG.token || !TG.chatId) return;
+  var url = 'https://api.telegram.org/bot' + TG.token + '/sendMessage';
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: TG.chatId,
+      text: mensaje,
+      parse_mode: 'HTML'
+    })
+  }).then(function(r){ return r.json(); })
+    .then(function(d){
+      var st = document.getElementById('tg-status-txt');
+      if(st){
+        if(d.ok){
+          st.textContent = 'Ultimo envio: ' + new Date().toLocaleTimeString() + ' ✓';
+          st.style.color = 'var(--green)';
+        } else {
+          st.textContent = 'Error Telegram: ' + (d.description || 'desconocido');
+          st.style.color = 'var(--red)';
+        }
+      }
+    })
+    .catch(function(e){
+      var st = document.getElementById('tg-status-txt');
+      if(st){ st.textContent = 'Error de red: ' + e.message; st.style.color = 'var(--red)'; }
+    });
+}
+
+function tgTest(){
+  /* CAMBIO v10: Boton de prueba — envia mensaje de verificacion */
+  tgGuardar();
+  if(!TG.activo){
+    alert('Primero ingresa Token y Chat ID validos.');
+    return;
+  }
+  var hora = new Date().toLocaleTimeString();
+  tgEnviar(
+    '\u2705 <b>Codigo de Oro v10 — Bot activo</b>\n' +
+    'Notificaciones Telegram configuradas correctamente.\n' +
+    'Solo recibiras alertas de tendencia <b>ALCISTA</b> en XAU/USD.\n' +
+    '\u23F0 ' + hora
+  );
+}
+
+function tgLimpiar(){
+  /* CAMBIO v10: Limpia campos y desactiva */
+  document.getElementById('tg-token').value = '';
+  document.getElementById('tg-chatid').value = '';
+  TG.token = ''; TG.chatId = ''; TG.activo = false;
+  tgActualizarBadge();
+}
+
+/* Inicializar badge al cargar con los valores precargados */
+setTimeout(function(){
+  tgActualizarBadge();
+  /* Rellenar campos visuales con los valores precargados */
+  var ti = document.getElementById('tg-token');
+  var ci = document.getElementById('tg-chatid');
+  if(ti && !ti.value) ti.value = TG.token;
+  if(ci && !ci.value) ci.value = TG.chatId;
+}, 500);
+
 /* =========================================================
    SISTEMA DE IMPULSO Y ALERTAS v8
    Historial: 60 registros cada 15s = 15 minutos
@@ -1896,6 +2052,12 @@ function playAlertaImpulso(nivel){
   }catch(e){}
 }
 
+/* CAMBIO v10: fmtVel extraida al scope global para uso en mensajes Telegram */
+function fmtVel(v){
+  if(v === null || v === undefined) return 'N/D';
+  return (v >= 0 ? '+' : '') + parseFloat(v).toFixed(2) + ' pts';
+}
+
 function renderImpulsoXAU(){
   var precio = MKT['xau'].price;
   if(!precio || precio <= 0) return;
@@ -1908,11 +2070,7 @@ function renderImpulsoXAU(){
   var v5  = getVelocidad(5);
   var v15 = getVelocidad(15);
 
-  function fmtVel(v, dec){
-    if(v === null) return '--';
-    dec = dec || 2;
-    return (v >= 0 ? '+' : '') + v.toFixed(dec) + ' pts';
-  }
+  /* CAMBIO v10: fmtVel movida al scope global (ver arriba) */
   function colorVel(v){
     if(v === null) return 'var(--text2)';
     if(v > 10) return 'var(--green)';
@@ -2003,12 +2161,58 @@ function renderImpulsoXAU(){
     alertasHTML += '<div class="alerta-banner alerta-n1">&#9888; Movimiento rapido — ' + v5.toFixed(2) + ' pts en 5 min</div>';
   }
 
-  // Subidas fuertes tambien
+  // CAMBIO v10: Subidas fuertes — estas SÍ se envian a Telegram
+  // Solo las alcistas van al movil (segun lo pedido).
+  // Las bajistas solo suenan en pantalla (ya cubiertas arriba).
   if(v5 !== null && v5 >= 30){
+    /* Nivel 3 alcista: disparo de +30 pts — maxima prioridad */
     playAlertaImpulso(3);
     alertasHTML += '<div class="alerta-banner alerta-n3" style="border-color:var(--green);color:var(--green)">&#128640; DISPARO ALCISTA — +' + v5.toFixed(2) + ' pts en 5 min</div>';
+    /* CAMBIO v10: Enviar a Telegram — disparo alcista */
+    if(!tgEnCooldown('n3')){
+      tgEnviar(
+        '\u{1F680} <b>DISPARO ALCISTA — XAU/USD</b>\n' +
+        'Precio: <b>' + precio.toFixed(2) + '</b>\n' +
+        '1m: ' + fmtVel(v1) + ' | <b>5m: +' + v5.toFixed(2) + ' pts</b> | 15m: ' + fmtVel(v15) + '\n' +
+        '\u23F0 ' + new Date().toLocaleTimeString()
+      );
+    }
   } else if(v5 !== null && v5 >= 20){
+    /* Nivel 2 alcista: subida fuerte +20 pts */
+    playAlertaImpulso(2);
     alertasHTML += '<div class="alerta-banner alerta-n2" style="border-color:var(--green);color:var(--green)">&#9650; Subida fuerte — +' + v5.toFixed(2) + ' pts en 5 min</div>';
+    /* CAMBIO v10: Enviar a Telegram — subida fuerte */
+    if(!tgEnCooldown('n2')){
+      tgEnviar(
+        '\u2B06\uFE0F <b>Subida fuerte — XAU/USD</b>\n' +
+        'Precio: <b>' + precio.toFixed(2) + '</b>\n' +
+        '1m: ' + fmtVel(v1) + ' | <b>5m: +' + v5.toFixed(2) + ' pts</b> | 15m: ' + fmtVel(v15) + '\n' +
+        '\u23F0 ' + new Date().toLocaleTimeString()
+      );
+    }
+  } else if(v5 !== null && v5 >= 10){
+    /* CAMBIO v10: Nivel 1 alcista: movimiento rapido +10 pts — solo Telegram, sin banner visual */
+    if(!tgEnCooldown('n1')){
+      tgEnviar(
+        '\u26A0\uFE0F Movimiento rapido XAU/USD\n' +
+        'Precio: ' + precio.toFixed(2) + '\n' +
+        '5m: +' + v5.toFixed(2) + ' pts\n' +
+        '\u23F0 ' + new Date().toLocaleTimeString()
+      );
+    }
+  }
+
+  /* CAMBIO v10: Alerta de soporte respetado (rebote alcista desde soporte) */
+  if(_xauSoporte > 0 && precio > _xauSoporte && precio < _xauSoporte + 3){
+    /* El precio esta justo encima del soporte — posible rebote alcista */
+    if(!tgEnCooldown('soporte')){
+      tgEnviar(
+        '\u{1F7E2} <b>REBOTE en soporte — XAU/USD</b>\n' +
+        'Soporte: <b>' + _xauSoporte.toFixed(2) + '</b> — Precio actual: <b>' + precio.toFixed(2) + '</b>\n' +
+        'El precio respeto el soporte. Posible entrada en compra.\n' +
+        '\u23F0 ' + new Date().toLocaleTimeString()
+      );
+    }
   }
 
   wrap.innerHTML = alertasHTML;
