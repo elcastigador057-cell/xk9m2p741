@@ -141,6 +141,36 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 .btn-encender{padding:6px 18px;border:none;border-radius:var(--radius);font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
 .btn-enc-on{background:var(--green);color:#fff}
 .btn-enc-off{background:var(--red);color:#fff}
+
+/* ===== IMPULSO & ALERTAS v8 ===== */
+.impulso-card{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px}
+.impulso-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.impulso-meter{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.impulso-cell{background:var(--bg3);border-radius:6px;padding:7px 9px;text-align:center;border:0.5px solid var(--border)}
+.impulso-cell-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.impulso-cell-val{font-size:16px;font-weight:700;font-family:var(--mono)}
+.impulso-bar-wrap{margin-bottom:8px}
+.impulso-bar-bg{height:12px;background:var(--bg3);border:0.5px solid var(--border);border-radius:6px;overflow:hidden;position:relative}
+.impulso-bar-fill{height:100%;border-radius:6px;transition:width .5s,background .4s;position:absolute;top:0}
+.impulso-bar-center{position:absolute;top:0;bottom:0;left:50%;width:1.5px;background:rgba(255,255,255,.3)}
+.impulso-marks{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:3px}
+.fuerza-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid var(--border);font-size:11px}
+.fuerza-row:last-child{border-bottom:none}
+.fuerza-arrows{font-size:14px;letter-spacing:-2px;min-width:40px}
+.fuerza-lbl{flex:1;color:var(--text2)}
+.fuerza-val{font-weight:700;font-family:var(--mono)}
+.alerta-banner{border-radius:var(--radius);padding:8px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.alerta-n1{background:rgba(234,179,8,0.15);color:var(--yellow);border:0.5px solid rgba(234,179,8,0.5)}
+.alerta-n2{background:rgba(249,115,22,0.15);color:#f97316;border:0.5px solid rgba(249,115,22,0.5)}
+.alerta-n3{background:rgba(239,68,68,0.18);color:var(--red);border:0.5px solid var(--red-bdr);animation:dangerBlink .5s infinite}
+.alerta-ruptura{background:rgba(239,68,68,0.22);color:var(--red);border:1.5px solid var(--red);animation:dangerBlink .4s infinite}
+.historial-wrap{background:var(--bg3);border-radius:var(--radius);padding:8px;margin-top:6px;max-height:120px;overflow-y:auto}
+.hist-row{display:flex;justify-content:space-between;font-size:10px;padding:2px 4px;border-bottom:.5px solid var(--border)}
+.hist-row:last-child{border-bottom:none}
+.soporte-input-row{display:flex;align-items:center;gap:6px;margin-top:6px}
+.soporte-input-row label{font-size:10px;color:var(--text3);min-width:90px;text-transform:uppercase}
+.soporte-input-row input{flex:1;padding:5px 8px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:11px;font-family:var(--mono);outline:none}
+.soporte-input-row input:focus{border-color:var(--gold)}
 </style>
 </head>
 <body>
@@ -148,7 +178,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 <!-- STICKY HEADER FIJO -->
 <div class="sticky-header">
   <div class="topbar">
-    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v7.0 SCALP</span></div>
+    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v8.0 SCALP</span></div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div class="online"><div class="dot"></div>ONLINE</div>
       <span class="horario-badge bg" id="horario-badge">10AM-10PM</span>
@@ -367,7 +397,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="mcard"><div class="mcard-lbl">RSI 14</div><div class="mcard-val" id="xau-rsi">---</div><div class="mcard-sub" id="xau-rsis">--</div></div>
   </div>
   <div style="background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius);padding:7px 12px;margin-bottom:8px;display:flex;gap:16px;flex-wrap:wrap;font-size:11px">
-    <span style="color:var(--text3)">📡 Refresco: <b style="color:var(--green)">15 seg</b></span>
+    <span style="color:var(--text3)">📡 Refresco: <b style="color:var(--green)">15 seg (impulso activo)</b></span>
     <span style="color:var(--text3)">📊 Spread XM XAU: <b style="color:var(--yellow)">~$0.30</b> (incluido en entrada)</span>
     <span style="color:var(--text3)">🪙 Unidad: <b style="color:var(--gold2)">Lote — min 0.01</b></span>
     <span style="color:var(--text3)">⚡ Pip XAU: <b style="color:var(--text)">$1 por 0.1 Lot</b></span>
@@ -378,6 +408,62 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="track-bg"><div class="track-fill" id="xau-rsi-fill" style="width:50%"></div></div>
     <div class="track-marks"><span>0 sobreventa</span><span>30</span><span>50</span><span>70</span><span>100 sobrecompra</span></div>
   </div>
+  <!-- IMPULSO XAU v8 -->
+  <div class="sec">&#9889; Monitor de Impulso &amp; Alertas - XAU/USD</div>
+  <div class="impulso-card">
+    <div class="impulso-title">
+      <span>IMPULSO DE PRECIO XAU</span>
+      <span id="xau-imp-estado" style="font-size:11px;color:var(--text2)">Acumulando datos...</span>
+    </div>
+    <div class="impulso-meter">
+      <div class="impulso-cell">
+        <div class="impulso-cell-lbl">1 Min</div>
+        <div class="impulso-cell-val" id="xau-vel1" style="color:var(--text2)">--</div>
+      </div>
+      <div class="impulso-cell">
+        <div class="impulso-cell-lbl">5 Min</div>
+        <div class="impulso-cell-val" id="xau-vel5" style="color:var(--text2)">--</div>
+      </div>
+      <div class="impulso-cell">
+        <div class="impulso-cell-lbl">15 Min</div>
+        <div class="impulso-cell-val" id="xau-vel15" style="color:var(--text2)">--</div>
+      </div>
+    </div>
+    <div class="impulso-bar-wrap">
+      <div class="impulso-bar-bg">
+        <div class="impulso-bar-fill" id="xau-imp-fill" style="width:0%;left:50%;background:var(--blue)"></div>
+        <div class="impulso-bar-center"></div>
+      </div>
+      <div class="impulso-marks">
+        <span style="color:var(--red)">Caida -20+</span>
+        <span>Neutral 0</span>
+        <span style="color:var(--green)">Subida +20</span>
+      </div>
+    </div>
+    <div class="fuerza-row">
+      <span class="fuerza-arrows" id="xau-imp-arrows">--</span>
+      <span class="fuerza-lbl" id="xau-imp-label">Esperando historial...</span>
+      <span class="fuerza-val" id="xau-imp-pct" style="color:var(--text2)">--%</span>
+    </div>
+    <div id="xau-alertas-wrap" style="margin-top:8px"></div>
+    <div class="soporte-input-row">
+      <label>Soporte clave</label>
+      <input type="number" id="xau-soporte" placeholder="Ej: 4465.00" step="0.01" oninput="guardarSoporte()">
+      <span style="font-size:10px;color:var(--text3);white-space:nowrap">alerta si rompe</span>
+    </div>
+    <div style="margin-top:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleSec('xau-historial')">
+        <span style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px">Historial 15 min (ultimos 60 puntos)</span>
+        <span style="font-size:10px;color:var(--text3)" id="xau-historial-ico">mostrar</span>
+      </div>
+      <div id="xau-historial" style="display:none">
+        <div class="historial-wrap" id="xau-hist-list">
+          <span style="font-size:10px;color:var(--text3)">Sin registros aun...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- SELECTOR DE INTERVALO XAU -->
   <div class="sec">Intervalo de velas — afecta velocidad de senales</div>
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
@@ -569,7 +655,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 </div>
 <div class="divider"></div>
 <div style="text-align:center;font-size:10px;color:var(--text3);padding:6px 0">
-  Codigo de Oro v7.2 XM &nbsp;|&nbsp; BTC: Binance RT 5s &nbsp;|&nbsp; XAU: TwelveData 60s &nbsp;|&nbsp; Scalping EMA9/21 + 5 filtros anti-falsa
+  Codigo de Oro v8.0 XM &nbsp;|&nbsp; BTC: Binance RT 5s &nbsp;|&nbsp; XAU: TwelveData 60s &nbsp;|&nbsp; Scalping EMA9/21 + 5 filtros anti-falsa
 </div>
 
 <script>
@@ -1508,6 +1594,7 @@ function renderActivo(act){
   el(id+'s7').innerHTML=bdg(ds.isCompra?'bg':ds.isVenta?'br':'by',ds.isCompra?'Oportunidad COMPRA':ds.isVenta?'Oportunidad VENTA':'Esperar confirmacion');
   for(var n=1;n<=2;n++)renderTrade(act,n,d);
   renderCapital(act);
+  if(act==='xau') renderImpulsoXAU();
 }
 
 function calcTrade(act,n){
@@ -1652,6 +1739,208 @@ function renderCredits(){
   el('pool-txt').textContent=sum+'/'+maxPool.toLocaleString()+' ('+pp+'%)';
 }
 
+
+/* =========================================================
+   SISTEMA DE IMPULSO Y ALERTAS v8
+   Historial: 60 registros cada 15s = 15 minutos
+   Alertas: nivel 1 (-10 pts/5m), nivel 2 (-20 pts/5m), nivel 3 (-30 pts/5m)
+========================================================= */
+var HIST_XAU = [];          // {precio, ts}
+var HIST_MAX = 60;          // 60 registros
+var _xauSoporte = 0;        // soporte manual ingresado
+var _alertasCooldown = {};  // evitar repetir alertas
+
+function guardarSoporte(){
+  var v = parseFloat(document.getElementById('xau-soporte').value);
+  _xauSoporte = isNaN(v) ? 0 : v;
+}
+
+function registrarHistXAU(precio){
+  if(!precio || precio <= 0) return;
+  var ts = Date.now();
+  HIST_XAU.push({precio: precio, ts: ts});
+  if(HIST_XAU.length > HIST_MAX) HIST_XAU.shift();
+}
+
+function getVelocidad(minAtras){
+  if(HIST_XAU.length < 2) return null;
+  var ahora = Date.now();
+  var msAtras = minAtras * 60 * 1000;
+  // Buscar el punto mas cercano a N minutos atras
+  var target = ahora - msAtras;
+  var best = null, bestDiff = Infinity;
+  for(var i = 0; i < HIST_XAU.length; i++){
+    var diff = Math.abs(HIST_XAU[i].ts - target);
+    if(diff < bestDiff){ bestDiff = diff; best = HIST_XAU[i]; }
+  }
+  if(!best || bestDiff > msAtras * 1.5) return null;
+  var precioActual = HIST_XAU[HIST_XAU.length - 1].precio;
+  return parseFloat((precioActual - best.precio).toFixed(2));
+}
+
+function playAlertaImpulso(nivel){
+  var id = 'impulso_n' + nivel;
+  var cooldown = nivel === 3 ? 15000 : nivel === 2 ? 25000 : 40000;
+  var now = Date.now();
+  if(_alertasCooldown[id] && now - _alertasCooldown[id] < cooldown) return;
+  _alertasCooldown[id] = now;
+  if(!_audioCtx) return;
+  if(_audioCtx.state === 'suspended') _audioCtx.resume();
+  try{
+    var t = _audioCtx.currentTime;
+    var pulses = nivel === 1 ? 1 : nivel === 2 ? 2 : 3;
+    var freq = nivel === 1 ? 600 : nivel === 2 ? 800 : 1000;
+    for(var i = 0; i < pulses; i++){
+      var osc = _audioCtx.createOscillator();
+      var gain = _audioCtx.createGain();
+      osc.connect(gain); gain.connect(_audioCtx.destination);
+      osc.type = nivel === 3 ? 'square' : 'sawtooth';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t + i*0.25);
+      gain.gain.linearRampToValueAtTime(0.35, t + i*0.25 + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i*0.25 + 0.20);
+      osc.start(t + i*0.25);
+      osc.stop(t + i*0.25 + 0.22);
+    }
+  }catch(e){}
+}
+
+function renderImpulsoXAU(){
+  var precio = MKT['xau'].price;
+  if(!precio || precio <= 0) return;
+
+  // Registrar en historial
+  registrarHistXAU(precio);
+
+  // Calcular velocidades
+  var v1  = getVelocidad(1);
+  var v5  = getVelocidad(5);
+  var v15 = getVelocidad(15);
+
+  function fmtVel(v, dec){
+    if(v === null) return '--';
+    dec = dec || 2;
+    return (v >= 0 ? '+' : '') + v.toFixed(dec) + ' pts';
+  }
+  function colorVel(v){
+    if(v === null) return 'var(--text2)';
+    if(v > 10) return 'var(--green)';
+    if(v < -10) return 'var(--red)';
+    return 'var(--yellow)';
+  }
+
+  var v1el  = document.getElementById('xau-vel1');
+  var v5el  = document.getElementById('xau-vel5');
+  var v15el = document.getElementById('xau-vel15');
+  if(v1el){ v1el.textContent = fmtVel(v1); v1el.style.color = colorVel(v1); }
+  if(v5el){ v5el.textContent = fmtVel(v5); v5el.style.color = colorVel(v5); }
+  if(v15el){ v15el.textContent = fmtVel(v15); v15el.style.color = colorVel(v15); }
+
+  // Barra de impulso centrada — usa v5 como principal
+  var impRef = v5 !== null ? v5 : (v1 !== null ? v1 : 0);
+  var impFill = document.getElementById('xau-imp-fill');
+  if(impFill){
+    var clamp = Math.max(-25, Math.min(25, impRef));
+    var pct = Math.abs(clamp / 25) * 50;
+    if(clamp >= 0){
+      impFill.style.left = '50%';
+      impFill.style.width = pct + '%';
+      impFill.style.background = pct > 20 ? '#22c55e' : '#eab308';
+    } else {
+      impFill.style.left = (50 - pct) + '%';
+      impFill.style.width = pct + '%';
+      impFill.style.background = pct > 20 ? '#ef4444' : '#eab308';
+    }
+  }
+
+  // Fuerza direccional — porcentaje bajista/alcista
+  var arrows = '', label = '', pct = 0, color = 'var(--text2)';
+  if(HIST_XAU.length >= 4){
+    var bajadas = 0, subidas = 0;
+    for(var i = 1; i < Math.min(HIST_XAU.length, 20); i++){
+      var diff = HIST_XAU[i].precio - HIST_XAU[i-1].precio;
+      if(diff < 0) bajadas++; else if(diff > 0) subidas++;
+    }
+    var total = bajadas + subidas || 1;
+    if(bajadas > subidas){
+      pct = Math.round((bajadas/total)*100);
+      color = pct > 70 ? '#ef4444' : '#eab308';
+      var n = Math.min(4, Math.floor(pct/25));
+      arrows = ['','▼','▼▼','▼▼▼','▼▼▼▼'][n] || '▼';
+      label = 'FUERZA BAJISTA ' + pct + '%';
+    } else if(subidas > bajadas){
+      pct = Math.round((subidas/total)*100);
+      color = pct > 70 ? '#22c55e' : '#eab308';
+      var n2 = Math.min(4, Math.floor(pct/25));
+      arrows = ['','▲','▲▲','▲▲▲','▲▲▲▲'][n2] || '▲';
+      label = 'FUERZA ALCISTA ' + pct + '%';
+    } else {
+      arrows = '—'; label = 'MOVIMIENTO LATERAL'; color = 'var(--text2)'; pct = 50;
+    }
+  }
+  var arrowEl = document.getElementById('xau-imp-arrows');
+  var lblEl   = document.getElementById('xau-imp-label');
+  var pctEl   = document.getElementById('xau-imp-pct');
+  var stEl    = document.getElementById('xau-imp-estado');
+  if(arrowEl){ arrowEl.textContent = arrows; arrowEl.style.color = color; }
+  if(lblEl)   lblEl.textContent = label || 'Calculando...';
+  if(pctEl){  pctEl.textContent = pct ? pct + '%' : '--%'; pctEl.style.color = color; }
+  if(stEl)    stEl.textContent = HIST_XAU.length + '/60 registros — ' + new Date().toLocaleTimeString();
+
+  // === SISTEMA DE ALERTAS ===
+  var wrap = document.getElementById('xau-alertas-wrap');
+  if(!wrap) return;
+  var alertasHTML = '';
+
+  // Ruptura de soporte
+  if(_xauSoporte > 0 && precio < _xauSoporte - 0.5){
+    playAlertaImpulso(3);
+    alertasHTML += '<div class="alerta-banner alerta-ruptura">&#128680; SOPORTE ROTO — ' + _xauSoporte.toFixed(2) + ' &rarr; ' + precio.toFixed(2) + '</div>';
+  }
+
+  // Nivel 3: -30 en 5 min
+  if(v5 !== null && v5 <= -30){
+    playAlertaImpulso(3);
+    alertasHTML += '<div class="alerta-banner alerta-n3">&#128680; DESPLOME — ' + v5.toFixed(2) + ' pts en 5 min</div>';
+  } else if(v5 !== null && v5 <= -20){
+    // Nivel 2: -20 en 5 min
+    playAlertaImpulso(2);
+    alertasHTML += '<div class="alerta-banner alerta-n2">&#9888; CAIDA FUERTE — ' + v5.toFixed(2) + ' pts en 5 min</div>';
+  } else if(v5 !== null && v5 <= -10){
+    // Nivel 1: -10 en 5 min
+    playAlertaImpulso(1);
+    alertasHTML += '<div class="alerta-banner alerta-n1">&#9888; Movimiento rapido — ' + v5.toFixed(2) + ' pts en 5 min</div>';
+  }
+
+  // Subidas fuertes tambien
+  if(v5 !== null && v5 >= 30){
+    playAlertaImpulso(3);
+    alertasHTML += '<div class="alerta-banner alerta-n3" style="border-color:var(--green);color:var(--green)">&#128640; DISPARO ALCISTA — +' + v5.toFixed(2) + ' pts en 5 min</div>';
+  } else if(v5 !== null && v5 >= 20){
+    alertasHTML += '<div class="alerta-banner alerta-n2" style="border-color:var(--green);color:var(--green)">&#9650; Subida fuerte — +' + v5.toFixed(2) + ' pts en 5 min</div>';
+  }
+
+  wrap.innerHTML = alertasHTML;
+
+  // Actualizar historial UI
+  var listEl = document.getElementById('xau-hist-list');
+  if(listEl && document.getElementById('xau-historial').style.display !== 'none'){
+    var rows = '';
+    var slice = HIST_XAU.slice().reverse().slice(0, 30);
+    for(var h = 0; h < slice.length; h++){
+      var rec = slice[h];
+      var prev = h < slice.length - 1 ? slice[h+1].precio : rec.precio;
+      var diff = rec.precio - prev;
+      var dStr = (diff >= 0 ? '+' : '') + diff.toFixed(2);
+      var dColor = diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--text3)';
+      var t2 = new Date(rec.ts);
+      var tStr = t2.getHours().toString().padStart(2,'0') + ':' + t2.getMinutes().toString().padStart(2,'0') + ':' + t2.getSeconds().toString().padStart(2,'0');
+      rows += '<div class="hist-row"><span style="color:var(--text3)">' + tStr + '</span><span>' + rec.precio.toFixed(2) + '</span><span style="color:' + dColor + '">' + dStr + '</span></div>';
+    }
+    listEl.innerHTML = rows || '<span style="font-size:10px;color:var(--text3)">Sin registros aun...</span>';
+  }
+}
+
 function tickSim(){simular('btc');simular('xau');renderActivo('btc');renderActivo('xau');}
 var _btcTimer=null;
 var _xauTimer=null;
@@ -1668,12 +1957,12 @@ function iniciarTimers(){
     if(apiActiva())fetchBTC();
     else{simular('btc');renderActivo('btc');}
   },5000);
-  /* XAU — TwelveData: cada 60 segundos (ahorra créditos) */
+  /* XAU — TwelveData: cada 15 segundos (historial de impulso) */
   if(_xauTimer)clearInterval(_xauTimer);
   _xauTimer=setInterval(function(){
     if(apiActiva())fetchXAU();
     else{simular('xau');renderActivo('xau');}
-  },60000);
+  },15000);
   /* Fetch inmediato al arrancar */
   fetchBTC();
   setTimeout(fetchXAU,3000);
