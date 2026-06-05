@@ -1829,7 +1829,18 @@ function guardarSoporte(){
 }
 
 function registrarHistXAU(precio){
-  if(!precio || precio <= 0) return;
+  /* Validar rango real del oro: siempre entre 1500 y 9000 */
+  if(!precio || precio < 1500 || precio > 9000) return;
+  /* Validar que no sea un salto imposible vs el último precio registrado (>5% = precio falso) */
+  if(HIST_XAU.length > 0){
+    var ultimo = HIST_XAU[HIST_XAU.length-1].precio;
+    var salto = Math.abs(precio - ultimo) / ultimo;
+    if(salto > 0.05){
+      /* Salto >5% en un tick = precio de simulación o error API — limpiar historial contaminado */
+      console.warn('[CodigoDeOro] Precio sospechoso detectado: '+ultimo+' -> '+precio+' ('+Math.round(salto*100)+'%). Limpiando historial.');
+      HIST_XAU = [];
+    }
+  }
   var ts = Date.now();
   HIST_XAU.push({precio: precio, ts: ts});
   if(HIST_XAU.length > HIST_MAX) HIST_XAU.shift();
@@ -2014,13 +2025,22 @@ function renderImpulsoXAU(){
   }
 }
 
-function tickSim(){simular('btc');simular('xau');renderActivo('btc');renderActivo('xau');}
+function tickSim(){
+  simular('btc');
+  /* Solo simular XAU si NO tenemos precio real válido todavía */
+  if(MKT['xau'].price < 1500) simular('xau');
+  renderActivo('btc');renderActivo('xau');
+}
 var _btcTimer=null;
 var _xauTimer=null;
 
 function tickAPI(){
   if(apiActiva()){fetchBTC();}
-  else{simular('btc');simular('xau');renderActivo('btc');renderActivo('xau');}
+  else{
+    simular('btc');
+    if(MKT['xau'].price < 1500) simular('xau');
+    renderActivo('btc');renderActivo('xau');
+  }
 }
 
 function iniciarTimers(){
@@ -2030,11 +2050,15 @@ function iniciarTimers(){
     if(apiActiva())fetchBTC();
     else{simular('btc');renderActivo('btc');}
   },5000);
-  /* XAU — TwelveData: cada 5 segundos (sincronizado con XM) */
+  /* XAU — TwelveData: cada 5 segundos (precio) / 30s (indicadores) */
   if(_xauTimer)clearInterval(_xauTimer);
   _xauTimer=setInterval(function(){
     if(apiActiva())fetchXAU();
-    else{simular('xau');renderActivo('xau');}
+    else{
+      /* Solo simular si no hay precio real */
+      if(MKT['xau'].price < 1500){simular('xau');}
+      renderActivo('xau');
+    }
   },5000);
   /* Fetch inmediato al arrancar */
   fetchBTC();
