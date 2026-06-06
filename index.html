@@ -270,8 +270,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="scalp-title" id="btc-scalp-title">⏳ Analizando mercado...</div>
     <div class="scalp-grid">
       <div class="scalp-cell"><div class="scalp-cell-lbl">Entrada XM</div><div class="scalp-cell-val" id="btc-sc-entry" style="color:var(--gold2)">---</div></div>
-      <div class="scalp-cell"><div class="scalp-cell-lbl">Stop Loss</div><div class="scalp-cell-val" id="btc-sc-sl" style="color:var(--red)">---</div></div>
-      <div class="scalp-cell"><div class="scalp-cell-lbl">Take Profit</div><div class="scalp-cell-val" id="btc-sc-tp" style="color:var(--green)">---</div></div>
+      <div class="scalp-cell">
+        <div class="scalp-cell-lbl">Stop Loss</div>
+        <div class="scalp-cell-val" id="btc-sc-sl" style="color:var(--red)">---</div>
+        <div id="btc-sc-sl-info" style="font-size:10px;color:var(--red);opacity:.75;margin-top:2px;font-family:var(--mono)"></div>
+      </div>
+      <div class="scalp-cell">
+        <div class="scalp-cell-lbl">Take Profit</div>
+        <div class="scalp-cell-val" id="btc-sc-tp" style="color:var(--green)">---</div>
+        <div id="btc-sc-tp-info" style="font-size:10px;color:var(--green);opacity:.75;margin-top:2px;font-family:var(--mono)"></div>
+      </div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
       <span class="badge bb" id="btc-sc-tipo">--</span>
@@ -650,8 +658,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="scalp-title" id="xau-scalp-title">⏳ Analizando mercado...</div>
     <div class="scalp-grid">
       <div class="scalp-cell"><div class="scalp-cell-lbl">Entrada XM</div><div class="scalp-cell-val" id="xau-sc-entry" style="color:var(--gold2)">---</div></div>
-      <div class="scalp-cell"><div class="scalp-cell-lbl">Stop Loss</div><div class="scalp-cell-val" id="xau-sc-sl" style="color:var(--red)">---</div></div>
-      <div class="scalp-cell"><div class="scalp-cell-lbl">Take Profit</div><div class="scalp-cell-val" id="xau-sc-tp" style="color:var(--green)">---</div></div>
+      <div class="scalp-cell">
+        <div class="scalp-cell-lbl">Stop Loss</div>
+        <div class="scalp-cell-val" id="xau-sc-sl" style="color:var(--red)">---</div>
+        <div id="xau-sc-sl-info" style="font-size:10px;color:var(--red);opacity:.75;margin-top:2px;font-family:var(--mono)"></div>
+      </div>
+      <div class="scalp-cell">
+        <div class="scalp-cell-lbl">Take Profit</div>
+        <div class="scalp-cell-val" id="xau-sc-tp" style="color:var(--green)">---</div>
+        <div id="xau-sc-tp-info" style="font-size:10px;color:var(--green);opacity:.75;margin-top:2px;font-family:var(--mono)"></div>
+      </div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
       <span class="badge bb" id="xau-sc-tipo">--</span>
@@ -1622,6 +1638,25 @@ function renderScalp(act,ds){
   el(id+'sc-sl').textContent=fc(ds.sl,P.dec);
   el(id+'sc-tp').textContent=fc(ds.tp,P.dec);
 
+  /* CAMBIO v13b: Mostrar pts y $ estimados al lado del SL y TP
+     Para XAU: 1 punto = $1 por lote mini (0.1 lot). Para BTC: 1 punto = $1 x tamaño.
+     Mostramos el valor en puntos y el equivalente en $ para 0.01 lote (minimo XM). */
+  var slPts  = Math.abs(ds.entrada - ds.sl);
+  var tpPts  = Math.abs(ds.tp - ds.entrada);
+  var lotMin = act === 'xau' ? 0.01 : 0.01;  // lote minimo XM
+  /* XAU: pip value = $0.10 por 0.01 lot por punto. BTC: ~$0.01 por 0.01 lot por punto */
+  var pipVal = act === 'xau' ? 0.10 : 0.01;
+  var slUSD  = (slPts * pipVal).toFixed(2);
+  var tpUSD  = (tpPts * pipVal).toFixed(2);
+  var slEl   = document.getElementById(id+'sc-sl-info');
+  var tpEl   = document.getElementById(id+'sc-tp-info');
+  if(slEl && ds.entrada > 0){
+    slEl.textContent = '-' + slPts.toFixed(act==='xau'?1:0) + ' pts  /  -$' + slUSD + ' (0.01 lot)';
+  }
+  if(tpEl && ds.entrada > 0){
+    tpEl.textContent = '+' + tpPts.toFixed(act==='xau'?1:0) + ' pts  /  +$' + tpUSD + ' (0.01 lot)';
+  }
+
   var tipoBadge=el(id+'sc-tipo');
   tipoBadge.className='badge '+(isC?'bg':isV?'br':'by');
   tipoBadge.textContent=isC?'COMPRA':isV?'VENTA':'ESPERAR';
@@ -2354,7 +2389,10 @@ setTimeout(function(){
    Alertas: nivel 1 (-10 pts/5m), nivel 2 (-20 pts/5m), nivel 3 (-30 pts/5m)
 ========================================================= */
 var HIST_XAU = [];          // {precio, ts}
-var HIST_MAX = 60;          // 60 registros
+var HIST_MAX = 180;         // 180 registros = 15 min a 5s/tick
+                            // 1 min  = ~12 registros
+                            // 5 min  = ~60 registros
+                            // 15 min = ~180 registros
 var _xauSoporte = 0;        // soporte manual ingresado
 var _alertasCooldown = {};  // evitar repetir alertas
 
@@ -2364,20 +2402,23 @@ function guardarSoporte(){
 }
 
 function registrarHistXAU(precio){
-  /* Validar rango real del oro: siempre entre 1500 y 9000 */
+  /* CAMBIO v13c: Filtro de datos anomalos para XAU
+     Regla 1 — rango fisico del oro */
   if(!precio || precio < 1500 || precio > 9000) return;
-  /* Validar que no sea un salto imposible vs el último precio registrado (>5% = precio falso) */
+
+  /* Regla 2 — filtro porcentual: salto > 2% entre ticks consecutivos = error API */
   if(HIST_XAU.length > 0){
     var ultimo = HIST_XAU[HIST_XAU.length-1].precio;
-    var salto = Math.abs(precio - ultimo) / ultimo;
-    if(salto > 0.05){
-      /* Salto >5% en un tick = precio de simulación o error API — limpiar historial contaminado */
-      console.warn('[CodigoDeOro] Precio sospechoso detectado: '+ultimo+' -> '+precio+' ('+Math.round(salto*100)+'%). Limpiando historial.');
-      HIST_XAU = [];
+    var cambioPct = Math.abs(precio - ultimo) / ultimo * 100;
+    if(cambioPct > 2){
+      console.warn('[XAU] Dato anomalo ignorado: '+ultimo+' -> '+precio+' ('+cambioPct.toFixed(1)+'%)');
+      /* Guardar en historial como anomalo para mostrarlo en UI */
+      HIST_XAU.push({precio: precio, ts: Date.now(), anomalo: true});
+      if(HIST_XAU.length > HIST_MAX) HIST_XAU.shift();
+      return; /* No usar este dato para calculos */
     }
   }
-  var ts = Date.now();
-  HIST_XAU.push({precio: precio, ts: ts});
+  HIST_XAU.push({precio: precio, ts: Date.now()});
   if(HIST_XAU.length > HIST_MAX) HIST_XAU.shift();
 }
 
@@ -2385,15 +2426,20 @@ function getVelocidad(minAtras){
   if(HIST_XAU.length < 2) return null;
   var ahora = Date.now();
   var msAtras = minAtras * 60 * 1000;
-  // Buscar el punto mas cercano a N minutos atras
   var target = ahora - msAtras;
   var best = null, bestDiff = Infinity;
   for(var i = 0; i < HIST_XAU.length; i++){
+    if(HIST_XAU[i].anomalo) continue; /* CAMBIO v13c: saltar datos anomalos */
     var diff = Math.abs(HIST_XAU[i].ts - target);
     if(diff < bestDiff){ bestDiff = diff; best = HIST_XAU[i]; }
   }
   if(!best || bestDiff > msAtras * 1.5) return null;
-  var precioActual = HIST_XAU[HIST_XAU.length - 1].precio;
+  /* Usar solo el ultimo precio valido (no anomalo) */
+  var precioActual = null;
+  for(var j = HIST_XAU.length-1; j >= 0; j--){
+    if(!HIST_XAU[j].anomalo){ precioActual = HIST_XAU[j].precio; break; }
+  }
+  if(!precioActual) return null;
   return parseFloat((precioActual - best.precio).toFixed(2));
 }
 
@@ -2477,21 +2523,40 @@ function renderImpulsoBTC(){
   var precio = MKT['btc'] ? MKT['btc'].price : 0;
   if(!precio || precio <= 0) return;
 
-  // Registrar historial
+  // CAMBIO v13c: Filtro anomalos BTC antes de registrar
+  // Regla 1 — rango fisico BTC
+  if(precio < 5000 || precio > 500000) return;
+  // Regla 2 — filtro absoluto: salto > $500 en un tick = error API
+  // Regla 3 — filtro porcentual: salto > 2% en un tick = error API
+  var BTC_MAX = 180; // 180 registros = 15 min a 5s/tick
+  if(HIST_BTC.length > 0){
+    var ultBTC = HIST_BTC[HIST_BTC.length-1].precio;
+    var saltoBTC = Math.abs(precio - ultBTC);
+    var saltoPct = saltoBTC / ultBTC * 100;
+    if(saltoBTC > 500 || saltoPct > 2){
+      console.warn('[BTC] Dato anomalo ignorado: '+ultBTC+' -> '+precio+' ($'+saltoBTC.toFixed(0)+' / '+saltoPct.toFixed(1)+'%)');
+      HIST_BTC.push({precio: precio, ts: Date.now(), anomalo: true});
+      if(HIST_BTC.length > BTC_MAX) HIST_BTC.shift();
+      // Actualizar UI pero NO calcular velocidades con este dato
+      var stElA = document.getElementById('btc-imp-estado');
+      if(stElA) stElA.innerHTML = '<span style="color:var(--yellow)">⚠ Dato anomalo ignorado</span> — ' + new Date().toLocaleTimeString();
+      return;
+    }
+  }
   HIST_BTC.push({precio: precio, ts: Date.now()});
-  if(HIST_BTC.length > 60) HIST_BTC.shift();
+  if(HIST_BTC.length > BTC_MAX) HIST_BTC.shift();
 
   // Barra de progreso
-  var pctAcum = Math.round((HIST_BTC.length / 60) * 100);
+  var pctAcum = Math.round((HIST_BTC.length / BTC_MAX) * 100);
   var pFill = document.getElementById('btc-hist-prog-fill');
   var pPct  = document.getElementById('btc-hist-prog-pct');
   if(pFill){ pFill.style.width = pctAcum + '%'; pFill.style.background = pctAcum >= 100 ? 'var(--green)' : pctAcum > 50 ? 'var(--yellow)' : '#f97316'; }
-  if(pPct)  pPct.textContent = HIST_BTC.length + '/60';
+  if(pPct)  pPct.textContent = HIST_BTC.length + '/' + BTC_MAX + ' (15min)';
 
   var stEl = document.getElementById('btc-imp-estado');
   if(stEl){
-    if(HIST_BTC.length < 60){
-      stEl.textContent = 'Acumulando... ' + pctAcum + '% — faltan ' + (60 - HIST_BTC.length) + ' registros';
+    if(HIST_BTC.length < BTC_MAX){
+      stEl.textContent = 'Acumulando... ' + pctAcum + '% — ' + HIST_BTC.length + '/' + BTC_MAX + ' registros';
       stEl.style.color = 'var(--yellow)';
     } else {
       stEl.innerHTML = '<span style="color:var(--green);font-weight:700">● ACTIVO</span> — ' + new Date().toLocaleTimeString();
@@ -2503,9 +2568,18 @@ function renderImpulsoBTC(){
     if(HIST_BTC.length < 2) return null;
     var ahora = Date.now(), msAtras = min*60000, target = ahora - msAtras;
     var best = null, bestDiff = Infinity;
-    HIST_BTC.forEach(function(r){ var d = Math.abs(r.ts - target); if(d < bestDiff){ bestDiff = d; best = r; }});
+    /* CAMBIO v13c: saltar anomalos al buscar el punto de referencia */
+    HIST_BTC.forEach(function(r){
+      if(r.anomalo) return;
+      var d = Math.abs(r.ts - target);
+      if(d < bestDiff){ bestDiff = d; best = r; }
+    });
     if(!best || bestDiff > msAtras*1.5) return null;
-    return parseFloat((HIST_BTC[HIST_BTC.length-1].precio - best.precio).toFixed(0));
+    /* Usar ultimo precio valido */
+    var ultValido = null;
+    for(var j=HIST_BTC.length-1;j>=0;j--){ if(!HIST_BTC[j].anomalo){ultValido=HIST_BTC[j].precio;break;} }
+    if(!ultValido) return null;
+    return parseFloat((ultValido - best.precio).toFixed(0));
   }
 
   var v1 = getVelBTC(1), v5 = getVelBTC(5), v15 = getVelBTC(15);
@@ -2578,7 +2652,8 @@ function renderImpulsoBTC(){
       var diff=rec.precio-prev, dStr=(diff>=0?'+':'')+diff.toFixed(0);
       var dColor=diff>0?'var(--green)':diff<0?'var(--red)':'var(--text3)';
       var t2=new Date(rec.ts), tStr=t2.getHours().toString().padStart(2,'0')+':'+t2.getMinutes().toString().padStart(2,'0')+':'+t2.getSeconds().toString().padStart(2,'0');
-      rows+='<div class="hist-row"><span style="color:var(--text3)">'+tStr+'</span><span>$'+rec.precio.toFixed(0)+'</span><span style="color:'+dColor+'">'+dStr+'</span></div>';
+      var anomTagB = rec.anomalo ? ' <span style="color:var(--yellow)">⚠</span>' : '';
+      rows+='<div class="hist-row"><span style="color:var(--text3)">'+tStr+'</span><span>$'+rec.precio.toFixed(0)+anomTagB+'</span><span style="color:'+dColor+'">'+(rec.anomalo?'IGNORADO':dStr)+'</span></div>';
     }
     listEl.innerHTML=rows||'<span style="font-size:10px;color:var(--text3)">Sin registros aun...</span>';
   }
@@ -2675,16 +2750,16 @@ function renderImpulsoXAU(){
   /* CAMBIO v11: Barra de progreso de acumulacion de historial */
   var progFill = document.getElementById('xau-hist-prog-fill');
   var progPct  = document.getElementById('xau-hist-prog-pct');
-  var pctAcum  = Math.round((HIST_XAU.length / HIST_MAX) * 100);
+  var pctAcum  = Math.round((HIST_XAU.length / HIST_MAX) * 100); /* CAMBIO v13c: HIST_MAX=180 */
   if(progFill){
     progFill.style.width = pctAcum + '%';
     // Verde cuando completo, amarillo acumulando
     progFill.style.background = pctAcum >= 100 ? 'var(--green)' : pctAcum > 50 ? 'var(--yellow)' : '#f97316';
   }
-  if(progPct) progPct.textContent = HIST_XAU.length + '/60';
+  if(progPct) progPct.textContent = HIST_XAU.length + '/' + HIST_MAX + ' (15min)';
   if(stEl){
     if(HIST_XAU.length < HIST_MAX){
-      stEl.textContent = 'Acumulando... ' + pctAcum + '% — faltan ' + (HIST_MAX - HIST_XAU.length) + ' registros';
+      stEl.textContent = 'Acumulando... ' + pctAcum + '% — ' + HIST_XAU.length + '/' + HIST_MAX + ' registros';
       stEl.style.color = 'var(--yellow)';
     } else {
       /* CAMBIO v11: Cuando historial completo mostrar punto verde ACTIVO */
@@ -2794,7 +2869,8 @@ function renderImpulsoXAU(){
       var dColor = diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--text3)';
       var t2 = new Date(rec.ts);
       var tStr = t2.getHours().toString().padStart(2,'0') + ':' + t2.getMinutes().toString().padStart(2,'0') + ':' + t2.getSeconds().toString().padStart(2,'0');
-      rows += '<div class="hist-row"><span style="color:var(--text3)">' + tStr + '</span><span>' + rec.precio.toFixed(2) + '</span><span style="color:' + dColor + '">' + dStr + '</span></div>';
+      var anomTag = rec.anomalo ? ' <span style="color:var(--yellow)">⚠</span>' : '';
+      rows += '<div class="hist-row"><span style="color:var(--text3)">' + tStr + '</span><span>' + rec.precio.toFixed(2) + anomTag + '</span><span style="color:' + dColor + '">' + (rec.anomalo ? 'IGNORADO' : dStr) + '</span></div>';
     }
     listEl.innerHTML = rows || '<span style="font-size:10px;color:var(--text3)">Sin registros aun...</span>';
   }
