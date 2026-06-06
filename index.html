@@ -183,6 +183,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 .tg-btn{padding:5px 12px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-family:var(--mono);font-size:10px;font-weight:700;cursor:pointer;margin-top:6px}
 .tg-badge-on{color:var(--green);font-weight:700}
 .tg-badge-off{color:var(--text3)}
+
+/* ===== SIMULADOR DE ENTRADA v12 ===== */
+.sim-card{margin-top:8px;background:rgba(59,130,246,0.07);border:.5px solid rgba(59,130,246,0.35);border-radius:var(--radius);padding:10px 12px}
+.sim-title{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.sim-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px}
+.sim-cell{background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center;border:.5px solid var(--border)}
+.sim-cell-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:2px}
+.sim-cell-val{font-size:15px;font-weight:700;font-family:var(--mono)}
+.sim-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap}
+.sim-row label{font-size:10px;color:var(--text3);min-width:80px}
+.sim-row input{flex:1;min-width:80px;padding:4px 8px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:11px;font-family:var(--mono);outline:none}
+.sim-row input:focus{border-color:var(--blue)}
+.sim-btn{padding:5px 12px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-family:var(--mono);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -190,7 +203,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 <!-- STICKY HEADER FIJO -->
 <div class="sticky-header">
   <div class="topbar">
-    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v10.0 SCALP</span></div>
+    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v13.0 SCALP</span></div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div class="online"><div class="dot"></div>ONLINE</div>
       <span class="horario-badge bg" id="horario-badge">10AM-10PM</span>
@@ -267,17 +280,42 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
       <span class="badge bb" id="btc-sc-sesion">--</span>
     </div>
     <div style="font-size:10px;color:var(--text2)" id="btc-sc-reason">--</div>
+
+    <!-- CAMBIO v12: Simulador de entrada BTC -->
+    <div class="sim-card" id="btc-sim-card" style="display:none">
+      <div class="sim-title">&#127919; Simular mi entrada &mdash; ver c&oacute;mo me ir&iacute;a</div>
+      <div class="sim-row">
+        <label>Mi entrada</label>
+        <input type="number" id="btc-sim-entrada" placeholder="Ej: 67500" step="0.01" oninput="simActualizar('btc')">
+        <button class="sim-btn" onclick="simUsarPrecio('btc')">Precio actual</button>
+      </div>
+      <div class="sim-row">
+        <label>Capital USD</label>
+        <input type="number" id="btc-sim-capital" placeholder="Ej: 100" step="1" value="100" oninput="simActualizar('btc')">
+      </div>
+      <div class="sim-grid" id="btc-sim-res" style="display:none">
+        <div class="sim-cell"><div class="sim-cell-lbl">PnL ahora</div><div class="sim-cell-val" id="btc-sim-pnl">--</div></div>
+        <div class="sim-cell"><div class="sim-cell-lbl">Si llega TP</div><div class="sim-cell-val" id="btc-sim-tp" style="color:var(--green)">--</div></div>
+        <div class="sim-cell"><div class="sim-cell-lbl">Si llega SL</div><div class="sim-cell-val" id="btc-sim-sl" style="color:var(--red)">--</div></div>
+      </div>
+      <div id="btc-sim-txt" style="font-size:10px;color:var(--text3);margin-top:4px"></div>
+    </div>
   </div>
 
-  <!-- FILTROS ANTI-SEÑAL FALSA -->
+  <!-- FILTROS ANTI-SEÑAL FALSA BTC — CAMBIO v13: colapsable -->
   <div class="card" style="margin-bottom:8px">
-    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🔍 Filtros anti-señal falsa</div>
-    <div class="filter-row"><span class="filter-icon" id="btc-f1-ico">○</span><span class="filter-lbl">EMA 9 cruce EMA 21</span><span class="filter-val" id="btc-f1">--</span></div>
-    <div class="filter-row"><span class="filter-icon" id="btc-f2-ico">○</span><span class="filter-lbl">RSI en zona correcta</span><span class="filter-val" id="btc-f2">--</span></div>
-    <div class="filter-row"><span class="filter-icon" id="btc-f3-ico">○</span><span class="filter-lbl">MACD confirma direccion</span><span class="filter-val" id="btc-f3">--</span></div>
-    <div class="filter-row"><span class="filter-icon" id="btc-f4-ico">○</span><span class="filter-lbl">Vela fuerte (cuerpo &gt; 60%)</span><span class="filter-val" id="btc-f4">--</span></div>
-    <div class="filter-row"><span class="filter-icon" id="btc-f5-ico">○</span><span class="filter-lbl">Sesion con liquidez</span><span class="filter-val" id="btc-f5">--</span></div>
-    <div style="margin-top:8px">
+    <div onclick="toggleSec('btc-filtros')" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px">🔍 Filtros anti-señal falsa — <span id="btc-f-resumen" style="color:var(--yellow)">0/5</span></div>
+      <span id="btc-filtros-ico" style="font-size:10px;color:var(--text3)">► mostrar</span>
+    </div>
+    <div id="btc-filtros" style="display:none">
+      <div class="filter-row"><span class="filter-icon" id="btc-f1-ico">○</span><span class="filter-lbl">EMA 9 cruce EMA 21</span><span class="filter-val" id="btc-f1">--</span></div>
+      <div class="filter-row"><span class="filter-icon" id="btc-f2-ico">○</span><span class="filter-lbl">RSI en zona correcta</span><span class="filter-val" id="btc-f2">--</span></div>
+      <div class="filter-row"><span class="filter-icon" id="btc-f3-ico">○</span><span class="filter-lbl">MACD confirma direccion</span><span class="filter-val" id="btc-f3">--</span></div>
+      <div class="filter-row"><span class="filter-icon" id="btc-f4-ico">○</span><span class="filter-lbl">Vela fuerte (cuerpo &gt; 60%)</span><span class="filter-val" id="btc-f4">--</span></div>
+      <div class="filter-row"><span class="filter-icon" id="btc-f5-ico">○</span><span class="filter-lbl">Sesion con liquidez</span><span class="filter-val" id="btc-f5">--</span></div>
+    </div>
+    <div style="margin-top:6px">
       <div class="quality-bar"><span class="quality-label">Calidad señal</span><div class="quality-bg"><div class="quality-fill" id="btc-qual-fill" style="width:0%"></div></div><span style="font-size:11px;font-weight:700;min-width:34px" id="btc-qual-pct">0%</span></div>
     </div>
   </div>
@@ -397,6 +435,91 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="cap-bar-bg"><div class="cap-fill" id="btc-cap-fill" style="width:50%;background:var(--blue)"></div></div>
     <div class="track-marks"><span style="color:var(--red)">Perdida critica</span><span>SL</span><span>Entrada</span><span>TP 50%</span><span style="color:var(--green)">TP meta</span></div>
   </div>
+  <!-- CAMBIO v13: Monitor de Impulso BTC + Panel Telegram — igual que XAU -->
+  <div class="sec">&#9889; Monitor de Impulso &amp; Alertas — BTC/USD</div>
+  <div class="impulso-card">
+    <div class="impulso-title">
+      <span>IMPULSO DE PRECIO BTC</span>
+      <span id="btc-imp-estado" style="font-size:11px;color:var(--text2)">Acumulando datos...</span>
+    </div>
+    <div id="btc-hist-prog-wrap" style="margin-top:6px;display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;border:.5px solid var(--border)">
+        <div id="btc-hist-prog-fill" style="height:100%;width:0%;background:var(--yellow);border-radius:3px;transition:width .5s,background .4s"></div>
+      </div>
+      <span id="btc-hist-prog-pct" style="font-size:10px;color:var(--text3);white-space:nowrap;font-family:var(--mono)">0/60</span>
+    </div>
+    <div class="impulso-meter">
+      <div class="impulso-cell">
+        <div class="impulso-cell-lbl">1 Min</div>
+        <div class="impulso-cell-val" id="btc-vel1" style="color:var(--text2)">--</div>
+      </div>
+      <div class="impulso-cell">
+        <div class="impulso-cell-lbl">5 Min</div>
+        <div class="impulso-cell-val" id="btc-vel5" style="color:var(--text2)">--</div>
+      </div>
+      <div class="impulso-cell">
+        <div class="impulso-cell-lbl">15 Min</div>
+        <div class="impulso-cell-val" id="btc-vel15" style="color:var(--text2)">--</div>
+      </div>
+    </div>
+    <div class="impulso-bar-wrap">
+      <div class="impulso-bar-bg">
+        <div class="impulso-bar-fill" id="btc-imp-fill" style="width:0%;left:50%;background:var(--blue)"></div>
+        <div class="impulso-bar-center"></div>
+      </div>
+      <div class="impulso-marks">
+        <span style="color:var(--red)">Caida</span>
+        <span>Neutral 0</span>
+        <span style="color:var(--green)">Subida</span>
+      </div>
+    </div>
+    <div class="fuerza-row">
+      <span class="fuerza-arrows" id="btc-imp-arrows">--</span>
+      <span class="fuerza-lbl" id="btc-imp-label">Esperando historial...</span>
+      <span class="fuerza-val" id="btc-imp-pct" style="color:var(--text2)">--%</span>
+    </div>
+    <div id="btc-alertas-wrap" style="margin-top:8px"></div>
+    <div class="soporte-input-row">
+      <label>Soporte clave</label>
+      <input type="number" id="btc-soporte" placeholder="Ej: 61000" step="1" oninput="guardarSoporteBTC()">
+      <span style="font-size:10px;color:var(--text3);white-space:nowrap">alerta si rompe</span>
+    </div>
+    <div style="margin-top:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleSec('btc-historial')">
+        <span style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px">Historial 15 min (ultimos 60 puntos)</span>
+        <span style="font-size:10px;color:var(--text3)" id="btc-historial-ico">mostrar</span>
+      </div>
+      <div id="btc-historial" style="display:none">
+        <div class="historial-wrap" id="btc-hist-list">
+          <span style="font-size:10px;color:var(--text3)">Sin registros aun...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMBIO v13: Panel Telegram BTC — identico al de XAU -->
+  <div id="btc-tg-sec-label" class="sec" style="display:none">&#128242; Notificaciones Telegram — alertas al movil</div>
+  <div class="tg-card" id="btc-tg-panel" style="display:none">
+    <div class="tg-title">&#128276; Telegram Bot <span id="btc-tg-badge" class="tg-badge-off">&#9679; desconectado</span></div>
+    <div class="tg-row">
+      <label>Token</label>
+      <input type="password" id="btc-tg-token" placeholder="Tu token de bot" oninput="tgSincronizar()">
+    </div>
+    <div class="tg-row">
+      <label>Chat ID</label>
+      <input type="text" id="btc-tg-chatid" placeholder="Tu chat ID" oninput="tgSincronizar()">
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+      <button class="tg-btn" onclick="tgTest()">&#9654; Enviar mensaje de prueba</button>
+      <button class="tg-btn" style="background:var(--bg3);color:var(--text2)" onclick="tgLimpiar()">&#215; Limpiar</button>
+    </div>
+    <div class="tg-status" id="btc-tg-status">Ingresa Token y Chat ID para activar.</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--text3)">
+      &#9888; Alertas BTC: subida Y bajada &gt;10 / &gt;20 / &gt;30 pts en 5 min
+    </div>
+  </div>
+
+
 </div>
 
 <!-- PANEL XAU -->
@@ -426,6 +549,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
     <div class="impulso-title">
       <span>IMPULSO DE PRECIO XAU</span>
       <span id="xau-imp-estado" style="font-size:11px;color:var(--text2)">Acumulando datos...</span>
+      <div id="xau-hist-prog-wrap" style="margin-top:6px;display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;border:.5px solid var(--border)">
+          <div id="xau-hist-prog-fill" style="height:100%;width:0%;background:var(--yellow);border-radius:3px;transition:width .5s,background .4s"></div>
+        </div>
+        <span id="xau-hist-prog-pct" style="font-size:10px;color:var(--text3);white-space:nowrap;font-family:var(--mono)">0/60</span>
+      </div>
     </div>
     <div class="impulso-meter">
       <div class="impulso-cell">
@@ -482,8 +611,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
        El usuario ingresa su Token y Chat ID. Se guarda en memoria de sesion.
        Las alertas solo se envian cuando hay tendencia ALCISTA confirmada.
   ===== -->
-  <div class="sec">&#128242; Notificaciones Telegram — alertas al movil</div>
-  <div class="tg-card">
+  <div id="tg-sec-label" class="sec" style="display:none">&#128242; Notificaciones Telegram — alertas al movil</div>
+  <div class="tg-card" id="tg-panel" style="display:none">
     <div class="tg-title">&#128276; Telegram Bot <span id="tg-estado-badge" class="tg-badge-off">● desconectado</span></div>
     <div class="tg-row">
       <label>Token</label>
@@ -531,17 +660,42 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
       <span class="badge bb" id="xau-sc-sesion">--</span>
     </div>
     <div style="font-size:10px;color:var(--text2)" id="xau-sc-reason">--</div>
+
+    <!-- CAMBIO v12: Simulador de entrada XAU -->
+    <div class="sim-card" id="xau-sim-card" style="display:none">
+      <div class="sim-title">&#127919; Simular mi entrada &mdash; ver c&oacute;mo me ir&iacute;a</div>
+      <div class="sim-row">
+        <label>Mi entrada</label>
+        <input type="number" id="xau-sim-entrada" placeholder="Ej: 4344.34" step="0.01" oninput="simActualizar('xau')">
+        <button class="sim-btn" onclick="simUsarPrecio('xau')">Precio actual</button>
+      </div>
+      <div class="sim-row">
+        <label>Capital USD</label>
+        <input type="number" id="xau-sim-capital" placeholder="Ej: 100" step="1" value="100" oninput="simActualizar('xau')">
+      </div>
+      <div class="sim-grid" id="xau-sim-res" style="display:none">
+        <div class="sim-cell"><div class="sim-cell-lbl">PnL ahora</div><div class="sim-cell-val" id="xau-sim-pnl">--</div></div>
+        <div class="sim-cell"><div class="sim-cell-lbl">Si llega TP</div><div class="sim-cell-val" id="xau-sim-tp" style="color:var(--green)">--</div></div>
+        <div class="sim-cell"><div class="sim-cell-lbl">Si llega SL</div><div class="sim-cell-val" id="xau-sim-sl" style="color:var(--red)">--</div></div>
+      </div>
+      <div id="xau-sim-txt" style="font-size:10px;color:var(--text3);margin-top:4px"></div>
+    </div>
   </div>
 
-  <!-- FILTROS ANTI-SEÑAL FALSA XAU -->
+  <!-- FILTROS ANTI-SEÑAL FALSA XAU — CAMBIO v13: colapsable -->
   <div class="card" style="margin-bottom:8px">
-    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🔍 Filtros anti-señal falsa</div>
-    <div class="filter-row"><span class="filter-icon" id="xau-f1-ico">○</span><span class="filter-lbl">EMA 9 cruce EMA 21</span><span class="filter-val" id="xau-f1">--</span></div>
-    <div class="filter-row"><span class="filter-icon" id="xau-f2-ico">○</span><span class="filter-lbl">RSI en zona correcta</span><span class="filter-val" id="xau-f2">--</span></div>
-    <div class="filter-row"><span class="filter-icon" id="xau-f3-ico">○</span><span class="filter-lbl">MACD confirma direccion</span><span class="filter-val" id="xau-f3">--</span></div>
-    <div class="filter-row"><span class="filter-icon" id="xau-f4-ico">○</span><span class="filter-lbl">Vela fuerte (cuerpo &gt; 60%)</span><span class="filter-val" id="xau-f4">--</span></div>
-    <div class="filter-row"><span class="filter-icon" id="xau-f5-ico">○</span><span class="filter-lbl">Sesion con liquidez</span><span class="filter-val" id="xau-f5">--</span></div>
-    <div style="margin-top:8px">
+    <div onclick="toggleSec('xau-filtros')" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px">🔍 Filtros anti-señal falsa — <span id="xau-f-resumen" style="color:var(--yellow)">0/5</span></div>
+      <span id="xau-filtros-ico" style="font-size:10px;color:var(--text3)">► mostrar</span>
+    </div>
+    <div id="xau-filtros" style="display:none">
+      <div class="filter-row"><span class="filter-icon" id="xau-f1-ico">○</span><span class="filter-lbl">EMA 9 cruce EMA 21</span><span class="filter-val" id="xau-f1">--</span></div>
+      <div class="filter-row"><span class="filter-icon" id="xau-f2-ico">○</span><span class="filter-lbl">RSI en zona correcta</span><span class="filter-val" id="xau-f2">--</span></div>
+      <div class="filter-row"><span class="filter-icon" id="xau-f3-ico">○</span><span class="filter-lbl">MACD confirma direccion</span><span class="filter-val" id="xau-f3">--</span></div>
+      <div class="filter-row"><span class="filter-icon" id="xau-f4-ico">○</span><span class="filter-lbl">Vela fuerte (cuerpo &gt; 60%)</span><span class="filter-val" id="xau-f4">--</span></div>
+      <div class="filter-row"><span class="filter-icon" id="xau-f5-ico">○</span><span class="filter-lbl">Sesion con liquidez</span><span class="filter-val" id="xau-f5">--</span></div>
+    </div>
+    <div style="margin-top:6px">
       <div class="quality-bar"><span class="quality-label">Calidad señal</span><div class="quality-bg"><div class="quality-fill" id="xau-qual-fill" style="width:0%"></div></div><span style="font-size:11px;font-weight:700;min-width:34px" id="xau-qual-pct">0%</span></div>
     </div>
   </div>
@@ -1512,6 +1666,13 @@ function renderScalp(act,ds){
   qf.style.width=ds.calidad+'%';
   qf.style.background=ds.calidad>=80?'#22c55e':ds.calidad>=60?'#eab308':'#ef4444';
   el(id+'qual-pct').textContent=ds.calidad+'%';
+  /* CAMBIO v13: Actualizar resumen colapsable X/5 con color segun calidad */
+  var resEl = document.getElementById(id+'f-resumen');
+  if(resEl){
+    var scoreActivo = isC ? ds.scoreCompra : isV ? ds.scoreVenta : Math.max(ds.scoreCompra||0, ds.scoreVenta||0);
+    resEl.textContent = scoreActivo + '/5';
+    resEl.style.color = scoreActivo>=4 ? 'var(--green)' : scoreActivo>=3 ? 'var(--yellow)' : 'var(--red)';
+  }
 
   /* Panel mantener */
   function setHold(num,ok,txt){
@@ -1545,6 +1706,18 @@ function renderScalp(act,ds){
     if(isC)playBuySound();else playSellSound();
   }
   _lastSignalAlert[act]=sigKey;
+
+  /* CAMBIO v12: Mostrar/ocultar simulador segun señal activa */
+  if(isC){
+    simMostrar(act, 'compra', ds.sl, ds.tp);
+    if(act==='xau') tgActualizarVisibilidad(true);
+  } else if(isV){
+    simMostrar(act, 'venta', ds.sl, ds.tp);
+    if(act==='xau') tgActualizarVisibilidad(false);
+  } else {
+    simOcultar(act);
+    if(act==='xau') tgActualizarVisibilidad(false);
+  }
 }
 
 
@@ -1715,6 +1888,7 @@ function renderActivo(act){
   for(var n=1;n<=2;n++)renderTrade(act,n,d);
   renderCapital(act);
   if(act==='xau') renderImpulsoXAU();
+  if(act==='btc') renderImpulsoBTC();
 }
 
 function calcTrade(act,n){
@@ -1879,16 +2053,217 @@ var TG = {
   COOLDOWN_MS: { n1: 120000, n2: 90000, n3: 60000, soporte: 300000 }
 };
 
+
+/* =========================================================
+   CAMBIO v11: Control de visibilidad del panel Telegram
+   El panel solo aparece cuando la señal XAU dice COMPRA.
+   Se oculta automaticamente en VENTA o ESPERAR.
+   Esto evita distracciones y refuerza la disciplina:
+   solo configurar alertas cuando hay señal activa de compra.
+========================================================= */
+var _tgUltimaSenal = '';  // para no animar innecesariamente
+
+function tgActualizarVisibilidad(isCompra){
+  var panel = document.getElementById('tg-panel');
+  var label = document.getElementById('tg-sec-label');
+  if(!panel || !label) return;
+
+  if(isCompra){
+    /* Señal COMPRA activa — mostrar panel Telegram */
+    if(_tgUltimaSenal !== 'compra'){
+      panel.style.display = 'block';
+      label.style.display = 'block';
+      _tgUltimaSenal = 'compra';
+    }
+  } else {
+    /* VENTA o ESPERAR — ocultar panel */
+    if(_tgUltimaSenal !== 'otra'){
+      panel.style.display = 'none';
+      label.style.display = 'none';
+      _tgUltimaSenal = 'otra';
+    }
+  }
+}
+
+
+/* =========================================================
+   CAMBIO v12: Motor del Simulador de Entrada
+   Muestra PnL en tiempo real segun precio actual vs entrada.
+   Calcula ganancia potencial al TP y perdida al SL.
+   Funciona para XAU y BTC con sus respectivos parametros.
+========================================================= */
+var _simData = { xau:{dir:'',entrada:0,sl:0,tp:0}, btc:{dir:'',entrada:0,sl:0,tp:0} };
+
+function simUsarPrecio(act){
+  /* CAMBIO v12: Rellena el campo con el precio actual del activo */
+  var precio = MKT[act] ? MKT[act].price : 0;
+  var input = document.getElementById(act+'-sim-entrada');
+  if(input && precio > 0){
+    input.value = precio.toFixed(act==='xau' ? 2 : 0);
+    simActualizar(act);
+  }
+}
+
+function simActualizar(act){
+  /* CAMBIO v12: Recalcula PnL cada vez que cambia la entrada o capital */
+  var entradaEl = document.getElementById(act+'-sim-entrada');
+  var capitalEl = document.getElementById(act+'-sim-capital');
+  var resEl     = document.getElementById(act+'-sim-res');
+  var pnlEl     = document.getElementById(act+'-sim-pnl');
+  var tpEl      = document.getElementById(act+'-sim-tp');
+  var slEl      = document.getElementById(act+'-sim-sl');
+  var txtEl     = document.getElementById(act+'-sim-txt');
+  if(!entradaEl || !capitalEl) return;
+
+  var entrada  = parseFloat(entradaEl.value);
+  var capital  = parseFloat(capitalEl.value) || 100;
+  var d        = _simData[act];
+  var precioAct = MKT[act] ? MKT[act].price : 0;
+
+  if(!entrada || entrada <= 0 || !d.sl || !d.tp || !d.dir){
+    if(txtEl) txtEl.textContent = 'Ingresa tu precio de entrada para ver la simulacion.';
+    if(resEl) resEl.style.display = 'none';
+    return;
+  }
+
+  /* Calcular movimiento en % */
+  var pctAct = (precioAct - entrada) / entrada;
+  var pctTP  = (d.tp - entrada) / entrada;
+  var pctSL  = (d.sl - entrada) / entrada;
+
+  /* Para VENTA invertir la direccion */
+  if(d.dir === 'venta'){
+    pctAct = -pctAct;
+    pctTP  = -pctTP;
+    pctSL  = -pctSL;
+  }
+
+  var pnlAct = capital * pctAct;
+  var pnlTP  = capital * Math.abs(pctTP);
+  var pnlSL  = capital * Math.abs(pctSL);
+
+  if(resEl) resEl.style.display = 'grid';
+
+  /* PnL actual */
+  if(pnlEl){
+    pnlEl.textContent = (pnlAct >= 0 ? '+' : '') + '$' + pnlAct.toFixed(2);
+    pnlEl.style.color = pnlAct >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+  if(tpEl) tpEl.textContent = '+$' + pnlTP.toFixed(2);
+  if(slEl) slEl.textContent = '-$' + pnlSL.toFixed(2);
+
+  /* Texto de estado */
+  if(txtEl){
+    var dist = precioAct - entrada;
+    var distFmt = (dist >= 0 ? '+' : '') + dist.toFixed(act==='xau'?2:0) + ' pts desde tu entrada';
+    var rr = pnlTP / (pnlSL || 1);
+    txtEl.textContent = distFmt + ' | R:R ' + rr.toFixed(1) + 'x';
+    txtEl.style.color = pnlAct >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+}
+
+function simMostrar(act, dir, sl, tp){
+  /* CAMBIO v12: Llamado desde renderScalp cuando hay señal activa.
+     Muestra el card y guarda SL/TP para los calculos. */
+  _simData[act] = { dir:dir, sl:sl, tp:tp };
+  var card = document.getElementById(act+'-sim-card');
+  if(card) card.style.display = 'block';
+  simActualizar(act);
+}
+
+function simOcultar(act){
+  /* CAMBIO v12: Oculta el simulador cuando no hay señal */
+  var card = document.getElementById(act+'-sim-card');
+  if(card) card.style.display = 'none';
+}
+
+/* Actualizar PnL en tiempo real con cada tick de precio */
+function simTickActualizar(){
+  ['xau','btc'].forEach(function(act){
+    var card = document.getElementById(act+'-sim-card');
+    if(card && card.style.display !== 'none'){
+      simActualizar(act);
+    }
+  });
+}
+
+/* =========================================================
+   CAMBIO v12: Alertas Telegram XAU — AMBAS direcciones
+   Envia notificacion cuando el oro sube O baja 10/20/30 pts.
+   Reemplaza la logica anterior que solo enviaba alcistas.
+========================================================= */
+function tgAlertaMovimiento(v1, v5, v15, precio){
+  if(!TG || !TG.activo) return;
+  var hora = new Date().toLocaleTimeString();
+
+  /* ── Bajadas ── */
+  if(v5 <= -30){
+    if(!tgEnCooldown('baj3')){
+      tgEnviar(
+        '\uD83D\uDEA8 <b>DESPLOME XAU/USD</b>\n' +
+        'Precio: <b>' + precio.toFixed(2) + '</b>\n' +
+        '1m: ' + fmtVel(v1) + ' | <b>5m: ' + v5.toFixed(2) + ' pts</b> | 15m: ' + fmtVel(v15) + '\n' +
+        '\u23F0 ' + hora
+      );
+    }
+  } else if(v5 <= -20){
+    if(!tgEnCooldown('baj2')){
+      tgEnviar(
+        '\u26A0\uFE0F <b>Caida fuerte XAU/USD</b>\n' +
+        'Precio: <b>' + precio.toFixed(2) + '</b>\n' +
+        '5m: <b>' + v5.toFixed(2) + ' pts</b>\n' +
+        '\u23F0 ' + hora
+      );
+    }
+  } else if(v5 <= -10){
+    if(!tgEnCooldown('baj1')){
+      tgEnviar(
+        '\u26A0\uFE0F Movimiento bajista XAU\n' +
+        'Precio: ' + precio.toFixed(2) + ' | 5m: ' + v5.toFixed(2) + ' pts\n' +
+        '\u23F0 ' + hora
+      );
+    }
+  }
+
+  /* ── Subidas ── */
+  if(v5 >= 30){
+    if(!tgEnCooldown('alc3')){
+      tgEnviar(
+        '\uD83D\uDE80 <b>DISPARO ALCISTA XAU/USD</b>\n' +
+        'Precio: <b>' + precio.toFixed(2) + '</b>\n' +
+        '1m: ' + fmtVel(v1) + ' | <b>5m: +' + v5.toFixed(2) + ' pts</b> | 15m: ' + fmtVel(v15) + '\n' +
+        '\u23F0 ' + hora
+      );
+    }
+  } else if(v5 >= 20){
+    if(!tgEnCooldown('alc2')){
+      tgEnviar(
+        '\u2B06\uFE0F <b>Subida fuerte XAU/USD</b>\n' +
+        'Precio: <b>' + precio.toFixed(2) + '</b>\n' +
+        '5m: <b>+' + v5.toFixed(2) + ' pts</b>\n' +
+        '\u23F0 ' + hora
+      );
+    }
+  } else if(v5 >= 10){
+    if(!tgEnCooldown('alc1')){
+      tgEnviar(
+        '\u2197\uFE0F Subida XAU/USD\n' +
+        'Precio: ' + precio.toFixed(2) + ' | 5m: +' + v5.toFixed(2) + ' pts\n' +
+        '\u23F0 ' + hora
+      );
+    }
+  }
+}
 function tgGuardar(){
   /* CAMBIO v10: Lee campos del panel y actualiza el objeto TG */
   var tok = document.getElementById('tg-token').value.trim();
   var cid = document.getElementById('tg-chatid').value.trim();
   if(tok) TG.token = tok;
   if(cid) TG.chatId = cid;
-  tgActualizarBadge();
+  tgActualizarBadges();
 }
 
-function tgActualizarBadge(){
+function tgActualizarBadges(){
   var badge = document.getElementById('tg-estado-badge');
   var status = document.getElementById('tg-status-txt');
   if(!badge) return;
@@ -1963,17 +2338,14 @@ function tgLimpiar(){
   document.getElementById('tg-token').value = '';
   document.getElementById('tg-chatid').value = '';
   TG.token = ''; TG.chatId = ''; TG.activo = false;
-  tgActualizarBadge();
+  tgActualizarBadges();
 }
 
-/* Inicializar badge al cargar con los valores precargados */
+/* CAMBIO v13: Inicializar ambos paneles Telegram (XAU y BTC) al cargar */
 setTimeout(function(){
-  tgActualizarBadge();
-  /* Rellenar campos visuales con los valores precargados */
-  var ti = document.getElementById('tg-token');
-  var ci = document.getElementById('tg-chatid');
-  if(ti && !ti.value) ti.value = TG.token;
-  if(ci && !ci.value) ci.value = TG.chatId;
+  tgActualizarBadges();
+  ['tg-token','btc-tg-token'].forEach(function(id){ var e=document.getElementById(id); if(e&&!e.value) e.value=TG.token; });
+  ['tg-chatid','btc-tg-chatid'].forEach(function(id){ var e=document.getElementById(id); if(e&&!e.value) e.value=TG.chatId; });
 }, 500);
 
 /* =========================================================
@@ -2058,6 +2430,172 @@ function fmtVel(v){
   return (v >= 0 ? '+' : '') + parseFloat(v).toFixed(2) + ' pts';
 }
 
+
+/* =========================================================
+   CAMBIO v13: Historial y motor de impulso para BTC
+   Igual que XAU — 60 registros, velocidad 1m/5m/15m,
+   alertas Telegram ambas direcciones.
+========================================================= */
+var HIST_BTC = [];
+var _btcSoporte = 0;
+
+function guardarSoporteBTC(){
+  var v = parseFloat(document.getElementById('btc-soporte').value);
+  _btcSoporte = isNaN(v) ? 0 : v;
+}
+
+/* CAMBIO v13: Sincroniza token/chatId del panel BTC con el objeto TG
+   Un solo bot — los campos BTC y XAU comparten credenciales */
+function tgSincronizar(){
+  var tok = document.getElementById('btc-tg-token').value.trim();
+  var cid = document.getElementById('btc-tg-chatid').value.trim();
+  if(tok){ TG.token = tok; document.getElementById('tg-token').value = tok; }
+  if(cid){ TG.chatId = cid; document.getElementById('tg-chatid').value = cid; }
+  tgActualizarBadges();
+}
+
+function tgActualizarBadges(){
+  /* CAMBIO v13: Actualiza badge en ambos paneles (XAU y BTC) */
+  var ok = TG.token && TG.token.length > 20 && TG.chatId && TG.chatId.length > 4;
+  TG.activo = ok;
+  ['tg-estado-badge','btc-tg-badge'].forEach(function(id){
+    var el2 = document.getElementById(id);
+    if(el2){ el2.textContent = ok ? '● activo' : '● desconectado'; el2.className = ok ? 'tg-badge-on' : 'tg-badge-off'; }
+  });
+  ['tg-status-txt','btc-tg-status'].forEach(function(id){
+    var el2 = document.getElementById(id);
+    if(el2) el2.textContent = ok ? 'Conectado — alertas XAU y BTC se enviaran a tu movil.' : 'Ingresa Token y Chat ID para activar.';
+  });
+  // Sync campos
+  var btcTok = document.getElementById('btc-tg-token');
+  var btcCid = document.getElementById('btc-tg-chatid');
+  if(btcTok && !btcTok.value && TG.token) btcTok.value = TG.token;
+  if(btcCid && !btcCid.value && TG.chatId) btcCid.value = TG.chatId;
+}
+
+function renderImpulsoBTC(){
+  var precio = MKT['btc'] ? MKT['btc'].price : 0;
+  if(!precio || precio <= 0) return;
+
+  // Registrar historial
+  HIST_BTC.push({precio: precio, ts: Date.now()});
+  if(HIST_BTC.length > 60) HIST_BTC.shift();
+
+  // Barra de progreso
+  var pctAcum = Math.round((HIST_BTC.length / 60) * 100);
+  var pFill = document.getElementById('btc-hist-prog-fill');
+  var pPct  = document.getElementById('btc-hist-prog-pct');
+  if(pFill){ pFill.style.width = pctAcum + '%'; pFill.style.background = pctAcum >= 100 ? 'var(--green)' : pctAcum > 50 ? 'var(--yellow)' : '#f97316'; }
+  if(pPct)  pPct.textContent = HIST_BTC.length + '/60';
+
+  var stEl = document.getElementById('btc-imp-estado');
+  if(stEl){
+    if(HIST_BTC.length < 60){
+      stEl.textContent = 'Acumulando... ' + pctAcum + '% — faltan ' + (60 - HIST_BTC.length) + ' registros';
+      stEl.style.color = 'var(--yellow)';
+    } else {
+      stEl.innerHTML = '<span style="color:var(--green);font-weight:700">● ACTIVO</span> — ' + new Date().toLocaleTimeString();
+    }
+  }
+
+  // Velocidades (reutiliza getVelocidad generica)
+  function getVelBTC(min){
+    if(HIST_BTC.length < 2) return null;
+    var ahora = Date.now(), msAtras = min*60000, target = ahora - msAtras;
+    var best = null, bestDiff = Infinity;
+    HIST_BTC.forEach(function(r){ var d = Math.abs(r.ts - target); if(d < bestDiff){ bestDiff = d; best = r; }});
+    if(!best || bestDiff > msAtras*1.5) return null;
+    return parseFloat((HIST_BTC[HIST_BTC.length-1].precio - best.precio).toFixed(0));
+  }
+
+  var v1 = getVelBTC(1), v5 = getVelBTC(5), v15 = getVelBTC(15);
+
+  function fv(v){ if(v===null) return '--'; return (v>=0?'+':'')+v+' pts'; }
+  function cv(v){ if(v===null) return 'var(--text2)'; return v>100?'var(--green)':v<-100?'var(--red)':'var(--yellow)'; }
+
+  var v1el=document.getElementById('btc-vel1'), v5el=document.getElementById('btc-vel5'), v15el=document.getElementById('btc-vel15');
+  if(v1el){ v1el.textContent=fv(v1); v1el.style.color=cv(v1); }
+  if(v5el){ v5el.textContent=fv(v5); v5el.style.color=cv(v5); }
+  if(v15el){ v15el.textContent=fv(v15); v15el.style.color=cv(v15); }
+
+  // Barra impulso
+  var impRef = v5!==null?v5:(v1!==null?v1:0);
+  var impFill = document.getElementById('btc-imp-fill');
+  if(impFill){
+    var clamp = Math.max(-500, Math.min(500, impRef));
+    var pct = Math.abs(clamp/500)*50;
+    if(clamp>=0){ impFill.style.left='50%'; impFill.style.width=pct+'%'; impFill.style.background=pct>20?'#22c55e':'#eab308'; }
+    else{ impFill.style.left=(50-pct)+'%'; impFill.style.width=pct+'%'; impFill.style.background=pct>20?'#ef4444':'#eab308'; }
+  }
+
+  // Fuerza direccional
+  var arrows='', label='', pct2=0, color2='var(--text2)';
+  if(HIST_BTC.length >= 4){
+    var baj=0, sub=0;
+    for(var i=1;i<Math.min(HIST_BTC.length,20);i++){ var d2=HIST_BTC[i].precio-HIST_BTC[i-1].precio; if(d2<0)baj++;else if(d2>0)sub++; }
+    var tot=baj+sub||1;
+    if(baj>sub){ pct2=Math.round((baj/tot)*100); color2=pct2>70?'#ef4444':'#eab308'; var n=Math.min(4,Math.floor(pct2/25)); arrows=['','▼','▼▼','▼▼▼','▼▼▼▼'][n]||'▼'; label='FUERZA BAJISTA '+pct2+'%'; }
+    else if(sub>baj){ pct2=Math.round((sub/tot)*100); color2=pct2>70?'#22c55e':'#eab308'; var n2=Math.min(4,Math.floor(pct2/25)); arrows=['','▲','▲▲','▲▲▲','▲▲▲▲'][n2]||'▲'; label='FUERZA ALCISTA '+pct2+'%'; }
+    else{ arrows='—'; label='MOVIMIENTO LATERAL'; pct2=50; }
+  }
+  var aEl=document.getElementById('btc-imp-arrows'), lEl=document.getElementById('btc-imp-label'), pEl=document.getElementById('btc-imp-pct');
+  if(aEl){ aEl.textContent=arrows; aEl.style.color=color2; }
+  if(lEl) lEl.textContent=label||'Calculando...';
+  if(pEl){ pEl.textContent=pct2?pct2+'%':'--%'; pEl.style.color=color2; }
+
+  // Alertas en pantalla
+  var wrap=document.getElementById('btc-alertas-wrap');
+  if(!wrap) return;
+  var html='';
+  if(_btcSoporte>0 && precio<_btcSoporte-10){ html+='<div class="alerta-banner alerta-ruptura">&#128680; SOPORTE ROTO — '+_btcSoporte+' &rarr; '+precio.toFixed(0)+'</div>'; }
+  if(v5!==null){
+    if(v5<=-300){ html+='<div class="alerta-banner alerta-n3">&#128680; DESPLOME BTC — '+v5+' pts en 5 min</div>'; }
+    else if(v5<=-200){ html+='<div class="alerta-banner alerta-n2">&#9888; Caida fuerte BTC — '+v5+' pts</div>'; }
+    else if(v5<=-100){ html+='<div class="alerta-banner alerta-n1">&#9888; Movimiento bajista BTC — '+v5+' pts</div>'; }
+    if(v5>=300){ html+='<div class="alerta-banner alerta-n3" style="border-color:var(--green);color:var(--green)">&#128640; DISPARO ALCISTA BTC — +'+v5+' pts</div>'; }
+    else if(v5>=200){ html+='<div class="alerta-banner alerta-n2" style="border-color:var(--green);color:var(--green)">&#9650; Subida fuerte BTC — +'+v5+' pts</div>'; }
+    else if(v5>=100){ html+='<div class="alerta-banner alerta-n1" style="border-color:var(--yellow);color:var(--yellow)">&#8679; Subida BTC — +'+v5+' pts</div>'; }
+  }
+  wrap.innerHTML = html;
+
+  // Alertas Telegram BTC
+  if(v5!==null && TG && TG.activo){
+    var hora = new Date().toLocaleTimeString();
+    if(v5<=-300 && !tgEnCooldown('btc_baj3')){ tgEnviar('\uD83D\uDEA8 <b>DESPLOME BTC/USD</b>\nPrecio: <b>$'+precio.toFixed(0)+'</b>\n5m: <b>'+v5+' pts</b>\n\u23F0 '+hora); }
+    else if(v5<=-200 && !tgEnCooldown('btc_baj2')){ tgEnviar('\u26A0\uFE0F <b>Caida fuerte BTC/USD</b>\nPrecio: $'+precio.toFixed(0)+' | 5m: <b>'+v5+' pts</b>\n\u23F0 '+hora); }
+    else if(v5<=-100 && !tgEnCooldown('btc_baj1')){ tgEnviar('\u26A0\uFE0F Movimiento bajista BTC\nPrecio: $'+precio.toFixed(0)+' | 5m: '+v5+' pts\n\u23F0 '+hora); }
+    if(v5>=300 && !tgEnCooldown('btc_alc3')){ tgEnviar('\uD83D\uDE80 <b>DISPARO ALCISTA BTC/USD</b>\nPrecio: <b>$'+precio.toFixed(0)+'</b>\n5m: <b>+'+v5+' pts</b>\n\u23F0 '+hora); }
+    else if(v5>=200 && !tgEnCooldown('btc_alc2')){ tgEnviar('\u2B06\uFE0F <b>Subida fuerte BTC/USD</b>\nPrecio: $'+precio.toFixed(0)+' | 5m: <b>+'+v5+' pts</b>\n\u23F0 '+hora); }
+    else if(v5>=100 && !tgEnCooldown('btc_alc1')){ tgEnviar('\u2197\uFE0F Subida BTC\nPrecio: $'+precio.toFixed(0)+' | 5m: +'+v5+' pts\n\u23F0 '+hora); }
+  }
+
+  // Historial BTC
+  var listEl=document.getElementById('btc-hist-list');
+  if(listEl && document.getElementById('btc-historial') && document.getElementById('btc-historial').style.display!=='none'){
+    var rows=''; var slice=HIST_BTC.slice().reverse().slice(0,30);
+    for(var h=0;h<slice.length;h++){
+      var rec=slice[h], prev=h<slice.length-1?slice[h+1].precio:rec.precio;
+      var diff=rec.precio-prev, dStr=(diff>=0?'+':'')+diff.toFixed(0);
+      var dColor=diff>0?'var(--green)':diff<0?'var(--red)':'var(--text3)';
+      var t2=new Date(rec.ts), tStr=t2.getHours().toString().padStart(2,'0')+':'+t2.getMinutes().toString().padStart(2,'0')+':'+t2.getSeconds().toString().padStart(2,'0');
+      rows+='<div class="hist-row"><span style="color:var(--text3)">'+tStr+'</span><span>$'+rec.precio.toFixed(0)+'</span><span style="color:'+dColor+'">'+dStr+'</span></div>';
+    }
+    listEl.innerHTML=rows||'<span style="font-size:10px;color:var(--text3)">Sin registros aun...</span>';
+  }
+
+  // Mostrar/ocultar panel Telegram BTC segun señal
+  var scBTC = document.getElementById('btc-scalp-title');
+  var hayCompra = scBTC && scBTC.textContent.indexOf('COMPRA') !== -1;
+  var hayVenta  = scBTC && scBTC.textContent.indexOf('VENTA') !== -1;
+  var btcTgPanel = document.getElementById('btc-tg-panel');
+  var btcTgLabel = document.getElementById('btc-tg-sec-label');
+  if(btcTgPanel && btcTgLabel){
+    var mostrar = hayCompra || hayVenta;
+    btcTgPanel.style.display = mostrar ? 'block' : 'none';
+    btcTgLabel.style.display = mostrar ? 'block' : 'none';
+  }
+}
+
 function renderImpulsoXAU(){
   var precio = MKT['xau'].price;
   if(!precio || precio <= 0) return;
@@ -2134,9 +2672,32 @@ function renderImpulsoXAU(){
   if(arrowEl){ arrowEl.textContent = arrows; arrowEl.style.color = color; }
   if(lblEl)   lblEl.textContent = label || 'Calculando...';
   if(pctEl){  pctEl.textContent = pct ? pct + '%' : '--%'; pctEl.style.color = color; }
-  if(stEl)    stEl.textContent = HIST_XAU.length + '/60 registros — ' + new Date().toLocaleTimeString();
+  /* CAMBIO v11: Barra de progreso de acumulacion de historial */
+  var progFill = document.getElementById('xau-hist-prog-fill');
+  var progPct  = document.getElementById('xau-hist-prog-pct');
+  var pctAcum  = Math.round((HIST_XAU.length / HIST_MAX) * 100);
+  if(progFill){
+    progFill.style.width = pctAcum + '%';
+    // Verde cuando completo, amarillo acumulando
+    progFill.style.background = pctAcum >= 100 ? 'var(--green)' : pctAcum > 50 ? 'var(--yellow)' : '#f97316';
+  }
+  if(progPct) progPct.textContent = HIST_XAU.length + '/60';
+  if(stEl){
+    if(HIST_XAU.length < HIST_MAX){
+      stEl.textContent = 'Acumulando... ' + pctAcum + '% — faltan ' + (HIST_MAX - HIST_XAU.length) + ' registros';
+      stEl.style.color = 'var(--yellow)';
+    } else {
+      /* CAMBIO v11: Cuando historial completo mostrar punto verde ACTIVO */
+      stEl.innerHTML = '<span style="color:var(--green);font-weight:700">● ACTIVO</span> — ' + new Date().toLocaleTimeString();
+    }
+  }
 
   // === SISTEMA DE ALERTAS ===
+  /* CAMBIO v11: Leer señal actual XAU para mostrar/ocultar panel Telegram */
+  var scTitle = document.getElementById('xau-scalp-title');
+  var hayCompra = scTitle && scTitle.textContent.indexOf('COMPRA') !== -1;
+  tgActualizarVisibilidad(hayCompra);
+
   var wrap = document.getElementById('xau-alertas-wrap');
   if(!wrap) return;
   var alertasHTML = '';
@@ -2160,6 +2721,9 @@ function renderImpulsoXAU(){
     playAlertaImpulso(1);
     alertasHTML += '<div class="alerta-banner alerta-n1">&#9888; Movimiento rapido — ' + v5.toFixed(2) + ' pts en 5 min</div>';
   }
+
+  /* CAMBIO v12: Todas las alertas Telegram (subida Y bajada) centralizadas */
+  if(v5 !== null) tgAlertaMovimiento(v1, v5, v15, precio);
 
   // CAMBIO v10: Subidas fuertes — estas SÍ se envian a Telegram
   // Solo las alcistas van al movil (segun lo pedido).
@@ -2241,7 +2805,7 @@ function tickSim(){
   /* Solo simular XAU si NUNCA hemos recibido precio real de la API */
   if(!_xauPrecioRealRecibido) simular('xau');
   renderActivo('btc');renderActivo('xau');
-}
+simTickActualizar();}
 var _btcTimer=null;
 var _xauTimer=null;
 
