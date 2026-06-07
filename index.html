@@ -836,7 +836,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 
 <!-- CREDITOS API -->
 <div class="divider"></div>
-<div class="sec">Creditos API — rotacion ciclica (750 x 5 = 3,750 / dia)</div>
+<div class="sec">Creditos API — rotacion ciclica (750 x 10 = 7,500 / dia)</div>
 <!-- CAMBIO v13d: 10 cuentas API en 2 filas de 5 -->
 <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:6px">
   <div class="mcard"><div class="mcard-lbl">Cuenta 1</div><div class="cred-bar-bg"><div class="cred-bar" id="c1b"></div></div><div style="font-size:12px;font-weight:700" id="c1t">0/750</div><div class="mcard-sub" id="c1s">--</div></div>
@@ -1210,7 +1210,8 @@ function validarCreditos(callback){
   var keys=API.keys;var pendientes=keys.length;
   if(!pendientes){if(callback)callback();return;}
   /* Inicializar con 750 por defecto */
-  for(var k=0;k<5;k++) credits[k]=k<keys.length?750:0;
+  /* FIX v13f: inicializar hasta 10 cuentas */
+  for(var k=0;k<10;k++) credits[k]=k<keys.length?750:0;
   el('api-status').textContent='Validando creditos — '+keys.length+' cuentas...';el('api-status').style.color='var(--yellow)';
   keys.forEach(function(key,i){
     fetch('https://api.twelvedata.com/api_usage?apikey='+key)
@@ -1299,21 +1300,12 @@ function fetchBTC(){
 }
 
 function fetchBTCfallback(){
-  /* Fallback a TwelveData si Binance no responde */
-  var m=MKT['btc'],P=PARAMS['btc'];
-  var key=null,keyIdx=-1;
-  for(var a=0;a<API.keys.length;a++){var idx=(API.idx+a)%API.keys.length;if(credits[idx]>0){key=API.keys[idx];keyIdx=idx;API.idx=(idx+1)%API.keys.length;credits[idx]--;break;}}
-  if(!key){simular('btc');renderActivo('btc');return;}
-  fetch('https://api.twelvedata.com/quote?symbol=BTC%2FUSD&apikey='+key)
-    .then(function(r){return r.json();})
-    .then(function(q){
-      if(q.status==='error'){simular('btc');renderActivo('btc');return;}
-      m.prevPrice=m.price||parseFloat(q.previous_close||q.close);
-      m.price=fp(parseFloat(q.close),0);
-      el('api-status').textContent='BTC: TwelveData fallback — '+new Date().toLocaleTimeString();
-      renderActivo('btc');renderCredits();
-    })
-    .catch(function(){simular('btc');renderActivo('btc');});
+  /* FIX v13f: BTC NUNCA usa TwelveData — esas keys son SOLO para XAU/USD.
+     Si Binance falla, simular precio en vez de consumir creditos. */
+  simular('btc');
+  renderActivo('btc');
+  var st = el('api-status');
+  if(st){ st.textContent='BTC: Binance no disponible — modo simulacion'; st.style.color='var(--yellow)'; }
 }
 
 /* =========================================================
