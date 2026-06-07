@@ -196,6 +196,63 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 .sim-row input{flex:1;min-width:80px;padding:4px 8px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:11px;font-family:var(--mono);outline:none}
 .sim-row input:focus{border-color:var(--blue)}
 .sim-btn{padding:5px 12px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-family:var(--mono);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
+
+/* ===== v14 PRO — Estado Global, IT, Semaforo, Proyeccion ===== */
+
+/* Estado Global */
+.eg-wrap{border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:8px;border:1.5px solid;transition:all .4s}
+.eg-compra  {background:rgba(34,197,94,0.10); border-color:rgba(34,197,94,0.5)}
+.eg-venta   {background:rgba(239,68,68,0.10); border-color:rgba(239,68,68,0.5)}
+.eg-esperar {background:rgba(234,179,8,0.08); border-color:rgba(234,179,8,0.35)}
+.eg-mantener{background:rgba(59,130,246,0.10);border-color:rgba(59,130,246,0.5)}
+.eg-accion  {font-size:28px;font-weight:700;letter-spacing:2px;line-height:1;margin-bottom:4px}
+.eg-sub     {font-size:12px;margin-bottom:10px;opacity:.8}
+.eg-grid    {display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.eg-cell    {background:rgba(0,0,0,0.2);border-radius:6px;padding:7px 10px;text-align:center}
+.eg-cell-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;opacity:.6;margin-bottom:3px}
+.eg-cell-val{font-size:16px;font-weight:700;font-family:var(--mono)}
+
+/* Indice de Tendencia */
+.it-wrap  {background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px}
+.it-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.it-lbl   {font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.it-score {font-size:26px;font-weight:700;font-family:var(--mono)}
+.it-bar-bg{height:16px;background:var(--bg3);border-radius:8px;overflow:hidden;border:.5px solid var(--border);position:relative}
+.it-bar-fill{height:100%;border-radius:8px;transition:width .8s,background .5s;position:relative}
+.it-bar-fill::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,rgba(255,255,255,0.1),rgba(255,255,255,0));border-radius:8px}
+.it-zones {display:flex;justify-content:space-between;font-size:9px;margin-top:3px;color:var(--text3)}
+.it-label {font-size:11px;font-weight:700;text-align:center;margin-top:5px;padding:3px 0;border-radius:4px}
+.it-filtros{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:8px}
+.it-filtro {display:flex;align-items:center;gap:5px;font-size:10px;padding:3px 6px;border-radius:4px;background:var(--bg3)}
+.it-filtro-ico{font-size:12px;min-width:16px}
+
+/* Semaforo */
+.sem-wrap{display:flex;gap:8px;align-items:center;margin-bottom:8px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius-lg);padding:10px 14px}
+.sem-luz{width:24px;height:24px;border-radius:50%;opacity:.25;transition:all .4s;flex-shrink:0}
+.sem-luz.on{opacity:1;box-shadow:0 0 12px currentColor}
+.sem-rojo  {background:#ef4444;color:#ef4444}
+.sem-amari {background:#eab308;color:#eab308}
+.sem-verde {background:#22c55e;color:#22c55e}
+.sem-txt   {flex:1}
+.sem-titulo{font-size:13px;font-weight:700}
+.sem-sub   {font-size:10px;color:var(--text3);margin-top:2px}
+.sem-pct   {font-size:20px;font-weight:700;font-family:var(--mono)}
+
+/* Proyeccion */
+.proy-wrap{background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--radius-lg);padding:10px 14px;margin-bottom:8px}
+.proy-hdr {display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.proy-lbl {font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.proy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.proy-cell{background:var(--bg3);border-radius:6px;padding:7px;text-align:center;border:.5px solid var(--border)}
+.proy-t   {font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:3px}
+.proy-p   {font-size:14px;font-weight:700;font-family:var(--mono)}
+.proy-chg {font-size:10px;margin-top:2px;font-family:var(--mono)}
+.proy-prob{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:11px}
+.proy-bar-tp{height:8px;border-radius:4px;background:var(--green);transition:width .5s}
+.proy-bar-sl{height:8px;border-radius:4px;background:var(--red);transition:width .5s}
+
+/* ATR / SL dinamico */
+.atr-badge{display:inline-flex;align-items:center;gap:4px;background:var(--bg3);border:.5px solid var(--border2);border-radius:4px;padding:2px 8px;font-size:10px;font-family:var(--mono);margin-top:4px}
 </style>
 </head>
 <body>
@@ -203,7 +260,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 <!-- STICKY HEADER FIJO -->
 <div class="sticky-header">
   <div class="topbar">
-    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v13.0 SCALP</span></div>
+    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v14.0 PRO</span></div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div class="online"><div class="dot"></div>ONLINE</div>
       <span class="horario-badge bg" id="horario-badge">10AM-10PM</span>
@@ -233,6 +290,101 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 
 <!-- PANEL BTC -->
 <div class="panel active" id="panel-btc">
+
+  <!-- ===== v14 PRO: Estado Global + IT + Semaforo + Proyeccion — BTC/USD ===== -->
+
+  <!-- 1. ESTADO GLOBAL -->
+  <div id="btc-eg-wrap" class="eg-wrap eg-esperar">
+    <div class="eg-accion" id="btc-eg-accion" style="color:var(--yellow)">⏳ ANALIZANDO</div>
+    <div class="eg-sub"   id="btc-eg-sub">Acumulando datos...</div>
+    <div class="eg-grid">
+      <div class="eg-cell">
+        <div class="eg-cell-lbl">IT Score</div>
+        <div class="eg-cell-val" id="btc-eg-it" style="color:var(--text2)">--</div>
+      </div>
+      <div class="eg-cell">
+        <div class="eg-cell-lbl">Prob. TP</div>
+        <div class="eg-cell-val" id="btc-eg-tp-pct" style="color:var(--green)">--%</div>
+      </div>
+      <div class="eg-cell">
+        <div class="eg-cell-lbl">Prob. SL</div>
+        <div class="eg-cell-val" id="btc-eg-sl-pct" style="color:var(--red)">--%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SEMAFORO DE ENTRADA -->
+  <div class="sem-wrap">
+    <div class="sem-luz sem-rojo"  id="btc-sem-rojo"></div>
+    <div class="sem-luz sem-amari" id="btc-sem-amari"></div>
+    <div class="sem-luz sem-verde" id="btc-sem-verde"></div>
+    <div class="sem-txt">
+      <div class="sem-titulo" id="btc-sem-titulo">Analizando...</div>
+      <div class="sem-sub"   id="btc-sem-sub">Esperando datos suficientes</div>
+    </div>
+    <div class="sem-pct" id="btc-sem-pct" style="color:var(--text2)">--%</div>
+  </div>
+
+  <!-- 3. INDICE DE TENDENCIA -->
+  <div class="it-wrap">
+    <div class="it-header">
+      <span class="it-lbl">&#205;ndice de Tendencia (IT)</span>
+      <span class="it-score" id="btc-it-score" style="color:var(--text2)">--/100</span>
+    </div>
+    <div class="it-bar-bg">
+      <div class="it-bar-fill" id="btc-it-fill" style="width:0%;background:var(--yellow)"></div>
+    </div>
+    <div class="it-zones">
+      <span style="color:var(--red)">0 Venta</span>
+      <span>20</span><span>40</span><span>60</span><span>80</span>
+      <span style="color:var(--green)">100 Compra</span>
+    </div>
+    <div class="it-label" id="btc-it-label" style="color:var(--text2)">Calculando...</div>
+    <div class="it-filtros" id="btc-it-filtros"></div>
+  </div>
+
+  <!-- 4. PROYECCION DE PRECIO -->
+  <div class="proy-wrap">
+    <div class="proy-hdr">
+      <span class="proy-lbl">&#127916; Proyeccion de precio</span>
+      <span id="btc-proy-conf" style="font-size:10px;color:var(--text3)">Acumulando...</span>
+    </div>
+    <div class="proy-grid">
+      <div class="proy-cell">
+        <div class="proy-t">1 minuto</div>
+        <div class="proy-p" id="btc-proy-1m">--</div>
+        <div class="proy-chg" id="btc-proy-1m-chg" style="color:var(--text3)">--</div>
+      </div>
+      <div class="proy-cell">
+        <div class="proy-t">3 minutos</div>
+        <div class="proy-p" id="btc-proy-3m">--</div>
+        <div class="proy-chg" id="btc-proy-3m-chg" style="color:var(--text3)">--</div>
+      </div>
+      <div class="proy-cell">
+        <div class="proy-t">5 minutos</div>
+        <div class="proy-p" id="btc-proy-5m">--</div>
+        <div class="proy-chg" id="btc-proy-5m-chg" style="color:var(--text3)">--</div>
+      </div>
+    </div>
+    <div class="proy-prob">
+      <span style="color:var(--green);min-width:20px" id="btc-proy-tp-pct">--%</span>
+      <div style="flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;display:flex">
+        <div class="proy-bar-tp" id="btc-proy-bar-tp" style="width:50%"></div>
+        <div class="proy-bar-sl" id="btc-proy-bar-sl" style="width:50%"></div>
+      </div>
+      <span style="color:var(--red);min-width:20px;text-align:right" id="btc-proy-sl-pct">--%</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:2px">
+      <span>Prob. TP</span><span>Prob. SL</span>
+    </div>
+  </div>
+
+  <!-- Seccion detalle colapsable -->
+  <div class="sec" onclick="toggleSec('btc-detalle')" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+    <span>&#128269; Indicadores, señales y calculadoras</span>
+    <span id="btc-detalle-ico" style="font-size:10px;color:var(--text3)">&#9658; mostrar</span>
+  </div>
+  <div id="btc-detalle" style="display:none">
   <div class="sec">Estado de mercado — BTC/USD</div>
   <div class="g4">
     <div class="mcard"><div class="mcard-lbl">BTC/USD precio</div><div class="mcard-val" id="btc-price">$---</div><div class="mcard-sub" id="btc-chg">--</div></div>
@@ -528,10 +680,106 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
   </div>
 
 
+  </div><!-- /detalle BTC -->
 </div>
 
 <!-- PANEL XAU -->
 <div class="panel" id="panel-xau">
+
+  <!-- ===== v14 PRO: Estado Global + IT + Semaforo + Proyeccion — XAU/USD ===== -->
+
+  <!-- 1. ESTADO GLOBAL -->
+  <div id="xau-eg-wrap" class="eg-wrap eg-esperar">
+    <div class="eg-accion" id="xau-eg-accion" style="color:var(--yellow)">⏳ ANALIZANDO</div>
+    <div class="eg-sub"   id="xau-eg-sub">Acumulando datos...</div>
+    <div class="eg-grid">
+      <div class="eg-cell">
+        <div class="eg-cell-lbl">IT Score</div>
+        <div class="eg-cell-val" id="xau-eg-it" style="color:var(--text2)">--</div>
+      </div>
+      <div class="eg-cell">
+        <div class="eg-cell-lbl">Prob. TP</div>
+        <div class="eg-cell-val" id="xau-eg-tp-pct" style="color:var(--green)">--%</div>
+      </div>
+      <div class="eg-cell">
+        <div class="eg-cell-lbl">Prob. SL</div>
+        <div class="eg-cell-val" id="xau-eg-sl-pct" style="color:var(--red)">--%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SEMAFORO DE ENTRADA -->
+  <div class="sem-wrap">
+    <div class="sem-luz sem-rojo"  id="xau-sem-rojo"></div>
+    <div class="sem-luz sem-amari" id="xau-sem-amari"></div>
+    <div class="sem-luz sem-verde" id="xau-sem-verde"></div>
+    <div class="sem-txt">
+      <div class="sem-titulo" id="xau-sem-titulo">Analizando...</div>
+      <div class="sem-sub"   id="xau-sem-sub">Esperando datos suficientes</div>
+    </div>
+    <div class="sem-pct" id="xau-sem-pct" style="color:var(--text2)">--%</div>
+  </div>
+
+  <!-- 3. INDICE DE TENDENCIA -->
+  <div class="it-wrap">
+    <div class="it-header">
+      <span class="it-lbl">&#205;ndice de Tendencia (IT)</span>
+      <span class="it-score" id="xau-it-score" style="color:var(--text2)">--/100</span>
+    </div>
+    <div class="it-bar-bg">
+      <div class="it-bar-fill" id="xau-it-fill" style="width:0%;background:var(--yellow)"></div>
+    </div>
+    <div class="it-zones">
+      <span style="color:var(--red)">0 Venta</span>
+      <span>20</span><span>40</span><span>60</span><span>80</span>
+      <span style="color:var(--green)">100 Compra</span>
+    </div>
+    <div class="it-label" id="xau-it-label" style="color:var(--text2)">Calculando...</div>
+    <div class="it-filtros" id="xau-it-filtros"></div>
+  </div>
+
+  <!-- 4. PROYECCION DE PRECIO -->
+  <div class="proy-wrap">
+    <div class="proy-hdr">
+      <span class="proy-lbl">&#127916; Proyeccion de precio</span>
+      <span id="xau-proy-conf" style="font-size:10px;color:var(--text3)">Acumulando...</span>
+    </div>
+    <div class="proy-grid">
+      <div class="proy-cell">
+        <div class="proy-t">1 minuto</div>
+        <div class="proy-p" id="xau-proy-1m">--</div>
+        <div class="proy-chg" id="xau-proy-1m-chg" style="color:var(--text3)">--</div>
+      </div>
+      <div class="proy-cell">
+        <div class="proy-t">3 minutos</div>
+        <div class="proy-p" id="xau-proy-3m">--</div>
+        <div class="proy-chg" id="xau-proy-3m-chg" style="color:var(--text3)">--</div>
+      </div>
+      <div class="proy-cell">
+        <div class="proy-t">5 minutos</div>
+        <div class="proy-p" id="xau-proy-5m">--</div>
+        <div class="proy-chg" id="xau-proy-5m-chg" style="color:var(--text3)">--</div>
+      </div>
+    </div>
+    <div class="proy-prob">
+      <span style="color:var(--green);min-width:20px" id="xau-proy-tp-pct">--%</span>
+      <div style="flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;display:flex">
+        <div class="proy-bar-tp" id="xau-proy-bar-tp" style="width:50%"></div>
+        <div class="proy-bar-sl" id="xau-proy-bar-sl" style="width:50%"></div>
+      </div>
+      <span style="color:var(--red);min-width:20px;text-align:right" id="xau-proy-sl-pct">--%</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:2px">
+      <span>Prob. TP</span><span>Prob. SL</span>
+    </div>
+  </div>
+
+  <!-- Seccion detalle colapsable -->
+  <div class="sec" onclick="toggleSec('xau-detalle')" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+    <span>&#128269; Indicadores, señales y calculadoras</span>
+    <span id="xau-detalle-ico" style="font-size:10px;color:var(--text3)">&#9658; mostrar</span>
+  </div>
+  <div id="xau-detalle" style="display:none">
   <div class="sec">Estado de mercado — XAU/USD (Oro)</div>
   <div class="g4">
     <div class="mcard"><div class="mcard-lbl">XAU/USD precio</div><div class="mcard-val" id="xau-price">$---</div><div class="mcard-sub" id="xau-chg">--</div></div>
@@ -1937,6 +2185,8 @@ function renderActivo(act){
   renderCapital(act);
   if(act==='xau') renderImpulsoXAU();
   if(act==='btc') renderImpulsoBTC();
+  /* v14: Renderizar Estado Global, IT, Semaforo y Proyeccion */
+  renderEstadoGlobal(act);
 }
 
 function calcTrade(act,n){
@@ -2541,6 +2791,235 @@ function tgActualizarBadges(){
   if(btcCid && !btcCid.value && TG.chatId) btcCid.value = TG.chatId;
 }
 
+
+/* =========================================================
+   v14 PRO — Motor de Inteligencia: IT, Semaforo, Proyeccion
+   Funciona para BTC y XAU usando los datos de MKT y historial.
+========================================================= */
+
+/* ── Calcular IT 0-100 y estado global ── */
+function calcIT(act){
+  var m = MKT[act];
+  if(!m || !m.price) return {it:50,dir:'esperar',conf:50,filtros:[]};
+
+  var pts = 0, filtros = [];
+  var hist = act==='xau' ? HIST_XAU : HIST_BTC;
+  var validos = hist.filter(function(r){return !r.anomalo;});
+
+  /* EMA 9 vs 21 — peso 20 */
+  if(m.ema9 && m.ema21){
+    if(m.ema9 > m.ema21){ pts+=20; filtros.push({txt:'EMA9>EMA21',ok:true}); }
+    else { filtros.push({txt:'EMA9<EMA21',ok:false}); }
+  }
+
+  /* EMA 20 vs 50 — peso 15 */
+  if(m.ema20 && m.ema50){
+    if(m.ema20 > m.ema50){ pts+=15; filtros.push({txt:'Tendencia ▲',ok:true}); }
+    else { filtros.push({txt:'Tendencia ▼',ok:false}); }
+  }
+
+  /* RSI — peso 20 */
+  if(m.rsi){
+    var r = m.rsi;
+    if(r < 30){      pts+=20; filtros.push({txt:'RSI '+r.toFixed(0)+' Sobreventa',ok:true}); }
+    else if(r > 70){ filtros.push({txt:'RSI '+r.toFixed(0)+' Sobrecompra',ok:false}); }
+    else if(r >= 50 && r < 65){ pts+=15; filtros.push({txt:'RSI '+r.toFixed(0)+' Alcista',ok:true}); }
+    else if(r >= 35 && r < 50){ pts+=8;  filtros.push({txt:'RSI '+r.toFixed(0)+' Neutro',ok:null}); }
+    else { pts+=5; filtros.push({txt:'RSI '+r.toFixed(0),ok:null}); }
+  }
+
+  /* MACD — peso 20 */
+  if(m.macdData){
+    if(m.macdData.bull && m.macdData.aboveSig){ pts+=20; filtros.push({txt:'MACD Cruce ▲',ok:true}); }
+    else if(m.macdData.aboveSig){ pts+=12; filtros.push({txt:'MACD Positivo',ok:true}); }
+    else if(m.macdData.bear){ filtros.push({txt:'MACD Cruce ▼',ok:false}); }
+    else { filtros.push({txt:'MACD Negativo',ok:false}); }
+  }
+
+  /* Impulso 5m — peso 15 */
+  var v5 = null;
+  if(validos.length >= 2){
+    var ahora=Date.now(), target=ahora-5*60000;
+    var best=null, bestD=Infinity;
+    validos.forEach(function(r){ var d=Math.abs(r.ts-target); if(d<bestD){bestD=d;best=r;} });
+    if(best && bestD < 5*60000*1.5){
+      v5 = parseFloat((validos[validos.length-1].precio - best.precio).toFixed(act==='xau'?2:0));
+      var umbral = act==='xau' ? 8 : 80;
+      if(v5 > umbral){ pts+=15; filtros.push({txt:'Impulso +'+v5,ok:true}); }
+      else if(v5 < -umbral){ filtros.push({txt:'Impulso '+v5,ok:false}); }
+      else { pts+=7; filtros.push({txt:'Impulso neutro',ok:null}); }
+    }
+  }
+
+  /* Sesion — peso 10 */
+  var ses = getSesion ? getSesion() : {activa:false,nombre:'--'};
+  if(ses && ses.activa){ pts+=10; filtros.push({txt:ses.nombre,ok:true}); }
+  else { filtros.push({txt:'Baja liquidez',ok:false}); }
+
+  pts = Math.min(100, Math.max(0, Math.round(pts)));
+
+  var dir, conf;
+  if(pts >= 70)      { dir='compra';  conf=pts; }
+  else if(pts >= 55) { dir='compra';  conf=pts; }
+  else if(pts <= 30) { dir='venta';   conf=100-pts; }
+  else if(pts <= 45) { dir='venta';   conf=100-pts; }
+  else               { dir='esperar'; conf=50; }
+
+  return {it:pts, dir:dir, conf:conf, filtros:filtros, v5:v5, rsi:m.rsi};
+}
+
+/* ── Calcular proyeccion de precio ── */
+function calcProyeccion(act, precio){
+  var hist = act==='xau' ? HIST_XAU : HIST_BTC;
+  var validos = hist.filter(function(r){return !r.anomalo;});
+  if(validos.length < 12) return null;
+
+  /* Velocidad promedio por segundo de los ultimos 60 registros */
+  var muestra = validos.slice(-60);
+  var span    = (muestra[muestra.length-1].ts - muestra[0].ts) / 1000; // segundos
+  var cambio  = muestra[muestra.length-1].precio - muestra[0].precio;
+  if(span < 1) return null;
+  var velSeg  = cambio / span; // pts por segundo
+
+  /* Proyectar */
+  var p1  = parseFloat((precio + velSeg * 60).toFixed(act==='xau'?2:0));
+  var p3  = parseFloat((precio + velSeg * 180).toFixed(act==='xau'?2:0));
+  var p5  = parseFloat((precio + velSeg * 300).toFixed(act==='xau'?2:0));
+
+  /* Probabilidad TP/SL basada en IT y direccion del impulso */
+  var it    = calcIT(act);
+  var probTP = it.dir==='compra' ? Math.min(85, 50+it.it/3) : it.dir==='venta' ? Math.max(15, 50-it.it/3) : 50;
+  var probSL = 100 - probTP;
+
+  /* Confianza segun cantidad de datos */
+  var confPct = Math.min(90, Math.round(validos.length / 180 * 90));
+
+  return {p1:p1, p3:p3, p5:p5, vel:velSeg, probTP:Math.round(probTP), probSL:Math.round(probSL), conf:confPct};
+}
+
+/* ── Render Estado Global ── */
+function renderEstadoGlobal(act){
+  var it  = calcIT(act);
+  var m   = MKT[act];
+  if(!m || !m.price) return;
+  var precio  = m.price;
+  var dec     = act==='xau' ? 2 : 0;
+
+  /* Detectar MANTENER si hay operacion abierta */
+  var entEl = document.getElementById(act+'-t1-entrada');
+  var tieneOp = entEl && parseFloat(entEl.value) > 0;
+  var dir = tieneOp ? 'mantener' : it.dir;
+
+  var cfg = {
+    compra:   {cls:'eg-compra',  color:'var(--green)', emoji:'🟢', txt:'COMPRAR'},
+    venta:    {cls:'eg-venta',   color:'var(--red)',   emoji:'🔴', txt:'VENDER'},
+    esperar:  {cls:'eg-esperar', color:'var(--yellow)',emoji:'⏳', txt:'ESPERAR'},
+    mantener: {cls:'eg-mantener',color:'var(--blue)',  emoji:'🔵', txt:'MANTENER'},
+  };
+  var c = cfg[dir] || cfg.esperar;
+
+  /* Box */
+  var box = document.getElementById(act+'-eg-wrap');
+  if(box) box.className = 'eg-wrap ' + c.cls;
+
+  /* Accion */
+  var acEl = document.getElementById(act+'-eg-accion');
+  if(acEl){ acEl.textContent = c.emoji + ' ' + c.txt; acEl.style.color = c.color; }
+
+  /* Sub */
+  var subEl = document.getElementById(act+'-eg-sub');
+  if(subEl){
+    if(dir==='mantener') subEl.textContent = 'Operacion abierta — monitorear posicion';
+    else if(dir==='esperar') subEl.textContent = 'IT '+it.it+'/100 — señales en conflicto o mercado lateral';
+    else subEl.textContent = 'Confianza '+it.conf+'% | IT '+it.it+'/100 | '+it.filtros.filter(function(f){return f.ok;}).length+' de '+it.filtros.length+' condiciones cumplidas';
+    subEl.style.color = c.color;
+  }
+
+  /* Celdas IT/TP/SL */
+  var proy = calcProyeccion(act, precio);
+  var itEl   = document.getElementById(act+'-eg-it');
+  var tpEl   = document.getElementById(act+'-eg-tp-pct');
+  var slEl   = document.getElementById(act+'-eg-sl-pct');
+  if(itEl) itEl.textContent = it.it;
+  if(tpEl){ tpEl.textContent = proy ? proy.probTP+'%' : '--%'; tpEl.style.color = proy && proy.probTP>60?'var(--green)':'var(--yellow)'; }
+  if(slEl){ slEl.textContent = proy ? proy.probSL+'%' : '--%'; slEl.style.color = proy && proy.probSL>60?'var(--red)':'var(--yellow)'; }
+
+  /* ── IT barra ── */
+  var fill  = document.getElementById(act+'-it-fill');
+  var score = document.getElementById(act+'-it-score');
+  var label = document.getElementById(act+'-it-label');
+  if(fill){
+    fill.style.width = it.it + '%';
+    fill.style.background = it.it>=75?'#22c55e':it.it>=55?'#86efac':it.it<=25?'#ef4444':it.it<=45?'#fca5a5':'#eab308';
+  }
+  if(score){ score.textContent = it.it+'/100'; score.style.color = it.it>=60?'var(--green)':it.it<=40?'var(--red)':'var(--yellow)'; }
+  var labels = ['🔴 Venta fuerte (0-20)','🟠 Presion bajista (20-40)','🟡 Mercado indeciso (40-60)','🟢 Compra probable (60-80)','🚀 Compra fuerte (80-100)'];
+  var li = it.it>=80?4:it.it>=60?3:it.it>=40?2:it.it>=20?1:0;
+  if(label){ label.textContent=labels[li]; label.style.color=it.it>=60?'var(--green)':it.it<=40?'var(--red)':'var(--yellow)'; }
+
+  /* ── Filtros detalle ── */
+  var filtrosEl = document.getElementById(act+'-it-filtros');
+  if(filtrosEl && it.filtros.length){
+    filtrosEl.innerHTML = it.filtros.map(function(f){
+      var ico = f.ok===true?'✅':f.ok===false?'❌':'➖';
+      var color = f.ok===true?'rgba(34,197,94,0.15)':f.ok===false?'rgba(239,68,68,0.15)':'var(--bg3)';
+      return '<div class="it-filtro" style="background:'+color+'"><span class="it-filtro-ico">'+ico+'</span><span>'+f.txt+'</span></div>';
+    }).join('');
+  }
+
+  /* ── Semaforo ── */
+  var semTit = document.getElementById(act+'-sem-titulo');
+  var semSub = document.getElementById(act+'-sem-sub');
+  var semPct = document.getElementById(act+'-sem-pct');
+  var luces  = ['rojo','amari','verde'];
+  luces.forEach(function(l){
+    var el2 = document.getElementById(act+'-sem-'+l);
+    if(el2) el2.classList.remove('on');
+  });
+  if(it.it >= 65){
+    var sv = document.getElementById(act+'-sem-verde'); if(sv) sv.classList.add('on');
+    if(semTit){ semTit.textContent='🟢 ENTRAR AHORA'; semTit.style.color='var(--green)'; }
+    if(semSub) semSub.textContent='Señal fuerte — condiciones alineadas';
+    if(semPct){ semPct.textContent=it.conf+'%'; semPct.style.color='var(--green)'; }
+  } else if(it.it >= 48){
+    var sa = document.getElementById(act+'-sem-amari'); if(sa) sa.classList.add('on');
+    if(semTit){ semTit.textContent='🟡 ESPERAR CONFIRMACION'; semTit.style.color='var(--yellow)'; }
+    if(semSub) semSub.textContent='Señal parcial — no es ideal para entrar';
+    if(semPct){ semPct.textContent=it.conf+'%'; semPct.style.color='var(--yellow)'; }
+  } else {
+    var sr = document.getElementById(act+'-sem-rojo'); if(sr) sr.classList.add('on');
+    if(semTit){ semTit.textContent='🔴 NO OPERAR'; semTit.style.color='var(--red)'; }
+    if(semSub) semSub.textContent='Mercado en contra — probabilidad de perdida alta';
+    if(semPct){ semPct.textContent=it.conf+'%'; semPct.style.color='var(--red)'; }
+  }
+
+  /* ── Proyeccion ── */
+  if(proy){
+    var d = dec;
+    function fmtP(p){ return act==='xau'?'$'+p.toFixed(2):'$'+p.toFixed(0); }
+    function fmtC(p){ var diff=parseFloat((p-precio).toFixed(d)); return (diff>=0?'+':'')+diff+(act==='xau'?' pts':' pts'); }
+    var conf = document.getElementById(act+'-proy-conf');
+    if(conf) conf.textContent = 'Confianza: '+proy.conf+'%';
+    var ids = ['1m','3m','5m'];
+    var vals = [proy.p1, proy.p3, proy.p5];
+    ids.forEach(function(id,i){
+      var pe = document.getElementById(act+'-proy-'+id);
+      var ce = document.getElementById(act+'-proy-'+id+'-chg');
+      var diff = vals[i] - precio;
+      if(pe){ pe.textContent=fmtP(vals[i]); pe.style.color=diff>0?'var(--green)':diff<0?'var(--red)':'var(--text2)'; }
+      if(ce){ ce.textContent=fmtC(vals[i]); ce.style.color=diff>0?'var(--green)':diff<0?'var(--red)':'var(--text3)'; }
+    });
+    var btp = document.getElementById(act+'-proy-bar-tp');
+    var bsl = document.getElementById(act+'-proy-bar-sl');
+    var ptp = document.getElementById(act+'-proy-tp-pct');
+    var psl = document.getElementById(act+'-proy-sl-pct');
+    if(btp) btp.style.width = proy.probTP+'%';
+    if(bsl) bsl.style.width = proy.probSL+'%';
+    if(ptp){ ptp.textContent=proy.probTP+'%'; }
+    if(psl){ psl.textContent=proy.probSL+'%'; }
+  }
+}
+
 function renderImpulsoBTC(){
   var precio = MKT['btc'] ? MKT['btc'].price : 0;
   if(!precio || precio <= 0) return;
@@ -3021,5 +3500,6 @@ validarCreditos(function(){
   }
 });
 </script>
+  </div><!-- /detalle XAU -->
 </body>
 </html>
