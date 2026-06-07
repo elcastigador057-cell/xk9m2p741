@@ -837,32 +837,52 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 <!-- CREDITOS API -->
 <div class="divider"></div>
 <div class="sec">Creditos API — rotacion ciclica (750 x 5 = 3,750 / dia)</div>
-<div class="g4">
+<!-- CAMBIO v13d: 10 cuentas API en 2 filas de 5 -->
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:6px">
   <div class="mcard"><div class="mcard-lbl">Cuenta 1</div><div class="cred-bar-bg"><div class="cred-bar" id="c1b"></div></div><div style="font-size:12px;font-weight:700" id="c1t">0/750</div><div class="mcard-sub" id="c1s">--</div></div>
   <div class="mcard"><div class="mcard-lbl">Cuenta 2</div><div class="cred-bar-bg"><div class="cred-bar" id="c2b"></div></div><div style="font-size:12px;font-weight:700" id="c2t">0/750</div><div class="mcard-sub" id="c2s">--</div></div>
   <div class="mcard"><div class="mcard-lbl">Cuenta 3</div><div class="cred-bar-bg"><div class="cred-bar" id="c3b"></div></div><div style="font-size:12px;font-weight:700" id="c3t">0/750</div><div class="mcard-sub" id="c3s">--</div></div>
   <div class="mcard"><div class="mcard-lbl">Cuenta 4</div><div class="cred-bar-bg"><div class="cred-bar" id="c4b"></div></div><div style="font-size:12px;font-weight:700" id="c4t">0/750</div><div class="mcard-sub" id="c4s">--</div></div>
+  <div class="mcard"><div class="mcard-lbl">Cuenta 5</div><div class="cred-bar-bg"><div class="cred-bar" id="c5b"></div></div><div style="font-size:12px;font-weight:700" id="c5t">0/750</div><div class="mcard-sub" id="c5s">--</div></div>
 </div>
-<div class="mcard" style="margin-top:8px"><div class="mcard-lbl">Cuenta 5 (extra)</div><div class="cred-bar-bg"><div class="cred-bar" id="c5b"></div></div><div style="font-size:12px;font-weight:700" id="c5t">0/750</div><div class="mcard-sub" id="c5s">--</div></div>
-<div class="track-wrap" style="margin-top:8px">
-  <div class="track-hdr"><span class="track-lbl">Pool total diario</span><span style="font-size:11px;font-weight:700" id="pool-txt">0/3,750</span></div>
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:6px">
+  <div class="mcard"><div class="mcard-lbl">Cuenta 6</div><div class="cred-bar-bg"><div class="cred-bar" id="c6b"></div></div><div style="font-size:12px;font-weight:700" id="c6t">0/750</div><div class="mcard-sub" id="c6s">--</div></div>
+  <div class="mcard"><div class="mcard-lbl">Cuenta 7</div><div class="cred-bar-bg"><div class="cred-bar" id="c7b"></div></div><div style="font-size:12px;font-weight:700" id="c7t">0/750</div><div class="mcard-sub" id="c7s">--</div></div>
+  <div class="mcard"><div class="mcard-lbl">Cuenta 8</div><div class="cred-bar-bg"><div class="cred-bar" id="c8b"></div></div><div style="font-size:12px;font-weight:700" id="c8t">0/750</div><div class="mcard-sub" id="c8s">--</div></div>
+  <div class="mcard"><div class="mcard-lbl">Cuenta 9</div><div class="cred-bar-bg"><div class="cred-bar" id="c9b"></div></div><div style="font-size:12px;font-weight:700" id="c9t">0/750</div><div class="mcard-sub" id="c9s">--</div></div>
+  <div class="mcard"><div class="mcard-lbl">Cuenta 10</div><div class="cred-bar-bg"><div class="cred-bar" id="c10b"></div></div><div style="font-size:12px;font-weight:700" id="c10t">0/750</div><div class="mcard-sub" id="c10s">--</div></div>
+</div>
+<div class="track-wrap" style="margin-top:4px">
+  <div class="track-hdr"><span class="track-lbl">Pool total diario</span><span style="font-size:11px;font-weight:700" id="pool-txt">0/7,500</span></div>
   <div class="track-bg"><div class="track-fill" id="pool-fill" style="width:0%"></div></div>
-  <div class="track-marks"><span>0</span><span>750</span><span>1,500</span><span>2,500</span><span>3,750</span></div>
+  <div class="track-marks"><span>0</span><span>1,500</span><span>3,000</span><span>5,000</span><span>7,500</span></div>
 </div>
 
-<!-- API CONFIG AL FINAL -->
+<!-- CAMBIO v13d: API CONFIG COLAPSABLE + 10 KEYS -->
 <div class="divider"></div>
-<div class="sec">Configuracion TwelveData — 5 cuentas API</div>
+<div class="sec sec-toggle" onclick="toggleSec('api-config-wrap')" style="cursor:pointer;display:flex;justify-content:space-between">
+  <span>&#9881; Configuracion TwelveData — <span id="api-keys-resumen" style="color:var(--yellow)">0/10 keys</span></span>
+  <span id="api-config-wrap-ico" style="font-size:10px;color:var(--text3)">&#9658; mostrar</span>
+</div>
+<div id="api-config-wrap" style="display:none">
 <div class="api-config">
-  <div class="api-row"><label>API Key 1</label><input type="password" id="api1" placeholder="key cuenta 1"></div>
-  <div class="api-row"><label>API Key 2</label><input type="password" id="api2" placeholder="key cuenta 2"></div>
-  <div class="api-row"><label>API Key 3</label><input type="password" id="api3" placeholder="key cuenta 3"></div>
-  <div class="api-row"><label>API Key 4</label><input type="password" id="api4" placeholder="key cuenta 4"></div>
-  <div class="api-row"><label>API Key 5</label><input type="password" id="api5" placeholder="key cuenta 5 (extra)"></div>
-  <div class="api-row">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+    <div class="api-row"><label>API Key 1</label><input type="password" id="api1" placeholder="key cuenta 1"></div>
+    <div class="api-row"><label>API Key 2</label><input type="password" id="api2" placeholder="key cuenta 2"></div>
+    <div class="api-row"><label>API Key 3</label><input type="password" id="api3" placeholder="key cuenta 3"></div>
+    <div class="api-row"><label>API Key 4</label><input type="password" id="api4" placeholder="key cuenta 4"></div>
+    <div class="api-row"><label>API Key 5</label><input type="password" id="api5" placeholder="key cuenta 5"></div>
+    <div class="api-row"><label>API Key 6</label><input type="password" id="api6" placeholder="key cuenta 6"></div>
+    <div class="api-row"><label>API Key 7</label><input type="password" id="api7" placeholder="key cuenta 7"></div>
+    <div class="api-row"><label>API Key 8</label><input type="password" id="api8" placeholder="key cuenta 8"></div>
+    <div class="api-row"><label>API Key 9</label><input type="password" id="api9" placeholder="key cuenta 9"></div>
+    <div class="api-row"><label>API Key 10</label><input type="password" id="api10" placeholder="key cuenta 10"></div>
+  </div>
+  <div class="api-row" style="margin-top:4px">
     <button class="api-btn" onclick="conectarAPI()">Conectar APIs</button>
     <div class="api-status" id="api-status">Ingresa tus keys y presiona conectar</div>
   </div>
+</div>
 </div>
 <div class="divider"></div>
 <div style="text-align:center;font-size:10px;color:var(--text3);padding:6px 0">
@@ -1218,8 +1238,9 @@ function validarCreditos(callback){
 }
 
 function conectarAPI(){
+  /* CAMBIO v13d: 10 campos */
   var keys=[];
-  for(var i=1;i<=5;i++){var v=el('api'+i);if(v&&v.value.trim())keys.push(v.value.trim());}
+  for(var i=1;i<=10;i++){var v=el('api'+i);if(v&&v.value.trim())keys.push(v.value.trim());}
   if(!keys.length){el('api-status').textContent='Error: ingresa al menos 1 key';el('api-status').style.color='var(--red)';return;}
   API.keys=keys;API.conectada=true;
   validarCreditos(function(){
@@ -2052,20 +2073,23 @@ function renderCapital(act){
 }
 
 function renderCredits(){
+  /* CAMBIO v13d: 10 cuentas, pool 7500 */
   var sum=0;
-  var maxAccounts=5;
+  var maxAccounts=10;
   for(var i=1;i<=maxAccounts;i++){
     var u=credits[i-1]||0,p=Math.round((u/750)*100);sum+=u;
     var cb=el('c'+i+'b');if(!cb)continue;
     cb.style.width=p+'%';cb.style.background=p<35?'#ef4444':p<60?'#eab308':'#22c55e';
-    el('c'+i+'t').textContent=u+'/750';
-    el('c'+i+'s').textContent=p===0?'Agotada':p<35?'Bajo':'OK';
-    el('c'+i+'s').style.color=p===0?'#ef4444':p<35?'#eab308':'#22c55e';
+    var ct=el('c'+i+'t'); if(ct) ct.textContent=u+'/750';
+    var cs=el('c'+i+'s'); if(cs){ cs.textContent=p===0?'Agotada':p<35?'Bajo':'OK'; cs.style.color=p===0?'#ef4444':p<35?'#eab308':'#22c55e'; }
   }
-  var maxPool=750*maxAccounts;
+  var maxPool=750*maxAccounts; /* 7500 */
   var pp=Math.round((sum/maxPool)*100);
   el('pool-fill').style.width=pp+'%';el('pool-fill').style.background=pp<35?'#ef4444':pp<60?'#eab308':'#22c55e';
   el('pool-txt').textContent=sum+'/'+maxPool.toLocaleString()+' ('+pp+'%)';
+  /* Actualizar resumen en header colapsable */
+  var kRes=document.getElementById('api-keys-resumen');
+  if(kRes){ var kAct=API.keys?API.keys.length:0; kRes.textContent=kAct+'/10 keys'; kRes.style.color=kAct>=8?'var(--green)':kAct>=5?'var(--yellow)':'var(--red)'; }
 }
 
 
@@ -2916,11 +2940,27 @@ function iniciarTimers(){
 }
 
 /* KEYS PRECARGADAS */
-var KEYS_PRECARGADAS=['4b41d893c4a94827954f2a62f7c2b3cf','5fad4bb6de644394a8003e63bdcb5c3f','2af6b69b41594b0e96ae77b69ad7173d','ffab2053a03d4e6d8f8923251358f8ff','4b8efbec21af4e28ab71ee3f6a83e0d7'];
+/* CAMBIO v13d: 10 keys precargadas — 5 originales + 5 nuevas */
+var KEYS_PRECARGADAS=[
+  '4b41d893c4a94827954f2a62f7c2b3cf',
+  '5fad4bb6de644394a8003e63bdcb5c3f',
+  '2af6b69b41594b0e96ae77b69ad7173d',
+  'ffab2053a03d4e6d8f8923251358f8ff',
+  '4b8efbec21af4e28ab71ee3f6a83e0d7',
+  'affdc37191394d21beaf0339513b6366',
+  '3218c948caa24a01a4daf1512c4f6da9',
+  '333cb285e3864e92b84f299b7cbf2118',
+  '9661cc1227064427be7498936216e225',
+  '6131f65810544ee5a76ddba2f4dda742'
+];
 API.keys=KEYS_PRECARGADAS.filter(function(k){return k.length>0;});API.conectada=true;
-el('api1').value=KEYS_PRECARGADAS[0];el('api2').value=KEYS_PRECARGADAS[1];
-el('api3').value=KEYS_PRECARGADAS[2];el('api4').value=KEYS_PRECARGADAS[3];
-el('api5').value=KEYS_PRECARGADAS[4];
+for(var _ki=1;_ki<=10;_ki++){
+  var _kEl=document.getElementById('api'+_ki);
+  if(_kEl && KEYS_PRECARGADAS[_ki-1]) _kEl.value=KEYS_PRECARGADAS[_ki-1];
+}
+/* Actualizar resumen keys */
+var _kRes=document.getElementById('api-keys-resumen');
+if(_kRes) _kRes.textContent=KEYS_PRECARGADAS.length+'/10 keys';
 
 setInterval(updateClock,1000);
 /* NO iniciar tickSim para XAU — esperamos precio real de la API */
