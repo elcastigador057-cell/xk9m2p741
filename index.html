@@ -2252,62 +2252,68 @@ function simTickActualizar(){
    Reemplaza la logica anterior que solo enviaba alcistas.
 ========================================================= */
 function tgAlertaMovimiento(v1, v5, v15, precio){
+  /* CAMBIO v13e: Alertas enriquecidas con EMA y RSI
+     Solo envia cuando el movimiento esta CONFIRMADO por tendencia.
+     Formato limpio tipo señal operativa. */
   if(!TG || !TG.activo) return;
+
+  /* Leer indicadores actuales de XAU del objeto MKT */
+  var m    = MKT['xau'] || {};
+  var rsi  = m.rsi  ? m.rsi.toFixed(0)  : '--';
+  var ema9 = m.ema9 || 0;
+  var ema21= m.ema21|| 0;
+  var ema20= m.ema20|| 0;
+  var ema50= m.ema50|| 0;
+  var emaTxt  = ema9  && ema21  ? (ema9 > ema21  ? 'EMA9 > EMA21 \u2705'  : 'EMA9 < EMA21 \u274C')  : '';
+  var emaTxt2 = ema20 && ema50  ? (ema20 > ema50 ? 'EMA20 > EMA50 \u2705' : 'EMA20 < EMA50 \u274C') : '';
   var hora = new Date().toLocaleTimeString();
 
-  /* ── Bajadas ── */
-  if(v5 <= -30){
-    if(!tgEnCooldown('baj3')){
+  /* ── VENTA XAU — bajada confirmada ── */
+  if(v5 <= -20){
+    /* Solo enviar si EMA confirma tendencia bajista O RSI en sobrecompra */
+    var confirma = (ema9 && ema21 && ema9 < ema21) || (m.rsi && m.rsi > 55);
+    var nivel = v5 <= -30 ? '\uD83D\uDEA8 <b>VENTA XAU/USD — Caida fuerte</b>' : '\uD83D\uDD34 <b>VENTA XAU/USD</b>';
+    if(confirma && !tgEnCooldown('xau_baj_conf')){
       tgEnviar(
-        '\uD83D\uDEA8 <b>DESPLOME XAU/USD</b>\n' +
+        nivel + '\n' +
+        '\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n' +
         'Precio: <b>' + precio.toFixed(2) + '</b>\n' +
-        '1m: ' + fmtVel(v1) + ' | <b>5m: ' + v5.toFixed(2) + ' pts</b> | 15m: ' + fmtVel(v15) + '\n' +
+        'Cambio 5m: <b>' + v5.toFixed(1) + ' pts</b>\n' +
+        'RSI: ' + rsi + '\n' +
+        emaTxt + (emaTxt2 ? '\n' + emaTxt2 : '') + '\n' +
         '\u23F0 ' + hora
       );
-    }
-  } else if(v5 <= -20){
-    if(!tgEnCooldown('baj2')){
+    } else if(!confirma && !tgEnCooldown('xau_baj_noconf')){
+      /* Caida sin confirmacion — solo avisar, no operar */
       tgEnviar(
-        '\u26A0\uFE0F <b>Caida fuerte XAU/USD</b>\n' +
-        'Precio: <b>' + precio.toFixed(2) + '</b>\n' +
-        '5m: <b>' + v5.toFixed(2) + ' pts</b>\n' +
-        '\u23F0 ' + hora
-      );
-    }
-  } else if(v5 <= -10){
-    if(!tgEnCooldown('baj1')){
-      tgEnviar(
-        '\u26A0\uFE0F Movimiento bajista XAU\n' +
-        'Precio: ' + precio.toFixed(2) + ' | 5m: ' + v5.toFixed(2) + ' pts\n' +
+        '\u26A0\uFE0F <b>Caida XAU sin confirmacion</b>\n' +
+        'Precio: ' + precio.toFixed(2) + ' | 5m: ' + v5.toFixed(1) + ' pts\n' +
+        'RSI: ' + rsi + ' — Esperar confirmacion de tendencia\n' +
         '\u23F0 ' + hora
       );
     }
   }
 
-  /* ── Subidas ── */
-  if(v5 >= 30){
-    if(!tgEnCooldown('alc3')){
+  /* ── COMPRA XAU — subida confirmada ── */
+  if(v5 >= 20){
+    /* Solo enviar si EMA confirma tendencia alcista O RSI en sobreventa */
+    var confirmaAlc = (ema9 && ema21 && ema9 > ema21) || (m.rsi && m.rsi < 45);
+    var nivelAlc = v5 >= 30 ? '\uD83D\uDE80 <b>COMPRA XAU/USD — Disparo alcista</b>' : '\uD83D\uDFE2 <b>COMPRA XAU/USD</b>';
+    if(confirmaAlc && !tgEnCooldown('xau_alc_conf')){
       tgEnviar(
-        '\uD83D\uDE80 <b>DISPARO ALCISTA XAU/USD</b>\n' +
+        nivelAlc + '\n' +
+        '\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n' +
         'Precio: <b>' + precio.toFixed(2) + '</b>\n' +
-        '1m: ' + fmtVel(v1) + ' | <b>5m: +' + v5.toFixed(2) + ' pts</b> | 15m: ' + fmtVel(v15) + '\n' +
+        'Cambio 5m: <b>+' + v5.toFixed(1) + ' pts</b>\n' +
+        'RSI: ' + rsi + '\n' +
+        emaTxt + (emaTxt2 ? '\n' + emaTxt2 : '') + '\n' +
         '\u23F0 ' + hora
       );
-    }
-  } else if(v5 >= 20){
-    if(!tgEnCooldown('alc2')){
+    } else if(!confirmaAlc && !tgEnCooldown('xau_alc_noconf')){
       tgEnviar(
-        '\u2B06\uFE0F <b>Subida fuerte XAU/USD</b>\n' +
-        'Precio: <b>' + precio.toFixed(2) + '</b>\n' +
-        '5m: <b>+' + v5.toFixed(2) + ' pts</b>\n' +
-        '\u23F0 ' + hora
-      );
-    }
-  } else if(v5 >= 10){
-    if(!tgEnCooldown('alc1')){
-      tgEnviar(
-        '\u2197\uFE0F Subida XAU/USD\n' +
-        'Precio: ' + precio.toFixed(2) + ' | 5m: +' + v5.toFixed(2) + ' pts\n' +
+        '\u26A0\uFE0F <b>Subida XAU sin confirmacion</b>\n' +
+        'Precio: ' + precio.toFixed(2) + ' | 5m: +' + v5.toFixed(1) + ' pts\n' +
+        'RSI: ' + rsi + ' — Esperar confirmacion de tendencia\n' +
         '\u23F0 ' + hora
       );
     }
@@ -2656,15 +2662,66 @@ function renderImpulsoBTC(){
   }
   wrap.innerHTML = html;
 
-  // Alertas Telegram BTC
-  if(v5!==null && TG && TG.activo){
-    var hora = new Date().toLocaleTimeString();
-    if(v5<=-300 && !tgEnCooldown('btc_baj3')){ tgEnviar('\uD83D\uDEA8 <b>DESPLOME BTC/USD</b>\nPrecio: <b>$'+precio.toFixed(0)+'</b>\n5m: <b>'+v5+' pts</b>\n\u23F0 '+hora); }
-    else if(v5<=-200 && !tgEnCooldown('btc_baj2')){ tgEnviar('\u26A0\uFE0F <b>Caida fuerte BTC/USD</b>\nPrecio: $'+precio.toFixed(0)+' | 5m: <b>'+v5+' pts</b>\n\u23F0 '+hora); }
-    else if(v5<=-100 && !tgEnCooldown('btc_baj1')){ tgEnviar('\u26A0\uFE0F Movimiento bajista BTC\nPrecio: $'+precio.toFixed(0)+' | 5m: '+v5+' pts\n\u23F0 '+hora); }
-    if(v5>=300 && !tgEnCooldown('btc_alc3')){ tgEnviar('\uD83D\uDE80 <b>DISPARO ALCISTA BTC/USD</b>\nPrecio: <b>$'+precio.toFixed(0)+'</b>\n5m: <b>+'+v5+' pts</b>\n\u23F0 '+hora); }
-    else if(v5>=200 && !tgEnCooldown('btc_alc2')){ tgEnviar('\u2B06\uFE0F <b>Subida fuerte BTC/USD</b>\nPrecio: $'+precio.toFixed(0)+' | 5m: <b>+'+v5+' pts</b>\n\u23F0 '+hora); }
-    else if(v5>=100 && !tgEnCooldown('btc_alc1')){ tgEnviar('\u2197\uFE0F Subida BTC\nPrecio: $'+precio.toFixed(0)+' | 5m: +'+v5+' pts\n\u23F0 '+hora); }
+  /* CAMBIO v13e: Alertas BTC enriquecidas con EMA y RSI
+     Umbral: 200 pts en 5 min confirmado por tendencia */
+  if(v5!==null && TG && TG.activo && Math.abs(v5) >= 200){
+    var mBTC   = MKT['btc'] || {};
+    var rsiBTC = mBTC.rsi  ? mBTC.rsi.toFixed(0)  : '--';
+    var e9b    = mBTC.ema9  || 0;
+    var e21b   = mBTC.ema21 || 0;
+    var e20b   = mBTC.ema20 || 0;
+    var e50b   = mBTC.ema50 || 0;
+    var emaTB  = e9b && e21b  ? (e9b > e21b  ? 'EMA9 > EMA21 \u2705'  : 'EMA9 < EMA21 \u274C')  : '';
+    var emaTB2 = e20b && e50b ? (e20b > e50b ? 'EMA20 > EMA50 \u2705' : 'EMA20 < EMA50 \u274C') : '';
+    var hora   = new Date().toLocaleTimeString();
+
+    if(v5 <= -200){
+      /* Venta BTC — confirmar con EMA bajista o RSI alto */
+      var confirmaB = (e9b && e21b && e9b < e21b) || (mBTC.rsi && mBTC.rsi > 55);
+      var labelB = v5 <= -300 ? '\uD83D\uDEA8 <b>VENTA BTC/USD — Desplome</b>' : '\uD83D\uDD34 <b>VENTA BTC/USD</b>';
+      if(confirmaB && !tgEnCooldown('btc_baj_conf')){
+        tgEnviar(
+          labelB + '\n' +
+          '\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n' +
+          'Precio: <b>$' + precio.toFixed(0) + '</b>\n' +
+          'Cambio 5m: <b>' + v5 + ' pts</b>\n' +
+          'RSI: ' + rsiBTC + '\n' +
+          emaTB + (emaTB2 ? '\n' + emaTB2 : '') + '\n' +
+          '\u23F0 ' + hora
+        );
+      } else if(!confirmaB && !tgEnCooldown('btc_baj_noconf')){
+        tgEnviar(
+          '\u26A0\uFE0F <b>Caida BTC sin confirmacion</b>\n' +
+          'Precio: $' + precio.toFixed(0) + ' | 5m: ' + v5 + ' pts\n' +
+          'RSI: ' + rsiBTC + ' — Esperar confirmacion\n' +
+          '\u23F0 ' + hora
+        );
+      }
+    }
+
+    if(v5 >= 200){
+      /* Compra BTC — confirmar con EMA alcista o RSI bajo */
+      var confirmaA = (e9b && e21b && e9b > e21b) || (mBTC.rsi && mBTC.rsi < 45);
+      var labelA = v5 >= 300 ? '\uD83D\uDE80 <b>COMPRA BTC/USD — Disparo</b>' : '\uD83D\uDFE2 <b>COMPRA BTC/USD</b>';
+      if(confirmaA && !tgEnCooldown('btc_alc_conf')){
+        tgEnviar(
+          labelA + '\n' +
+          '\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n' +
+          'Precio: <b>$' + precio.toFixed(0) + '</b>\n' +
+          'Cambio 5m: <b>+' + v5 + ' pts</b>\n' +
+          'RSI: ' + rsiBTC + '\n' +
+          emaTB + (emaTB2 ? '\n' + emaTB2 : '') + '\n' +
+          '\u23F0 ' + hora
+        );
+      } else if(!confirmaA && !tgEnCooldown('btc_alc_noconf')){
+        tgEnviar(
+          '\u26A0\uFE0F <b>Subida BTC sin confirmacion</b>\n' +
+          'Precio: $' + precio.toFixed(0) + ' | 5m: +' + v5 + ' pts\n' +
+          'RSI: ' + rsiBTC + ' — Esperar confirmacion\n' +
+          '\u23F0 ' + hora
+        );
+      }
+    }
   }
 
   // Historial BTC
@@ -2821,12 +2878,11 @@ function renderImpulsoXAU(){
     alertasHTML += '<div class="alerta-banner alerta-n1">&#9888; Movimiento rapido — ' + v5.toFixed(2) + ' pts en 5 min</div>';
   }
 
-  /* CAMBIO v12: Todas las alertas Telegram (subida Y bajada) centralizadas */
+  /* CAMBIO v13e: Todas las alertas Telegram centralizadas en tgAlertaMovimiento
+     que ahora incluye EMA y RSI para ambas direcciones */
   if(v5 !== null) tgAlertaMovimiento(v1, v5, v15, precio);
 
-  // CAMBIO v10: Subidas fuertes — estas SÍ se envian a Telegram
-  // Solo las alcistas van al movil (segun lo pedido).
-  // Las bajistas solo suenan en pantalla (ya cubiertas arriba).
+  // Las alertas visuales en pantalla se mantienen independientes de Telegram
   if(v5 !== null && v5 >= 30){
     /* Nivel 3 alcista: disparo de +30 pts — maxima prioridad */
     playAlertaImpulso(3);
