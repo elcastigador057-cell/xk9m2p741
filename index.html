@@ -1385,6 +1385,7 @@ function toggleSec(id){
 
 function setDir(act,n,dir){
   var isBuy=dir==='buy';
+  DIRS[act][n]=dir; /* FIX v15: guardar direccion antes de calcular */
   var titleEl=el(act+'-v'+n+'-title');
   var buyBtn=el(act+'-v'+n+'-buy');
   var sellBtn=el(act+'-v'+n+'-sell');
@@ -2197,7 +2198,7 @@ function calcTrade(act,n){
   var rr=parseFloat(el(act+'-v'+n+'rr').value);
   if(!entry||!cap||!pts||!rr||pts<=0||rr<=0)return;
   var isBuy=DIRS[act][n]==='buy';
-  var slDist=fp(pts*100,P.dec);
+  var slDist=fp(pts,P.dec); /* FIX v15: pts ya estan en unidades de precio XM, no multiplicar por 100 */
   var sl=isBuy?fp(entry-slDist,P.dec):fp(entry+slDist,P.dec);
   var tp=isBuy?fp(entry+(slDist*rr),P.dec):fp(entry-(slDist*rr),P.dec);
   if(tp<=0)tp=fp(entry*0.90,P.dec);if(sl<=0)sl=fp(entry*0.99,P.dec);
