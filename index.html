@@ -1,4 +1,27 @@
 <!DOCTYPE html>
+<!--
+=================================================================
+  CODIGO DE ORO — Historial de versiones
+=================================================================
+  v16.0 (actual) — Jun 2026
+    · Fix PnL dolares reales: XAU 1 Troy Oz = $1/pt
+    · BTC 0.01 Token = $0.10/pt
+    · localStorage: guarda historial cada 10s, recupera al volver
+    · Badge verde de confirmacion al recuperar datos
+
+  v15.0 — Jun 2026
+    · Fix bug critico: setDir no guardaba DIRS — compra/venta
+      no cambiaba los calculos de SL/TP
+    · Fix slDist multiplicaba pts*100 — valores absurdos en SL/TP
+
+  v14.0 — Jun 2026
+    · Sistema base: calculadoras SL/TP XAU y BTC
+    · EMAs, RSI, velocidad mercado, trailing stop
+    · Simulador entrada, barra capital, alertas sonoras
+    · Horario activo, API TwelveData
+=================================================================
+-->
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -260,7 +283,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 <!-- STICKY HEADER FIJO -->
 <div class="sticky-header">
   <div class="topbar">
-    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v14.0 PRO</span></div>
+    <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v16.0 PRO</span></div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div class="online"><div class="dot"></div>ONLINE</div>
       <span class="horario-badge bg" id="horario-badge">10AM-10PM</span>
@@ -1346,7 +1369,7 @@ function calcMarginXM(act,price,lot,leverage){
 }
 function calcAutoLot(act,balance,riskPercent,slPips){
   var riskUSD=balance*(riskPercent/100);
-  var ppv=act==='xau'?10:0.01; /* BTC: $0.01/pip con 0.01 token */
+  var ppv=act==='xau'?1.0:0.10; /* FIX v16: XAU 1oz=$1/pt | BTC 0.01Token=$0.10/pt */
   var lot=riskUSD/(slPips*ppv);
   if(lot<0.01)lot=0.01;
   if(act==='btc'&&lot>1)lot=1; /* max 1 token por seguridad */
@@ -1900,23 +1923,23 @@ function renderScalp(act,ds){
   el(id+'sc-sl').textContent=fc(ds.sl,P.dec);
   el(id+'sc-tp').textContent=fc(ds.tp,P.dec);
 
-  /* CAMBIO v13b: Mostrar pts y $ estimados al lado del SL y TP
-     Para XAU: 1 punto = $1 por lote mini (0.1 lot). Para BTC: 1 punto = $1 x tamaño.
-     Mostramos el valor en puntos y el equivalente en $ para 0.01 lote (minimo XM). */
+  /* FIX v16: PnL en dolares reales segun tamano real en XM
+     XAU: 1 Troy Ounce = $1 por punto (1 lot = $10/pip pero pip=0.01, entonces 1 punto=$1)
+     BTC: 0.01 Token XM = $0.10 por punto */
   var slPts  = Math.abs(ds.entrada - ds.sl);
   var tpPts  = Math.abs(ds.tp - ds.entrada);
-  var lotMin = act === 'xau' ? 0.01 : 0.01;  // lote minimo XM
-  /* XAU: pip value = $0.10 por 0.01 lot por punto. BTC: ~$0.01 por 0.01 lot por punto */
-  var pipVal = act === 'xau' ? 0.10 : 0.01;
+  /* XAU 1 Troy Oz = $1 por punto | BTC 0.01 Token = $0.10 por punto */
+  var pipVal = act === 'xau' ? 1.0 : 0.10;
+  var unidad = act === 'xau' ? '1 oz' : '0.01 Token';
   var slUSD  = (slPts * pipVal).toFixed(2);
   var tpUSD  = (tpPts * pipVal).toFixed(2);
   var slEl   = document.getElementById(id+'sc-sl-info');
   var tpEl   = document.getElementById(id+'sc-tp-info');
   if(slEl && ds.entrada > 0){
-    slEl.textContent = '-' + slPts.toFixed(act==='xau'?1:0) + ' pts  /  -$' + slUSD + ' (0.01 lot)';
+    slEl.textContent = '-' + slPts.toFixed(act==='xau'?1:0) + ' pts  /  -$' + slUSD + ' ('+unidad+')';
   }
   if(tpEl && ds.entrada > 0){
-    tpEl.textContent = '+' + tpPts.toFixed(act==='xau'?1:0) + ' pts  /  +$' + tpUSD + ' (0.01 lot)';
+    tpEl.textContent = '+' + tpPts.toFixed(act==='xau'?1:0) + ' pts  /  +$' + tpUSD + ' ('+unidad+')';
   }
 
   var tipoBadge=el(id+'sc-tipo');
