@@ -3490,6 +3490,72 @@ for(var _ki=1;_ki<=10;_ki++){
 var _kRes=document.getElementById('api-keys-resumen');
 if(_kRes) _kRes.textContent=KEYS_PRECARGADAS.length+'/10 keys';
 
+/* =========================================================
+   PERSISTENCIA localStorage — v16
+   Guarda HIST_BTC y HIST_XAU cada 10 segundos y al salir.
+   Al arrancar los recupera si tienen menos de 20 minutos.
+   Asi no se pierden los datos al cambiar de pestana.
+========================================================= */
+var LS_BTC = 'cdoro_hist_btc';
+var LS_XAU = 'cdoro_hist_xau';
+var LS_MAX_EDAD = 20 * 60 * 1000; /* 20 min — datos mas viejos se descartan */
+
+function lsGuardar(){
+  try{
+    localStorage.setItem(LS_BTC, JSON.stringify({ts: Date.now(), data: HIST_BTC}));
+    localStorage.setItem(LS_XAU, JSON.stringify({ts: Date.now(), data: HIST_XAU}));
+  }catch(e){ console.warn('[LS] No se pudo guardar:', e); }
+}
+
+function lsRecuperar(){
+  var recuperadoBTC = 0, recuperadoXAU = 0;
+  try{
+    var rawBTC = localStorage.getItem(LS_BTC);
+    if(rawBTC){
+      var obj = JSON.parse(rawBTC);
+      if(obj && obj.data && Array.isArray(obj.data) && (Date.now() - obj.ts) < LS_MAX_EDAD){
+        HIST_BTC = obj.data;
+        recuperadoBTC = HIST_BTC.length;
+      }
+    }
+  }catch(e){}
+  try{
+    var rawXAU = localStorage.getItem(LS_XAU);
+    if(rawXAU){
+      var obj2 = JSON.parse(rawXAU);
+      if(obj2 && obj2.data && Array.isArray(obj2.data) && (Date.now() - obj2.ts) < LS_MAX_EDAD){
+        HIST_XAU = obj2.data;
+        if(HIST_XAU.length > 0 && !HIST_XAU[HIST_XAU.length-1].anomalo){
+          _xauPrecioRealRecibido = true;
+        }
+        recuperadoXAU = HIST_XAU.length;
+      }
+    }
+  }catch(e){}
+  if(recuperadoBTC > 0 || recuperadoXAU > 0){
+    console.log('[LS] Historial recuperado — BTC: '+recuperadoBTC+' | XAU: '+recuperadoXAU);
+    var badge = document.createElement('div');
+    badge.style.cssText = 'position:fixed;bottom:12px;right:12px;z-index:9999;background:rgba(34,197,94,0.18);border:0.5px solid rgba(34,197,94,0.5);color:#22c55e;font-family:monospace;font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;';
+    badge.textContent = 'Historial recuperado — BTC: '+recuperadoBTC+' pts | XAU: '+recuperadoXAU+' pts';
+    document.body.appendChild(badge);
+    setTimeout(function(){ badge.remove(); }, 5000);
+  }
+}
+
+/* Guardar cada 10 segundos automaticamente */
+setInterval(lsGuardar, 10000);
+/* Guardar al minimizar o cambiar de pestana */
+window.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'hidden') lsGuardar();
+});
+/* Guardar al cerrar */
+window.addEventListener('beforeunload', function(){ lsGuardar(); });
+
+/* Recuperar historial al iniciar ANTES de arrancar los timers */
+lsRecuperar();
+
+/* ======================================================= */
+
 setInterval(updateClock,1000);
 /* NO iniciar tickSim para XAU — esperamos precio real de la API */
 updateClock();simular('btc');renderActivo('btc');renderActivo('xau');
