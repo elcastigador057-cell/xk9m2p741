@@ -284,6 +284,38 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 <div class="sticky-header">
   <div class="topbar">
     <div class="logo">&#9651; <span class="logo-gold">CODIGO DE ORO</span> <span class="status-tag">v16.0 PRO</span></div>
+
+  <!-- ═══ INSTRUCCIONES COMO USAR (colapsable) ═══ -->
+  <div style="margin:8px 12px 0 12px;">
+    <div onclick="toggleInstr()" style="cursor:pointer;background:rgba(212,175,55,0.08);border:0.5px solid rgba(212,175,55,0.3);border-radius:6px;padding:6px 12px;display:flex;justify-content:space-between;align-items:center;font-family:monospace;font-size:11px;color:var(--gold2);">
+      <span>📖 ¿Cómo usar la calculadora?</span>
+      <span id="instr-ico">► mostrar</span>
+    </div>
+    <div id="instr-box" style="display:none;background:rgba(0,0,0,0.3);border:0.5px solid rgba(212,175,55,0.2);border-top:none;border-radius:0 0 6px 6px;padding:10px 14px;font-family:monospace;font-size:11px;color:#ccc;line-height:1.7;">
+      <b style="color:var(--gold2)">CAMPOS A LLENAR:</b><br>
+      • <b>ENTRADA</b> — precio al que abriste la operación en XM<br>
+      • <b>PRECIO XM</b> — precio actual que ves en tu broker ahora mismo<br>
+      • <b>CAPITAL USD</b> — dinero disponible en tu cuenta demo (ej: 10)<br>
+      • <b>SL/TP PUNTOS XM</b> — distancia al Stop Loss en puntos desde tu entrada<br>
+      &nbsp;&nbsp;&nbsp;ORO: mira el soporte más cercano, cuenta los puntos (ej: 4 a 6 pts)<br>
+      &nbsp;&nbsp;&nbsp;BTC: usa entre 50 y 150 puntos según volatilidad del momento<br>
+      • <b>RATIO R:R</b> — relación riesgo/recompensa (mínimo recomendado: 2)<br>
+      &nbsp;&nbsp;&nbsp;Si SL = 5 pts y R:R = 2, entonces TP = 10 pts de ganancia<br>
+      <br>
+      <b style="color:var(--gold2)">BOTONES COMPRA / VENTA:</b><br>
+      • Presiona <b style="color:#22c55e">COMPRA</b> si la operación es alcista (esperas que suba)<br>
+      • Presiona <b style="color:#ef4444">VENTA</b> si la operación es bajista (esperas que baje)<br>
+      <br>
+      <b style="color:var(--gold2)">PNL REAL XM:</b><br>
+      • ORO 1 Troy Oz = <b>$1 por punto</b> de movimiento<br>
+      • BTC 0.01 Token = <b>$0.10 por punto</b> de movimiento<br>
+      <br>
+      <b style="color:var(--gold2)">SEMÁFORO INFERIOR:</b><br>
+      • 🟢 Verde = precio cerca del TP, operación va bien<br>
+      • 🔴 Rojo = precio cerca del SL, considerar cerrar<br>
+    </div>
+  </div>
+  <script>function toggleInstr(){var b=document.getElementById('instr-box');var i=document.getElementById('instr-ico');if(b.style.display==='none'){b.style.display='block';i.textContent='▼ ocultar';}else{b.style.display='none';i.textContent='► mostrar';}}</script>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div class="online"><div class="dot"></div>ONLINE</div>
       <span class="horario-badge bg" id="horario-badge">10AM-10PM</span>
@@ -1358,8 +1390,9 @@ var DIRS={btc:{1:'sell',2:'sell'},xau:{1:'sell',2:'sell'}};
 function getPipMultiplier(act){ return act==='xau' ? 100 : 1; }
 /* XM Token: 0.01 Token BTC = $0.01/pip donde pip=$1 movimiento */
 function calcPipValue(act,lot){
-  if(act==='xau') return fp(lot*10,2);   /* XAU: $10/pip por lote */
-  return fp(lot*1,4);                    /* BTC Token: $1/pip por token, 0.01 token=$0.01/pip */
+  /* FIX v16: XAU 1 Troy Oz = $1 por punto | BTC 0.01 Token = $0.10 por punto */
+  if(act==='xau') return fp(lot*100,2);  /* XAU: 1 lot=100oz, $1/pt por oz = $100/pt por lot */
+  return fp(lot*10,4);                   /* BTC Token: 0.01 token = $0.10/pt */
 }
 function calcMarginXM(act,price,lot,leverage){
   leverage=leverage||200;
@@ -1380,16 +1413,19 @@ function calcAutoLot(act,balance,riskPercent,slPips){
    diff = 73966 - 73587 = 379
    PnL = 379 * 0.01 = $3.79 ✓ */
 function calcPnLXM(act,entry,current,lot,side){
+  /* FIX v16: PnL en dolares reales segun tamano XM
+     XAU: 1 Troy Oz (lot=0.01 en calc = 1 oz real) -> $1 por punto
+     BTC: 0.01 Token -> $0.10 por punto */
+  var diff = side==='buy' ? (current-entry) : (entry-current);
   if(act==='btc'){
-    var diff=side==='buy'?(current-entry):(entry-current);
-    var usd=Math.round(diff*lot*100)/100; /* redondeo a centavos */
-    var pips=Math.round(diff*10)/10;
-    return{pips:pips,usd:fp(usd,2)};
+    var usd  = Math.round(diff * lot * 10 * 100) / 100; /* 0.01 token * 10 = $0.10/pt */
+    var pips = Math.round(diff * 10) / 10;
+    return{pips:pips, usd:fp(usd,2)};
   }
-  var mult=getPipMultiplier(act);
-  var pips=side==='buy'?(current-entry)*mult:(entry-current)*mult;
-  var pv=calcPipValue(act,lot);
-  return{pips:fp(pips,1),usd:fp(Math.round(pips*pv*100)/100,2)};
+  /* XAU: diff en puntos * $1 por punto por oz */
+  var pts  = diff;
+  var usdX = Math.round(pts * 1.0 * 100) / 100; /* $1 por punto, 1 Troy Oz */
+  return{pips:fp(pts,1), usd:fp(usdX,2)};
 }
 function applyTrailingStop(trade,current,act){ if(!trade.tp||!trade.entry)return; var total=Math.abs(trade.tp-trade.entry); var gain=trade.isBuy?current-trade.entry:trade.entry-current; var prog=gain/total; if(prog>=0.30&&!trade.breakEven){trade.sl=trade.entry;trade.breakEven=true;trade.trailingText='BREAK EVEN ACTIVADO';} if(prog>=0.60){var off=act==='xau'?1.5:150; trade.sl=trade.isBuy?current-off:current+off; trade.trailingText='TRAILING STOP ACTIVO';} }
 
@@ -2248,7 +2284,8 @@ function calcTrade(act,n){
     );
   }
   el(act+'-v'+n+'-lot').textContent=lot.toFixed(2)+(act==='btc'?' Token(s)':' Lot');
-  el(act+'-v'+n+'-pipv').textContent='$'+fp(pipValue,4)+'/pip (Token XM)';
+  var pipLabel = act==='xau' ? '$'+fp(pipValue,2)+'/pt (1 oz XAU)' : '$'+fp(pipValue,4)+'/pt (0.01 Token BTC)';
+  el(act+'-v'+n+'-pipv').textContent=pipLabel;
   el(act+'-v'+n+'-mg').textContent='$'+margin.toFixed(2);
   el(act+'-v'+n+'-mg').style.color=margin>cap?'var(--red)':'var(--green)';
   el(act+'-v'+n+'-trail').textContent='OFF';
